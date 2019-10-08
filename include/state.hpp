@@ -63,6 +63,8 @@ namespace translated_automata {
 		set<State*> getParents(string label);
 		bool hasExitingTransition(string label);
 		bool hasExitingTransition(string label, State* child);
+		bool hasIncomingTransition(string label);
+		bool hasIncomingTransition(string label, State* child);
 		map<string, set<State*>> getExitingTransitions();
 		map<string, set<State*>> getIncomingTransitions();
 		const map<string, set<State*>>& getExitingTransitionsRef();

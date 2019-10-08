@@ -15,8 +15,8 @@ using namespace translated_automata;
 void test_stateNFA() {
 	DEBUG_MARK_PHASE( test NFA ) {
 
-		StateNFA* state0 = new StateNFA("S0", false);
-		StateNFA* state1 = new StateNFA("S1", false);
+		StateNFA* state0 = new StateNFA("S0");
+		StateNFA* state1 = new StateNFA("S1");
 		StateNFA* state2 = new StateNFA("S2", true);
 
 		DEBUG_ASSERT_NOT_NULL( state0 );

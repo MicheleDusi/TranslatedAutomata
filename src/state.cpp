@@ -190,7 +190,7 @@ namespace translated_automata {
 	}
 
 	/**
-	 * Verifica se lo stato soggetto ha una transizione uscente
+	 * Verifica se lo stato soggetto ha una transizione USCENTE
 	 * marcata con la label passata come parametro.
 	 */
 	bool State::hasExitingTransition(string label)	{
@@ -199,12 +199,34 @@ namespace translated_automata {
 	}
 
 	/**
-	 * Verifica se lo stato soggetto ha una transizione
-	 * allo stato "child" marcata con l'etichetta "label".
+	 * Verifica se lo stato soggetto ha una transizione USCENTE che vada
+	 * allo stato "child" e che sia marcata con l'etichetta "label".
 	 */
 	bool State::hasExitingTransition(string label, State* child) {
 		auto search = m_exiting_transitions.find(label);
 		if (search != m_exiting_transitions.end()) {
+			return search->second.count(child);
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Verifica se lo stato soggetto ha una transizione ENTRANTE
+	 * marcata con la label passata come parametro.
+	 */
+	bool State::hasIncomingTransition(string label)	{
+		auto search = m_incoming_transitions.find(label);
+		return search != m_incoming_transitions.end();
+	}
+
+	/**
+	 * Verifica se lo stato soggetto ha una transizione ENTRANTE
+	 * che parta dallo stato "child" e che sia marcata con l'etichetta "label".
+	 */
+	bool State::hasIncomingTransition(string label, State* child) {
+		auto search = m_incoming_transitions.find(label);
+		if (search != m_incoming_transitions.end()) {
 			return search->second.count(child);
 		} else {
 			return false;

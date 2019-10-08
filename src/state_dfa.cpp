@@ -190,7 +190,8 @@ namespace translated_automata {
 //    }
 
     /**
-     * Restituisce tutte le etichette delle transizioni uscenti da questo stato.
+     * Restituisce tutte le etichette delle transizioni uscenti dagli stati
+     * dell'estensione.
      */
     set<string> StateDFA::getExitingLabels() {
         set<string> labels;

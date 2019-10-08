@@ -15,6 +15,7 @@
 #include <set>
 
 #include "state_nfa_test.hpp"
+#include "state_dfa_test.hpp"
 #include "debug.hpp"
 
 using std::set;
@@ -29,6 +30,7 @@ int main(int argc, char **argv) {
 	}
 	DEBUG_MARK_PHASE( testing ) {
 		test_stateNFA();
+		test_stateDFA();
 	}
 	return 0;
 }

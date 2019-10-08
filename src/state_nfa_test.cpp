@@ -1,7 +1,6 @@
 /******************************************************************************
  * state_nfa_test.cpp
  *
- * Author: Michele Dusi
  * Project: TranslatedAutomata
  *
  * TEST per il file sorgente "state_nfa.cpp".

@@ -1,7 +1,6 @@
 /******************************************************************************
  * main.hpp
  *
- * Author: Michele Dusi
  * Project: TranslatedAutomata
  *
  * Header del file main.cpp. Gestisce le dipendenze del main.

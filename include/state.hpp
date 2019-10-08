@@ -1,7 +1,6 @@
 /******************************************************************************
  * state.hpp
  *
- * Author: Michele Dusi
  * Project: TranslatedAutomata
  *
  * File header per il sorgente "state.cpp".
@@ -56,8 +55,8 @@ namespace translated_automata {
 		virtual bool isFinal() const = 0;
 		virtual State* duplicate() const = 0;
 
-		void connectChild(string transition, State* child);
-		void disconnectChild(string transition, State* child);
+		void connectChild(string label, State* child);
+		void disconnectChild(string label, State* child);
 		void detach();
 		set<State*> getChildren(string label);
 		State* getChild(string label);

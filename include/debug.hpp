@@ -1,7 +1,6 @@
 /******************************************************************************
  * debug.hpp
  *
- * Author: Michele Dusi
  * Project: TranslatedAutomata
  *
  * Semplice libreria che fornisce una comoda implementazione

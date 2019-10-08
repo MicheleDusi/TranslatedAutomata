@@ -1,7 +1,6 @@
 /******************************************************************************
  * state.cpp
  *
- * Author: Michele Dusi
  * Project: TranslatedAutomata
  *
  * File sorgente per l'implementazione della classe astratta "State", definita
@@ -137,9 +136,15 @@ namespace translated_automata {
 	}
 
 	/**
+	 * Metodo protetto.
 	 * Restituisce l'insieme di stati raggiunti da tutte le transizioni
 	 * uscenti da questo nodo marcate con la label "l" passata come parametro.
 	 * In pratica, restituisce la l-closure di questo nodo.
+	 *
+	 * Nota: questo metodo verrà "wrappato" dalla classe StateNFA, poiché per un NFA
+	 * è possibile avere più figli marcati con la stessa label. Nel caso di uno stato
+	 * StateDFA, invece, sarà opportuno operare alcuni controlli per verificare che
+	 * esista un unico figlio per ciascuna label.
 	 */
 	set<State*> State::getChildren(string label) {
 		auto search = m_exiting_transitions.find(label);

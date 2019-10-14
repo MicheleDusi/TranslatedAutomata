@@ -28,9 +28,5 @@ int main(int argc, char **argv) {
 		std::cout << "Hello world!" << std::endl;
 
 	}
-	DEBUG_MARK_PHASE( testing ) {
-		test_stateNFA();
-		test_stateDFA();
-	}
 	return 0;
 }

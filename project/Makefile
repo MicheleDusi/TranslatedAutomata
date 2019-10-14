@@ -1,3 +1,7 @@
+###############################################
+# Makefile del progetto "Translated Automata" #
+###############################################
+
 # Nome del file eseguibile di output
 OUTPUT = translated_automata
 
@@ -9,7 +13,7 @@ OBJDIR = ./obj
 
 # Parametri di compilazione
 CC = g++
-CFLAGS=-I$(INCDIR) #-std=c++11
+CFLAGS=-I$(INCDIR)  #-std=c++11
 
 # Nomi (base) dei file da compilare
 SOURCES := $(shell find $(SRCDIR) -name '*.cpp')					# Sources ".cpp"
@@ -25,7 +29,7 @@ $(BINDIR)/$(OUTPUT): $(OBJECTS)
 	$(CC) $(CFLAGS) -g -o $@ $^
 
 
-# Pulizia dei file
+# Pulizia dei file creati durante la compilazione
 # 	Usage: "make clean"
 .PHONY: clean
 clean:

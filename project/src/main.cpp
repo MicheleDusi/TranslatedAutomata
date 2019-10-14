@@ -14,8 +14,6 @@
 #include <string>
 #include <set>
 
-#include "state_nfa_test.hpp"
-#include "state_dfa_test.hpp"
 #include "debug.hpp"
 
 using std::set;

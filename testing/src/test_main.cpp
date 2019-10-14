@@ -8,7 +8,7 @@
  *
  ******************************************************************************/
 
-#include "main.hpp"
+#include "test_main.hpp"
 
 #include <iostream>
 #include <string>

@@ -51,7 +51,6 @@ namespace translated_automata {
         virtual ~State();									// Distruttore (virtuale)
         string getName() const;								// Restituisce il nome
 
-		virtual bool isEmpty() const = 0;
 		virtual bool isFinal() const = 0;
 		virtual State* duplicate() const = 0;
 

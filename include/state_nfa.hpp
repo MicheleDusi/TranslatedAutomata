@@ -38,7 +38,6 @@ namespace translated_automata {
         StateNFA(string name, bool final = false);
 		~StateNFA();
 
-		bool isEmpty() const; // Al momento non serve, era per l'intensione
         bool isFinal() const;
         void setFinal(bool final);
         StateNFA* duplicate() const;

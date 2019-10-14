@@ -36,14 +36,6 @@ namespace translated_automata {
 	}
 
 	/**
-	 * Restituisce TRUE se lo stato è vuoto. [??]
-	 */
-	bool StateNFA::isEmpty() const {
-		// DEFAULT TODO
-		return true;
-	}
-
-	/**
 	 * Restituisce TRUE se lo stato è marcato come stato finale.
 	 */
 	bool StateNFA::isFinal() const {

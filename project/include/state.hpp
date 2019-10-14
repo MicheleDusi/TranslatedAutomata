@@ -70,6 +70,7 @@ namespace translated_automata {
 		const map<string, set<State*>>& getIncomingTransitionsRef();
 		int getExitingTransitionsCount();
 		int getIncomingTransitionsCount();
+		bool hasSameTransitions(State* s);
 		string toString() const;
 
 		bool operator<(const State &other) const;

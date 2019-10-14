@@ -292,6 +292,64 @@ namespace translated_automata {
 	}
 
 	/**
+	 * Verifica se lo stato ha le stesse transizioni (entranti E uscenti) dello stato
+	 * passato come parametro.
+	 */
+	bool State::hasSameTransitions(State* s) {
+		// Verifico che il numero di transizioni uscenti sia uguale
+		if (this->m_exiting_transitions.size() != s->m_exiting_transitions.size()) {
+			return false;
+		}
+
+		// Per tutte le transizioni uscenti
+		for (auto &pair: m_exiting_transitions) {
+			string label = pair.first;
+			set<State*> other_children = s->m_exiting_transitions[label];
+
+			// Verifico che il numero di figli sia uguale
+			if (pair.second.size() != other_children.size()) {
+				return false;
+			}
+
+			// Verifico che tutti i figli siano coincidenti
+			for (auto &child: pair.second) {
+				// Se il figlio non è contenuto nell'altra lista
+				if (other_children.count(child) <= 0) {
+					// TODO Verificare che il controllo sia corretto
+					return false;
+				}
+			}
+		}
+
+		// Verifico che il numero di transizioni entranti sia uguale
+		if (this->m_incoming_transitions.size() != s->m_incoming_transitions.size()) {
+			return false;
+		}
+
+		// Per tutte le transizioni entranti
+		for (auto &pair: m_incoming_transitions) {
+			string label = pair.first;
+			set<State*> other_parents = s->m_incoming_transitions[label];
+
+			// Verifico che il numero di padri sia uguale
+			if (pair.second.size() != other_parents.size()) {
+				return false;
+			}
+
+			// Verifico che tutti i padri siano coincidenti
+			for (auto &parent: pair.second) {
+				// Se il padre non è contenuto nell'altra lista
+				if (other_parents.count(parent) <= 0) {
+					// TODO Verificare che il controllo sia corretto
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Restituisce una stringa contenente tutte le informazioni relative allo stato.
 	 */
 	string State::toString() const {

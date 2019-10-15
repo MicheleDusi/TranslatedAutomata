@@ -438,7 +438,10 @@ namespace translated_automata {
 			return getThis()->getName() != other.getName();
 	}
 
-	/// Istanziazione delle classi parametrizzate su StateNFA e StateDFA
+    /*************
+     * Nota: essendo la classe State parametrizzata sul tipo "S",
+     * è necessario comunicare al compilatore quali implementazioni verranno utilizzate.
+     */
     template class State<StateNFA>;
     template class State<StateDFA>;
 

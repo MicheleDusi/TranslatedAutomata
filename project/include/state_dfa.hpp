@@ -18,6 +18,7 @@
 
 #include "state.hpp"
 #include "state_nfa.hpp"
+#include "automaton.hpp"
 
 #define DEFAULT_VOID_DISTANCE 1U<<30
 
@@ -76,4 +77,5 @@ namespace translated_automata {
 		StateDFA* duplicate() const;
 
     };
+
 }

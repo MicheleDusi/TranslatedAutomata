@@ -5,6 +5,7 @@
  *
  * Header del file automaton.cpp. Fornisce le firme della classe "Automaton",
  * che rappresenta in astratto un Automa a stati finiti.
+ * Fornisce inoltre i due alias NFA e DFA.
  *
  ******************************************************************************/
 

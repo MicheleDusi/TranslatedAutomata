@@ -386,10 +386,12 @@ namespace translated_automata {
       return *lhs < *rhs;
     }
 
-    /**
-     * Semi-istanziazione finale delle due classi concrete.
+
+    /*************
+     * Nota: essendo la classe Automaton parametrizzata sul tipo "State",
+     * è necessario comunicare al compilatore quali implementazioni verranno utilizzate.
      */
-//    template class Automaton<StateNFA>;
-//    template class Automaton<StateDFA>;
+    template class Automaton<StateNFA>;
+    template class Automaton<StateDFA>;
 
 } /* namespace translated_automata */

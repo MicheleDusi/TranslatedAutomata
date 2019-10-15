@@ -16,6 +16,7 @@
 #define INCLUDE_STATE_NFA_HPP_
 
 #include "state.hpp"
+#include "automaton.hpp"
 
 namespace translated_automata {
 

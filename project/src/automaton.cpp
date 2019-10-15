@@ -389,7 +389,7 @@ namespace translated_automata {
     /**
      * Semi-istanziazione finale delle due classi concrete.
      */
-    template class Automaton<StateNFA>;
+//    template class Automaton<StateNFA>;
 //    template class Automaton<StateDFA>;
 
 } /* namespace translated_automata */

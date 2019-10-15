@@ -21,9 +21,10 @@ namespace translated_automata {
 
 	/**
 	 * Classe StateNFA.
-	 * Eredita in maniera pubblica da State.
+	 * Eredita in maniera pubblica da State parametrizzata sulla stessa
+	 * classe StateNFA.
 	 */
-    class StateNFA : public State {
+    class StateNFA : public State<StateNFA> {
 
 	private:
 		bool m_final = false;

@@ -19,7 +19,7 @@
 #include "state.hpp"
 #include "state_nfa.hpp"
 
-#define DEFAULT_VOID_DISTANCE 1<<30
+#define DEFAULT_VOID_DISTANCE 1U<<30
 
 namespace translated_automata {
 
@@ -32,14 +32,16 @@ namespace translated_automata {
 
 	/**
 	 * Concrete class "StateDFA".
+	 * Eredita pubblicamente da State parametrizzata sulla
+	 * stessa classe StateDFA.
 	 */
-    class StateDFA : public State {
+    class StateDFA : public State<StateDFA> {
 
 	private:
-		ExtensionDFA* m_extension;							// Nodi dell'NFA corrispondente
-		int m_distance = DEFAULT_VOID_DISTANCE;				// Distanza del nodo
-		bool m_updated = false;								// Flag che segnala l'aggiornamento
-		bool m_processed = false;							// Flag che segnala se è stato processato
+		ExtensionDFA* m_extension;								// Nodi dell'NFA corrispondente
+		unsigned int m_distance = DEFAULT_VOID_DISTANCE;		// Distanza del nodo
+		bool m_updated = false;									// Flag che segnala l'aggiornamento
+		bool m_processed = false;								// Flag che segnala se è stato processato
 
     public:
 		static string createNameFromExtension(const ExtensionDFA &ext);

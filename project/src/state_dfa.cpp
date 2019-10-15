@@ -160,7 +160,7 @@ namespace translated_automata {
         ExtensionDFA* closure = new ExtensionDFA();
 
         for (StateNFA* member: *m_extension) {
-            for (State* child_ : member->getChildren(label)) {
+            for (StateNFA* child_ : member->getChildren(label)) {
             	StateNFA* child = (StateNFA*) child_;
                 closure->insert(child);
             }
@@ -218,7 +218,7 @@ namespace translated_automata {
     	// Per tutte le transizioni uscenti dallo stato "state"
         for (auto &pair: state->getExitingTransitions()) {
             string label = pair.first;
-            for (State* child: pair.second) {
+            for (StateDFA* child: pair.second) {
                 if (!this->hasExitingTransition(label, child)) {
                     this->connectChild(label, child);
                 }

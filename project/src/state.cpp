@@ -19,6 +19,8 @@
 #include <set>
 
 #include "debug.hpp"
+#include "state_dfa.hpp"
+#include "state_nfa.hpp"
 
 using std::string;
 using std::map;
@@ -35,15 +37,17 @@ namespace translated_automata {
 	 * Metodo privato.
 	 * Restituisce il puntatore all'oggetto corrente.
 	 */
-	State* State::getThis() const {
-		return (State*) this;
+	template <class S>
+	S* State<S>::getThis() const {
+		return (S*) this;
 	}
 
 	/**
 	 * Costruttore della classe State.
 	 * Inizializza come vuoti gli insiemi di transizioni entranti e uscenti.
 	 */
-	State::State ()
+	template <class S>
+	State<S>::State ()
 	: m_exiting_transitions(), m_incoming_transitions() {
 		DEBUG_LOG_SUCCESS( "Nuovo oggetto State creato correttamente" );
 	}
@@ -51,7 +55,8 @@ namespace translated_automata {
 	/**
 	 * Distruttore della classe State.
 	 */
-	State::~State () {
+	template <class S>
+	State<S>::~State () {
 		DEBUG_LOG( "Distruzione dell'oggetto State \"%s\"", m_name.c_str() );
 		detach();
 		DEBUG_LOG_SUCCESS( "Oggetto State distrutto correttamente" );
@@ -60,7 +65,8 @@ namespace translated_automata {
 	/**
 	 * Restituisce il nome dello stato.
 	 */
-	string State::getName() const {
+	template <class S>
+	string State<S>::getName() const {
 		return m_name;
 	}
 
@@ -69,7 +75,8 @@ namespace translated_automata {
 	 * Rimuove una transizione dallo stato al figlio.
 	 * Se non esiste non succede nulla.
 	 */
-	void State::removeChild(string label, State* child)	{
+	template <class S>
+	void State<S>::removeChild(string label, S* child)	{
 		m_exiting_transitions[label].erase(child);
 		if (m_exiting_transitions[label].empty()) {
 			m_exiting_transitions.erase(label);
@@ -80,7 +87,8 @@ namespace translated_automata {
 	 * Metodo privato.
 	 * Come "removeChild", ma rimuovo una transizione entrante.
 	 */
-	void State::removeParent(string label, State* parent) {
+	template <class S>
+	void State<S>::removeParent(string label, S* parent) {
 		m_incoming_transitions[label].erase(parent);
 		if (m_incoming_transitions[label].empty()) {
 			m_incoming_transitions.erase(label);
@@ -91,7 +99,8 @@ namespace translated_automata {
 	 * Collega lo stato soggetto allo stato passato come parametro, con una transizione
 	 * etichettata dalla label "label" passata come parametro.
 	 */
-	void State::connectChild(string label, State* child)	{
+	template <class S>
+	void State<S>::connectChild(string label, S* child)	{
 		// Aggiungo una transizione uscente da questo stato
 		m_exiting_transitions[label].insert(child);
 		// Aggiungo una transizione entrante allo stato di arrivo
@@ -104,7 +113,8 @@ namespace translated_automata {
 	 *
 	 * Precondizione: si suppone che tale transizione sia esistente
 	 */
-	void State::disconnectChild(string label, State* child) {
+	template <class S>
+	void State<S>::disconnectChild(string label, S* child) {
 		// Rimuovo la transizione uscente da questo stato
 		removeChild(label, child);
 		// Rimuovo la transizione entrante dal
@@ -117,11 +127,12 @@ namespace translated_automata {
 	 * Le transizioni vengono aggiornate anche sui nodi che
 	 * risultavano precedentemente connessi.
 	 */
-	void State::detach() {
+	template <class S>
+	void State<S>::detach() {
 		// Rimuove le transizioni uscenti
 		for (auto pair: m_exiting_transitions) {
 			string label = pair.first;
-			for (State* child : pair.second) {
+			for (S* child : pair.second) {
 				child->removeParent(label, getThis());
 			}
 		}
@@ -129,7 +140,7 @@ namespace translated_automata {
 		// Rimuove le transizioni entranti
 		for (auto pair: m_incoming_transitions) {
 			string label = pair.first;
-			for (State* parent: pair.second) {
+			for (S* parent: pair.second) {
 				parent->removeChild(label, getThis());
 			}
 		}
@@ -146,7 +157,8 @@ namespace translated_automata {
 	 * StateDFA, invece, sarà opportuno operare alcuni controlli per verificare che
 	 * esista un unico figlio per ciascuna label.
 	 */
-	set<State*> State::getChildren(string label) {
+	template <class S>
+	set<S*> State<S>::getChildren(string label) {
 		auto search = m_exiting_transitions.find(label);
 		// Con "auto" sto esplicitando il processo di type-inference
 		if (search != m_exiting_transitions.end()) {
@@ -154,7 +166,7 @@ namespace translated_automata {
 			return m_exiting_transitions[label];
 		} else {
 			// Restituisco un insieme vuoto
-			return set<State*>();
+			return set<S*>();
 		}
 	}
 
@@ -163,7 +175,8 @@ namespace translated_automata {
 	 * In caso ne sia presente più di uno (caso NFA), restituisce solo il primo della lista.
 	 * Per ottenere tutti gli stati raggiunti, è opportuno chiamare il metodo "getChildren".
 	 */
-	State* State::getChild(string label) {
+	template <class S>
+	S* State<S>::getChild(string label) {
 		auto search = m_exiting_transitions.find(label);
 		// Con "auto" sto esplicitando il processo di type-inference
 		if (search != m_exiting_transitions.end()) {
@@ -180,12 +193,13 @@ namespace translated_automata {
 	 * che punta a questo stato. In pratica, tutti gli stati "padri" secondo una certa
 	 * label.
 	 */
-	set<State*> State::getParents(string label) {
+	template <class S>
+	set<S*> State<S>::getParents(string label) {
 		auto search = m_incoming_transitions.find(label);
 		if (search != m_incoming_transitions.end()) {
 			return m_incoming_transitions[label];
 		} else {
-			return set<State*>();
+			return set<S*>();
 		}
 	}
 
@@ -193,7 +207,8 @@ namespace translated_automata {
 	 * Verifica se lo stato soggetto ha una transizione USCENTE
 	 * marcata con la label passata come parametro.
 	 */
-	bool State::hasExitingTransition(string label)	{
+	template <class S>
+	bool State<S>::hasExitingTransition(string label)	{
 		auto search = m_exiting_transitions.find(label);
 		return search != m_exiting_transitions.end();
 	}
@@ -202,7 +217,8 @@ namespace translated_automata {
 	 * Verifica se lo stato soggetto ha una transizione USCENTE che vada
 	 * allo stato "child" e che sia marcata con l'etichetta "label".
 	 */
-	bool State::hasExitingTransition(string label, State* child) {
+	template <class S>
+	bool State<S>::hasExitingTransition(string label, S* child) {
 		auto search = m_exiting_transitions.find(label);
 		if (search != m_exiting_transitions.end()) {
 			return search->second.count(child);
@@ -215,7 +231,8 @@ namespace translated_automata {
 	 * Verifica se lo stato soggetto ha una transizione ENTRANTE
 	 * marcata con la label passata come parametro.
 	 */
-	bool State::hasIncomingTransition(string label)	{
+	template <class S>
+	bool State<S>::hasIncomingTransition(string label)	{
 		auto search = m_incoming_transitions.find(label);
 		return search != m_incoming_transitions.end();
 	}
@@ -224,7 +241,8 @@ namespace translated_automata {
 	 * Verifica se lo stato soggetto ha una transizione ENTRANTE
 	 * che parta dallo stato "child" e che sia marcata con l'etichetta "label".
 	 */
-	bool State::hasIncomingTransition(string label, State* child) {
+	template <class S>
+	bool State<S>::hasIncomingTransition(string label, S* child) {
 		auto search = m_incoming_transitions.find(label);
 		if (search != m_incoming_transitions.end()) {
 			return search->second.count(child);
@@ -236,14 +254,16 @@ namespace translated_automata {
 	/**
 	 * Restituisce la mappa di transizioni uscenti da questo stato.
 	 */
-	map<string, set<State*>> State::getExitingTransitions() {
+	template <class S>
+	map<string, set<S*>> State<S>::getExitingTransitions() {
 		return m_exiting_transitions;
 	}
 
 	/**
 	 * Restituisce la mappa di transizioni entranti in questo stato.
 	 */
-	map<string, set<State*>> State::getIncomingTransitions() {
+	template <class S>
+	map<string, set<S*>> State<S>::getIncomingTransitions() {
 		return m_incoming_transitions;
 	}
 
@@ -252,7 +272,8 @@ namespace translated_automata {
 	 * in cui la mappa è salvata.
 	 * Restituire un indirizzo permette di usare questo metodo come lvalue in un assegnamento, ad esempio.
 	 */
-	const map<string, set<State*>>& State::getExitingTransitionsRef() {
+	template <class S>
+	const map<string, set<S*>>& State<S>::getExitingTransitionsRef() {
 		return m_exiting_transitions;
 	}
 
@@ -261,7 +282,8 @@ namespace translated_automata {
 	 * in cui la mappa è salvata.
 	 * Restituire un indirizzo permette di usare questo metodo come lvalue in un assegnamento, ad esempio.
 	 */
-	const map<string, set<State*>>& State::getIncomingTransitionsRef() {
+	template <class S>
+	const map<string, set<S*>>& State<S>::getIncomingTransitionsRef() {
 		return m_incoming_transitions;
 	}
 
@@ -270,7 +292,8 @@ namespace translated_automata {
 	 * Per ciascuna label, conteggia la quantità di transizioni riferite a tale label uscenti
 	 * dallo stato corrente.
 	 */
-	int State::getExitingTransitionsCount() {
+	template <class S>
+	int State<S>::getExitingTransitionsCount() {
 		int count = 0;
 		for (auto &pair: m_exiting_transitions) {// Ciclo su tutti gli elementi della mappa
 			count += pair.second.size();
@@ -283,7 +306,8 @@ namespace translated_automata {
 	/**
 	 * Conta le transizioni entranti nello stato.
 	 */
-	int State::getIncomingTransitionsCount() {
+	template <class S>
+	int State<S>::getIncomingTransitionsCount() {
 		int count = 0;
 		for (auto &pair: m_incoming_transitions) {
 			count += pair.second.size();
@@ -295,7 +319,8 @@ namespace translated_automata {
 	 * Verifica se lo stato ha le stesse transizioni (entranti E uscenti) dello stato
 	 * passato come parametro.
 	 */
-	bool State::hasSameTransitions(State* s) {
+	template <class S>
+	bool State<S>::hasSameTransitions(S* s) {
 		// Verifico che il numero di transizioni uscenti sia uguale
 		if (this->m_exiting_transitions.size() != s->m_exiting_transitions.size()) {
 			return false;
@@ -304,7 +329,7 @@ namespace translated_automata {
 		// Per tutte le transizioni uscenti
 		for (auto &pair: m_exiting_transitions) {
 			string label = pair.first;
-			set<State*> other_children = s->m_exiting_transitions[label];
+			set<S*> other_children = s->m_exiting_transitions[label];
 
 			// Verifico che il numero di figli sia uguale
 			if (pair.second.size() != other_children.size()) {
@@ -329,7 +354,7 @@ namespace translated_automata {
 		// Per tutte le transizioni entranti
 		for (auto &pair: m_incoming_transitions) {
 			string label = pair.first;
-			set<State*> other_parents = s->m_incoming_transitions[label];
+			set<S*> other_parents = s->m_incoming_transitions[label];
 
 			// Verifico che il numero di padri sia uguale
 			if (pair.second.size() != other_parents.size()) {
@@ -352,7 +377,8 @@ namespace translated_automata {
 	/**
 	 * Restituisce una stringa contenente tutte le informazioni relative allo stato.
 	 */
-	string State::toString() const {
+	template <class S>
+	string State<S>::toString() const {
 		// Stringa che verrà restituita
 		string result = "";
 
@@ -369,7 +395,7 @@ namespace translated_automata {
 		for (auto &pair: m_exiting_transitions) {
 			string label = pair.first;
 			// Per tutti gli stati associati ad una label
-			for (State* state: pair.second) {
+			for (S* state: pair.second) {
 				// Inserisco le informazioni riguardanti la transizione uscente
 				result += "--(" + label + ")--> " + state->getName() + '\n';
 			}
@@ -379,7 +405,7 @@ namespace translated_automata {
 		for (auto &pair: m_incoming_transitions) {
 			string label = pair.first;
 			// Per tutti gli stati associati ad una label
-			for (State* state: pair.second) {
+			for (S* state: pair.second) {
 				// Inserisco le informazioni riguardanti la transizione entrante
 				result += state->getName() + " --(" + label + ")-->" + '\n';
 			}
@@ -391,23 +417,29 @@ namespace translated_automata {
 	/**
 	 * Definisce un operatore "<" di confronto, basato sul confronto dei nomi.
 	 */
-	bool State::operator<(const State &other) const	{
+	template <class S>
+	bool State<S>::operator<(const S &other) const	{
 		return getThis()->getName() < other.getName();
 	}
 
 	/**
 	 * Definisce un operatore di uguaglianza "==", basato sull'uguaglianza dei nomi.
 	 */
-	bool State::operator==(const State &other) const {
+	template <class S>
+	bool State<S>::operator==(const S &other) const {
 		return getThis()->getName() == other.getName();
 	}
 
 	/**
 	 * Definisce un operatore di disuguaglianza "!=", basato sul confronto dei nomi.
 	 */
-	bool State::operator!=(const State &other) const {
+	template <class S>
+	bool State<S>::operator!=(const S &other) const {
 			return getThis()->getName() != other.getName();
 	}
 
+	/// Istanziazione delle classi parametrizzate su StateNFA e StateDFA
+    template class State<StateNFA>;
+    template class State<StateDFA>;
 
 }

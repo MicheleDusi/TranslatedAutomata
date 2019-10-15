@@ -5,13 +5,13 @@
  *
  * File header per il sorgente "state.cpp".
  * Contiene la definizione della classe astratta "State", che viene implementata
- * dalle classe "StateNFA" e "StateDFA".
+ * dalle classe "StateNFA" e "StateDFA" ed è parametrizzata sul tipo "S".
  * Nel dominio concettuale, uno "State" è uno stato di un "automa a stati finiti",
  * sia esso deterministico o non deterministico. E' caratterizzato da un nome
  * univoco ed è legato ad altri stati mediante transizioni, ciascuna delle quali
  * è marcata da una label.
  * La classe "State" prevede, quando estesa, l'implementazione dei metodi virtuali
- * "isEmpty", "isFinal" e "duplicate".
+ * "isFinal" e "duplicate".
  *
  ******************************************************************************/
 
@@ -33,15 +33,16 @@ namespace translated_automata {
 	/**
 	 * Abstract class "State".
 	 */
+	template <class S>
 	class State {
 
     private:
-        map<string, set<State*>> m_exiting_transitions;		// Transizioni uscenti dallo stato
-        map<string, set<State*>> m_incoming_transitions;	// Transizioni entranti nello stato
+        map<string, set<S*>> m_exiting_transitions;		// Transizioni uscenti dallo stato
+        map<string, set<S*>> m_incoming_transitions;	// Transizioni entranti nello stato
 
-        State* getThis() const;
-        void removeChild(string label, State* child);
-        void removeParent(string label, State* parent);
+        S* getThis() const;
+        void removeChild(string label, S* child);
+        void removeParent(string label, S* parent);
 
 	protected:
 		string m_name = "";									// Nome dello stato
@@ -52,30 +53,30 @@ namespace translated_automata {
         string getName() const;								// Restituisce il nome
 
 		virtual bool isFinal() const = 0;
-		virtual State* duplicate() const = 0;
+		virtual S* duplicate() const = 0;
 
-		void connectChild(string label, State* child);
-		void disconnectChild(string label, State* child);
+		void connectChild(string label, S* child);
+		void disconnectChild(string label, S* child);
 		void detach();
-		set<State*> getChildren(string label);
-		State* getChild(string label);
-		set<State*> getParents(string label);
+		set<S*> getChildren(string label);
+		S* getChild(string label);
+		set<S*> getParents(string label);
 		bool hasExitingTransition(string label);
-		bool hasExitingTransition(string label, State* child);
+		bool hasExitingTransition(string label, S* child);
 		bool hasIncomingTransition(string label);
-		bool hasIncomingTransition(string label, State* child);
-		map<string, set<State*>> getExitingTransitions();
-		map<string, set<State*>> getIncomingTransitions();
-		const map<string, set<State*>>& getExitingTransitionsRef();
-		const map<string, set<State*>>& getIncomingTransitionsRef();
+		bool hasIncomingTransition(string label, S* child);
+		map<string, set<S*>> getExitingTransitions();
+		map<string, set<S*>> getIncomingTransitions();
+		const map<string, set<S*>>& getExitingTransitionsRef();
+		const map<string, set<S*>>& getIncomingTransitionsRef();
 		int getExitingTransitionsCount();
 		int getIncomingTransitionsCount();
-		bool hasSameTransitions(State* s);
+		bool hasSameTransitions(S* s);
 		string toString() const;
 
-		bool operator<(const State &other) const;
-		bool operator==(const State &other) const;
-		bool operator!=(const State &other) const;
+		bool operator<(const S &other) const;
+		bool operator==(const S &other) const;
+		bool operator!=(const S &other) const;
 
     };
 

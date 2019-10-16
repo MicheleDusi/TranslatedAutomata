@@ -12,6 +12,4 @@
 
 #include <iostream>
 
-#include "state.hpp"
-
 #endif /* INCLUDE_MAIN_HPP_ */

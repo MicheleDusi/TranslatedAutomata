@@ -383,7 +383,7 @@ namespace translated_automata {
 		string result = "";
 
 		// Inserisco il nome dello stato
-		result += getThis()->getName();
+		result += "State: " + getThis()->getName();
 
 		// Se lo stato è final, aggiungo un'etichetta alla stringa visualizzata
 		if (getThis()->isFinal()) {
@@ -391,23 +391,25 @@ namespace translated_automata {
 		}
 		result += "\n";
 
+		result += "\tExiting transitions:\n";
 		// Per tutte le label delle transizioni uscenti
 		for (auto &pair: m_exiting_transitions) {
 			string label = pair.first;
 			// Per tutti gli stati associati ad una label
 			for (S* state: pair.second) {
 				// Inserisco le informazioni riguardanti la transizione uscente
-				result += "--(" + label + ")--> " + state->getName() + '\n';
+				result += "\t\t━━(" + label + ")━━▶ " + state->getName() + '\n';
 			}
 		}
 
+		result += "\tIncoming transitions:\n";
 		// Per tutte le label delle transizioni entranti
 		for (auto &pair: m_incoming_transitions) {
 			string label = pair.first;
 			// Per tutti gli stati associati ad una label
 			for (S* state: pair.second) {
 				// Inserisco le informazioni riguardanti la transizione entrante
-				result += state->getName() + " --(" + label + ")-->" + '\n';
+				result += "\t\t" + state->getName() + " ━━(" + label + ")━━▶" + '\n';
 			}
 		}
 

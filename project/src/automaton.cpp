@@ -280,6 +280,7 @@ namespace translated_automata {
     void Automaton<State>::print() {
         std::cout << "Initial: " << m_initial_state->getName() << '\n';
 
+        // Per ogni stato dell'automa
         for (auto it = m_states.begin(); it != m_states.end(); ++it) {
             std::cout << it->second->toString();
         }

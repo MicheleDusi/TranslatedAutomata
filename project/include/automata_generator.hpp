@@ -18,6 +18,9 @@
 
 #include "automaton.hpp"
 
+#include <vector>
+#include <string>
+
 namespace translated_automata {
 
 	/**
@@ -27,38 +30,48 @@ namespace translated_automata {
 	 * e non limita la cardinalità dell'alfabeto al numero di
 	 * lettere dell'alfabeto latino.
 	 */
-	using Alphabet = set<string>;
+	using Alphabet = std::vector<string>;
 
-	template <class State>
+	template <class Automaton>
 	class AutomataGenerator {
 
 	private:
-		constexpr static char letters[] = "abcdefghijklmnopqrstuvwxyz";
-		constexpr static int default_alphabet_cardinality = 1;
-		constexpr static int default_size = 2;
-		constexpr static double default_transition_percentage = 0.5;
-		constexpr static double default_final_percentage = 0.1;
-
 		Alphabet m_alphabet;
-		int m_size 							= default_size;
-		double m_transition_percentage 		= default_transition_percentage;
-		double m_final_percentage 			= default_final_percentage;
+		unsigned long int m_size;
+		string m_name_prefix;
+		double m_transition_percentage;
+		double m_final_percentage;
 
-		Alphabet generateAlphabet(const char *chars, int chars_size, int cardinality);
+		unsigned int m_namesCounter = 0;
+
+	protected:
+		static const char *letters;
+		static const unsigned int default_alphabet_cardinality;
+		static const unsigned long int default_size;
+		static const char *default_name_prefix;
+		static const double default_transition_percentage;
+		static const double default_final_percentage;
+
 		void resetNames();
 		string generateUniqueName();
 
 	public:
 		AutomataGenerator();
-		virtual ~AutomataGenerator();
+
+		Alphabet getAlphabet();
+		unsigned long int getSize();
+		string getNamePrefix();
+		double getTransitionPercentage();
+		double getFinalPercentage();
 
 		void setAlphabet(Alphabet alpha);
-		void setAlphabetCardinality(int size);
-		void setSize(int size);
+		void setSize(unsigned long int size);
+		void setNamePrefix(string prefix);
 		void setTransitionPercentage(double percentage);
 		void setFinalPercentage(double percentage);
 
-		virtual Automaton<State> * generateRandomAutomaton();
+		Alphabet generateAlphabet(const char *chars, unsigned int chars_size, unsigned int cardinality);
+//		virtual Automaton * generateRandomAutomaton();
 
 	};
 

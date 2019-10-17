@@ -19,6 +19,7 @@
 #include "automaton_nfa.hpp"
 #include "automaton_dfa.hpp"
 #include "subset_construction.hpp"
+#include "nfa_generator.hpp"
 
 using std::set;
 
@@ -49,5 +50,16 @@ int main(int argc, char **argv) {
 		std::cout << "Numero di stati del DFA: " << dfa->size() << std::endl;
 
 	}
+
+	DEBUG_MARK_PHASE( test generazione ) {
+
+		NFAGenerator *gen = new NFAGenerator();
+
+//		for (string s : gen->generateAlphabet("abc", 3, 3)) {
+//			std::cout << s << std::endl;
+//		}
+
+	}
+
 	return 0;
 }

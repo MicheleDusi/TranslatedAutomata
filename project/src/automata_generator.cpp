@@ -44,9 +44,17 @@ namespace translated_automata {
 	AutomataGenerator<Automaton>::AutomataGenerator() {
 		this->m_alphabet = generateAlphabet("abc", 3, 5);
 		this->m_size = default_size;
-		this->m_name_prefix	= AutomataGenerator<Automaton>::default_name_prefix;
+		this->m_name_prefix	= default_name_prefix;
 		double m_transition_percentage = default_transition_percentage;
 		double m_final_percentage = default_final_percentage;
+	}
+
+	/**
+	 * Distruttore.
+	 */
+	template <class Automaton>
+	AutomataGenerator<Automaton>::~AutomataGenerator() {
+		this->m_alphabet.clear();
 	}
 
 	/**

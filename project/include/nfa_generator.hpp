@@ -1,9 +1,13 @@
-/*
+/******************************************************************************
  * nfa_generator.hpp
  *
- *  Created on: 17 ott 2019
- *      Author: thoozee
- */
+ * Project: TranslatedAutomata
+ *
+ * File header della classe NFAGenerator, classe figlia di AutomataGenerator.
+ * Fornisce le firme delle funzioni create specificamente per la generazione di
+ * automi NFA.
+ *
+ ******************************************************************************/
 
 #ifndef INCLUDE_NFA_GENERATOR_HPP_
 #define INCLUDE_NFA_GENERATOR_HPP_
@@ -19,7 +23,7 @@ namespace translated_automata {
 		NFAGenerator();
 		virtual ~NFAGenerator();
 
-		NFA* generateRandomAutomaton();
+		virtual NFA* generateRandomAutomaton();
 
 	};
 

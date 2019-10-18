@@ -3,8 +3,8 @@
  *
  * Project: TranslatedAutomata
  *
- * File header della classe NFAGenerator, classe figlia di AutomataGenerator.
- * Fornisce le firme delle funzioni create specificamente per la generazione di
+ * File sorgente della classe NFAGenerator, classe figlia di AutomataGenerator.
+ * Fornisce le implementazioni delle funzioni create specificamente per la generazione di
  * automi NFA.
  *
  ******************************************************************************/
@@ -15,11 +15,10 @@ namespace translated_automata {
 
 	NFAGenerator::NFAGenerator() {}
 
-	NFAGenerator::~NFAGenerator() {
-		this->resetNames();
-	}
+	NFAGenerator::~NFAGenerator() {}
 
 	NFA* NFAGenerator::generateRandomAutomaton() {
+		// TODO Generazione di un NFA
 		return NULL;
 	}
 

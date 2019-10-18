@@ -57,6 +57,7 @@ namespace translated_automata {
 
 	public:
 		AutomataGenerator();
+		virtual ~AutomataGenerator();
 
 		Alphabet getAlphabet();
 		unsigned long int getSize();
@@ -71,7 +72,7 @@ namespace translated_automata {
 		void setFinalPercentage(double percentage);
 
 		Alphabet generateAlphabet(const char *chars, unsigned int chars_size, unsigned int cardinality);
-//		virtual Automaton * generateRandomAutomaton();
+		virtual Automaton * generateRandomAutomaton() = 0;
 
 	};
 

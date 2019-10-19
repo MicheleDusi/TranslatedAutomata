@@ -19,11 +19,16 @@ namespace translated_automata {
 
 	class NFAGenerator : public AutomataGenerator<NFA> {
 
+	private:
+		void generateStates(NFA* nfa);
+		StateNFA* getRandomState(NFA* nfa);
+		unsigned long int computeTransitionsNumber();
+
 	public:
 		NFAGenerator();
-		virtual ~NFAGenerator();
+		~NFAGenerator();
 
-		virtual NFA* generateRandomAutomaton();
+		NFA* generateRandomAutomaton();
 
 	};
 

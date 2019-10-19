@@ -40,22 +40,25 @@ namespace translated_automata {
 		unsigned long int m_size;
 		string m_name_prefix;
 		double m_transition_percentage;
-		double m_final_percentage;
+		double m_final_probability;
 
 		unsigned int m_namesCounter = 0;
 
 	protected:
-		static const char *letters;
-		static const unsigned int default_alphabet_cardinality;
 		static const unsigned long int default_size;
 		static const char *default_name_prefix;
 		static const double default_transition_percentage;
-		static const double default_final_percentage;
+		static const double default_final_probability;
 
 		void resetNames();
 		string generateUniqueName();
+		double generateNormalizedDouble();
+		string getRandomLabelFromAlphabet();
 
 	public:
+		static const char *letters;
+		static const unsigned int default_alphabet_cardinality;
+
 		AutomataGenerator();
 		virtual ~AutomataGenerator();
 
@@ -63,15 +66,15 @@ namespace translated_automata {
 		unsigned long int getSize();
 		string getNamePrefix();
 		double getTransitionPercentage();
-		double getFinalPercentage();
+		double getFinalProbability();
 
 		void setAlphabet(Alphabet alpha);
 		void setSize(unsigned long int size);
 		void setNamePrefix(string prefix);
 		void setTransitionPercentage(double percentage);
-		void setFinalPercentage(double percentage);
+		void setFinalProbability(double probability);
 
-		Alphabet generateAlphabet(const char *chars, unsigned int chars_size, unsigned int cardinality);
+		Alphabet generateAlphabet(const char *chars, unsigned int cardinality);
 		virtual Automaton * generateRandomAutomaton() = 0;
 
 	};

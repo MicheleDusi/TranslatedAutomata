@@ -30,6 +30,7 @@ namespace translated_automata {
     	m_initial_state = NULL;
     }
 
+
     /**
      * Distruttore della classe Automaton.
      */
@@ -45,6 +46,14 @@ namespace translated_automata {
             	DEBUG_LOG_ERROR("Puntatore NULL per lo stato associato alla label %s", iterator->first.c_str() );
             }
         }
+    }
+
+    /**
+     * Restituisce la dimensione dell'automa, ossia il numero di stati.
+     */
+    template <class State>
+    int Automaton<State>::size() {
+        return m_states.size();
     }
 
     /**
@@ -64,14 +73,6 @@ namespace translated_automata {
     bool Automaton<State>::hasState(string name) {
         auto search = m_states.find(name);
         return search != m_states.end();
-    }
-
-    /**
-     * Restituisce la mappa <label, stato> di tutti gli stati dell'automa.
-     */
-    template <class State>
-    const map<string, State*>& Automaton<State>::getStates() {
-        return m_states;
     }
 
     /**
@@ -185,6 +186,9 @@ namespace translated_automata {
         return (m_initial_state->getName() == name);
     }
 
+    /**
+     * Verifica se uno stato è impostato come stato iniziale.
+     */
     template <class State>
     bool Automaton<State>::isInitial(State* s)
     {
@@ -208,17 +212,19 @@ namespace translated_automata {
      * Rimuove e distrugge lo stato con nome "", se presente.
      */
     template <class State>
-    void Automaton<State>::deleteEmptyState() {
+    bool Automaton<State>::deleteEmptyState() {
     	// Verifico se esiste uno stato con associato un nome vuoto
         if (m_states.count("")) {
             State* s = m_states[""];
             m_states.erase("");
             delete s;
+            return true;
         }
+        return false;
     }
 
     /**
-     * Metodo provato.
+     * Metodo privato.
      *
      * Rimuove da un insieme tutti i nodi che sono raggiungibili (leggi: CONNESSI) dal nodo s passato come parametro
      * mediante una transizione s->s', più tutti quelli che sono raggiungibili anche da essi in cascata.
@@ -274,7 +280,80 @@ namespace translated_automata {
     }
 
     /**
+     * Restituisce la lista di tutti gli stati dell'automa sotto forma di list.
+     * Gli stati sono restituiti come puntatori.
+     * La classe "list" permette un'aggiunta o rimozione in mezzo alla lista
+     * senza reallocazione della coda.
+     */
+    template <class State>
+    const list<State*> Automaton<State>::getStatesList() {
+    	list<State*> states_list;
+    	for (auto &pair : m_states) {
+    		states_list.push_back(pair.second);
+    	}
+        return states_list;
+    }
+
+    /**
+     * Restituisce il vettore dinamico di tutti gli stati dell'automa sotto forma di vector.
+     * Gli stati sono restituiti come puntatori.
+     * La classe "vector" permette un accesso casuale con tempo costante.
+     */
+    template <class State>
+    const vector<State*> Automaton<State>::getStatesVector() {
+    	vector<State*> states_vector;
+		for (auto &pair : m_states) {
+			states_vector.push_back(pair.second);
+		}
+		return states_vector;
+    }
+
+    /**
+     * Restituisce l'insieme di etichette usate nelle transizioni di questo automa.
+     */
+    template <class State>
+    const set<string>& Automaton<State>::getLabels() {
+        set<string> *labels;
+        for (auto &pair : m_states) {
+            State* s = pair.second;
+            for (auto &trans: s->getExitingTransitions())
+                labels->insert(trans.first);
+        }
+
+        return *labels;
+    }
+
+    /**
+     * Inserisce una transizione fra i due stati marcata con la label passata come parametro.
+     * Il metodo funziona solamente se entrambi gli stati sono appartenenti all'automa, e in
+     * tal caso restituisce TRUE.
+     * In caso contrario restituisce FALSE.
+     */
+    template <class State>
+    bool Automaton<State>::connectStates(State *from, State *to, string label) {
+    	if (this->hasState(from) && this->hasState(to)) {
+    		from->connectChild(label, to);
+    		return true;
+    	} else {
+    		return false;
+    	}
+    }
+
+    /**
+	 * Inserisce una transizione fra i due stati marcata con la label passata come parametro.
+	 * Il metodo funziona solamente se entrambi gli stati sono appartenenti all'automa, e in
+     * tal caso restituisce TRUE.
+     * In caso contrario restituisce FALSE.
+	 */
+    template <class State>
+    bool Automaton<State>::connectStates(string from, string to, string label) {
+    	return this->connectStates(m_states[from], m_states[to], label);
+    }
+
+    /**
      * Stampa tutti gli stati appartenenti all'automa, evidenziando lo stato iniziale.
+     * Ogni stato deve essere stato istanziato correttamente.
+     * Lo stato iniziale deve essere stato impostato correttamente.
      */
     template <class State>
     void Automaton<State>::print() {
@@ -284,21 +363,6 @@ namespace translated_automata {
         for (auto it = m_states.begin(); it != m_states.end(); ++it) {
             std::cout << it->second->toString();
         }
-    }
-
-    /**
-     * Restituisce l'insieme di etichette usate nelle transizioni di questo automa.
-     */
-    template <class State>
-    set<string> Automaton<State>::getLabels() {
-        set<string> labels;
-        for (auto &pair: m_states) {
-            State* s = pair.second;
-            for (auto &trans: s->getExitingTransitions())
-                labels.insert(trans.first);
-        }
-
-        return labels;
     }
 
     /**
@@ -367,14 +431,6 @@ namespace translated_automata {
         aut->setInitialState(m_initial_state->getName());
 
         return aut;
-    }
-
-    /**
-     * Restituisce la dimensione dell'automa, ossia il numero di stati.
-     */
-    template <class State>
-    int Automaton<State>::size() {
-        return m_states.size();
     }
 
     /**

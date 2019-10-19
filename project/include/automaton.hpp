@@ -12,9 +12,15 @@
 #ifndef INCLUDE_AUTOMATON_H_
 #define INCLUDE_AUTOMATON_H_
 
+#include <vector>
+#include <list>
+
 #include "state.hpp"
 
 namespace translated_automata {
+
+	using std::vector;
+	using std::list;
 
 	template <class State>
 	class Automaton {
@@ -29,27 +35,30 @@ namespace translated_automata {
 		Automaton();
 		virtual ~Automaton();
 
+        int size();
         void addState(State* s);
+        bool deleteState(string name);
+        bool deleteEmptyState();
         bool removeState(State* s);
         bool removeState(string name);
-        bool deleteState(string name);
-        void setInitialState(State* s);
-        void setInitialState(string name);
-        bool isInitial(State* s);
-        bool isInitial(string name);
-        State* getInitialState();
+        set<State*> removeUnreachableStates();
         bool hasState(State* s);
         bool hasState(string name);
-        const map<string, State*>& getStates();
+        bool isInitial(State* s);
+        bool isInitial(string name);
+        void setInitialState(State* s);
+        void setInitialState(string name);
+        State* getInitialState();
         State* getState(State* s);
         State* getState(string name);
-        void deleteEmptyState();
-        set<State*> removeUnreachableStates();
+        const list<State*> getStatesList();
+        const vector<State*> getStatesVector();
+        const set<string>& getLabels();
+        bool connectStates(State *from, State *to, string label);
+        bool connectStates(string from, string to, string label);
         void print();
         Automaton<State>* clone();
         bool operator==(Automaton<State>& other);
-        set<string> getLabels();
-        int size();
 
 	};
 

@@ -391,26 +391,34 @@ namespace translated_automata {
 		}
 		result += "\n";
 
-		result += "\tExiting transitions:\n";
-		// Per tutte le label delle transizioni uscenti
-		for (auto &pair: m_exiting_transitions) {
-			string label = pair.first;
-			// Per tutti gli stati associati ad una label
-			for (S* state: pair.second) {
-				// Inserisco le informazioni riguardanti la transizione uscente
-				result += "\t\t━━(" + label + ")━━▶ " + state->getName() + '\n';
+		if (!this->m_exiting_transitions.empty()) {
+			result += "\tExiting transitions:\n";
+			// Per tutte le label delle transizioni uscenti
+			for (auto &pair: m_exiting_transitions) {
+				string label = pair.first;
+				// Per tutti gli stati associati ad una label
+				for (S* state: pair.second) {
+					// Inserisco le informazioni riguardanti la transizione uscente
+					result += "\t\t━━(" + label + ")━━▶ " + state->getName() + '\n';
+				}
 			}
+		} else {
+			result += "\tNo exiting transitions.\n";
 		}
 
-		result += "\tIncoming transitions:\n";
-		// Per tutte le label delle transizioni entranti
-		for (auto &pair: m_incoming_transitions) {
-			string label = pair.first;
-			// Per tutti gli stati associati ad una label
-			for (S* state: pair.second) {
-				// Inserisco le informazioni riguardanti la transizione entrante
-				result += "\t\t" + state->getName() + " ━━(" + label + ")━━▶" + '\n';
+		if (!this->m_incoming_transitions.empty()) {
+			result += "\tIncoming transitions:\n";
+			// Per tutte le label delle transizioni entranti
+			for (auto &pair: m_incoming_transitions) {
+				string label = pair.first;
+				// Per tutti gli stati associati ad una label
+				for (S* state: pair.second) {
+					// Inserisco le informazioni riguardanti la transizione entrante
+					result += "\t\t" + state->getName() + " ━━(" + label + ")━━▶" + '\n';
+				}
 			}
+		} else {
+			result += "\tNo incoming transitions.\n";
 		}
 
 		return result;

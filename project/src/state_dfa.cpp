@@ -24,13 +24,9 @@ namespace translated_automata {
 	/**
 	 * Costruttore.
 	 */
-	StateDFA::StateDFA(ExtensionDFA* extension, bool processed) {
+	StateDFA::StateDFA(ExtensionDFA extension, bool processed) {
         m_extension = extension;
-        m_name = createNameFromExtension(*m_extension);
-
-//        for (StateNFA* n: *m_extension) {
-//            n->addToIntension(this);
-//        }
+        m_name = createNameFromExtension(m_extension);
         m_processed = processed;
     }
 
@@ -38,10 +34,7 @@ namespace translated_automata {
 	 * Distruttore.
 	 */
     StateDFA::~StateDFA() {
-//        for (StateNFA* nfa_state: *m_extension) {
-//        	nfa_state->removeFromIntension(this);
-//        }
-        delete m_extension;
+        m_extension.clear();
     }
 
     /**
@@ -61,7 +54,6 @@ namespace translated_automata {
         name += "}";
 
         return name;
-        // TODO Questo non dovrebbe essere salvato in "m_name"?
     }
 
     /**
@@ -97,7 +89,7 @@ namespace translated_automata {
      * Uno stato DFA è finale se contiene nella sua estensione almeno uno stato NFA finale.
      */
     bool StateDFA::isFinal() const {
-        for (StateNFA* member: *m_extension) {
+        for (StateNFA* member : m_extension) {
             if (member->isFinal()) {
                 return true;
             }
@@ -110,41 +102,31 @@ namespace translated_automata {
      * Verifica se lo stato è "vuoto", ossia se la sua estensione è vuota.
      */
     bool StateDFA::isEmpty() const {
-        return m_extension->empty();
+        return m_extension.empty();
     }
 
     /**
      * Duplica il seguente stato.
      */
     StateDFA* StateDFA::duplicate() const {
-        return new StateDFA(new ExtensionDFA(*m_extension));
+        return new StateDFA(m_extension);
     }
 
     /**
      * Restituisce l'estensione dello stato.
      */
     const ExtensionDFA& StateDFA::getExtension() {
-        return *m_extension;
+        return m_extension;
     }
 
     /**
      * Sostituisce interamente l'estensione di questo stato con un'altra.
      * Inoltre, per ciascuno stato dell'estensione (vecchia e nuova), vengono aggiornate le intensioni.
      */
-    void StateDFA::replaceExtensionWith(ExtensionDFA* new_ext) {
-//        for (StateNFA* n: *m_extension) {
-//            n->removeFromIntension(this);
-//        }
-
-        delete m_extension;
+    void StateDFA::replaceExtensionWith(ExtensionDFA new_ext) {
         m_extension = new_ext;
-        m_name = createNameFromExtension(*m_extension);
+        m_name = createNameFromExtension(m_extension);
         m_updated = true;
-
-//        for (StateNFA* n: *m_extension) {
-//			n->addToIntension(this);
-//		}
-
         m_processed = true;
     }
 
@@ -156,13 +138,13 @@ namespace translated_automata {
      * Nota: Non è necessario estendere il tutto con epsilon transizioni,
      * poiché esse non vengono considerate.
      */
-    ExtensionDFA* StateDFA::lClosure(string label) {
-        ExtensionDFA* closure = new ExtensionDFA();
+    ExtensionDFA StateDFA::lClosure(string label) {
+        ExtensionDFA closure;
 
-        for (StateNFA* member: *m_extension) {
+        for (StateNFA* member : m_extension) {
             for (StateNFA* child_ : member->getChildren(label)) {
             	StateNFA* child = (StateNFA*) child_;
-                closure->insert(child);
+                closure.insert(child);
             }
         }
 
@@ -197,7 +179,7 @@ namespace translated_automata {
         set<string> labels;
 
         // Per ciascuno stato dell'estensione
-        for (StateNFA* member: *m_extension) {
+        for (StateNFA* member : m_extension) {
         	// Inserisco le label delle transizioni uscenti
             for (auto &pair: member->getExitingTransitionsRef()) {
                 labels.insert(pair.first);

@@ -24,8 +24,8 @@ namespace translated_automata {
 		DFA *dfa = new DFA();
 
         // Creo lo stato iniziale per il DFA
-		ExtensionDFA *initial_dfa_extension = new ExtensionDFA();
-		initial_dfa_extension->insert(nfa->getInitialState());
+		ExtensionDFA initial_dfa_extension;
+		initial_dfa_extension.insert(nfa->getInitialState());
 		StateDFA * initial_dfa_state = new StateDFA(initial_dfa_extension);
 		// Inserisco lo stato all'interno del DFA
         dfa->addState(initial_dfa_state);

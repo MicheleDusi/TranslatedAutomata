@@ -39,7 +39,7 @@ namespace translated_automata {
     class StateDFA : public State<StateDFA> {
 
 	private:
-		ExtensionDFA* m_extension;								// Nodi dell'NFA corrispondente
+		ExtensionDFA m_extension;								// Stati dell'NFA corrispondente
 		unsigned int m_distance = DEFAULT_VOID_DISTANCE;		// Distanza del nodo
 		bool m_updated = false;									// Flag che segnala l'aggiornamento
 		bool m_processed = false;								// Flag che segnala se è stato processato
@@ -48,7 +48,7 @@ namespace translated_automata {
 		static string createNameFromExtension(const ExtensionDFA &ext);
 		static ExtensionDFA subtractExtensions(const ExtensionDFA &ext1, const ExtensionDFA &ext2);
 
-		StateDFA(ExtensionDFA* extension, bool processed = false);
+		StateDFA(ExtensionDFA extension, bool processed = false);
 		~StateDFA();
 
 		set<string> getExitingLabels();
@@ -56,10 +56,10 @@ namespace translated_automata {
 		void copyIncomingTransitionsOf(StateDFA* state);
 		void copyAllTransitionsFrom(StateDFA* state);
 
-		ExtensionDFA* lClosure(string l);
-//		ExtensionDFA* lClosure(string l, NFA &nfa_mut);
+		ExtensionDFA lClosure(string l);
+//		ExtensionDFA lClosure(string l, NFA &nfa_mut);
 		const ExtensionDFA& getExtension();
-		void replaceExtensionWith(ExtensionDFA* new_ext);
+		void replaceExtensionWith(ExtensionDFA new_ext);
 		bool hasExtension(const ExtensionDFA &ext);
 
 		int getDistance();

@@ -21,16 +21,9 @@
 #include <vector>
 #include <string>
 
-namespace translated_automata {
+#include "alphabet.hpp"
 
-	/**
-	 * Un alfabeto è una collezione di "simboli". Ogni simbolo
-	 * viene implementato, in questo caso, come stringa.
-	 * Questa soluzione permette una maggiore versatilità
-	 * e non limita la cardinalità dell'alfabeto al numero di
-	 * lettere dell'alfabeto latino.
-	 */
-	using Alphabet = std::vector<string>;
+namespace translated_automata {
 
 	template <class Automaton>
 	class AutomataGenerator {

@@ -66,6 +66,7 @@ namespace translated_automata {
 		void setDistance(int distance);
 		void initDistancesRecursively(int root_distance);
 	    void setBetterDistancesRecursively(int root_distance);
+	    int getMinimumParentsDistance();
 
 		void setProcessed();
 		bool isProcessed();

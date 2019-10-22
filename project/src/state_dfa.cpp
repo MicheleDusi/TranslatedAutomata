@@ -311,7 +311,7 @@ namespace translated_automata {
     		this->setDistance(root_distance);
 
     		// Per tutte le transizioni uscenti dallo stato corrente
-			for (auto &trans: this->getExitingTransitionsRef()) {
+			for (auto &trans : this->getExitingTransitionsRef()) {
 				// Per tutti i figli raggiunti
 				for (State* child_ : trans.second) {
                 	StateDFA* child = (StateDFA*) child_;
@@ -323,6 +323,24 @@ namespace translated_automata {
 				}
 			}
     	}
+    }
+
+    /**
+     * Restituisce la minima distanza fra tutte le distanze dei genitori.
+     */
+    int StateDFA::getMinimumParentsDistance() {
+    	int minimum = DEFAULT_VOID_DISTANCE;
+    	// Per tutte le transizioni entranti
+    	for (auto &pair : this->getIncomingTransitionsRef()) {
+    		// Per tutti gli stati genitori
+    		for (StateDFA* parent : pair.second) {
+    			// Se la distanza è inferiore
+    			if (parent->m_distance < minimum) {
+    				minimum = parent->m_distance;
+    			}
+    		}
+    	}
+    	return minimum;
     }
 
     /**

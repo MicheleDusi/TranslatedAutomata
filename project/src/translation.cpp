@@ -111,11 +111,11 @@ namespace translated_automata {
 	 *
 	 */
 	template <class State>
-	tuple<NFA*, DFA*, vector<Bud>> Translation::translate(Automaton<State> *automaton) {
+	tuple<NFA*, DFA*, list<Bud>> Translation::translate(Automaton<State> *automaton) {
 		// Preparazione degli output
 		NFA* translated_nfa = new NFA();
 		DFA* translated_dfa = new DFA();
-		vector<Bud> buds;
+		list<Bud> buds;
 
 		// Variabili locali ausiliarie
 		map<State*, pair<StateNFA*, StateDFA*>> states_map;	// Mantiene le associazioni fra gli stati tradotti
@@ -186,12 +186,12 @@ namespace translated_automata {
 		}
 
 		// Restituzione dei valori in output
-		return tuple<NFA*, DFA*, vector<Bud>>(translated_nfa, translated_dfa, buds);
+		return tuple<NFA*, DFA*, list<Bud>>(translated_nfa, translated_dfa, buds);
 	}
 
 	/** Istanziazione delle funzioni template */
-	template tuple<NFA*, DFA*, vector<Bud>> Translation::translate<StateNFA>(Automaton<StateNFA> *nfa);
-	template tuple<NFA*, DFA*, vector<Bud>> Translation::translate<StateDFA>(Automaton<StateDFA> *dfa);
+	template tuple<NFA*, DFA*, list<Bud>> Translation::translate<StateNFA>(Automaton<StateNFA> *nfa);
+	template tuple<NFA*, DFA*, list<Bud>> Translation::translate<StateDFA>(Automaton<StateDFA> *dfa);
 
 	/**
 	 * Restituisce una descrizione testuale della traduzione, come lista

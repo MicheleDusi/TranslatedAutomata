@@ -22,7 +22,7 @@
 #define INCLUDE_TRANSLATION_HPP_
 
 #include <map>
-#include <vector>
+#include <list>
 
 #include "alphabet.hpp"
 #include "automaton_nfa.hpp"
@@ -46,7 +46,7 @@ namespace translated_automata {
 
 		string translate(string label);
 		Alphabet translate(Alphabet alpha);
-		template <class State> tuple<NFA*, DFA*, vector<Bud>> translate(Automaton<State> *automaton);
+		template <class State> tuple<NFA*, DFA*, list<Bud>> translate(Automaton<State> *automaton);
 
 		string toString();
 

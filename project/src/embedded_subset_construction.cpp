@@ -32,13 +32,13 @@ namespace translated_automata {
 	DFA* EmbeddedSubsetConstruction::run(DFA* dfa, Translation* tau) {
 
 		// Fase 1: Automaton Translation
-		tuple<NFA*, DFA*, vector<Bud>> automaton_translation_result = tau->translate(dfa);
+		tuple<NFA*, DFA*, list<Bud>> automaton_translation_result = tau->translate(dfa);
 		NFA* translated_nfa = std::get<0>(automaton_translation_result);
 		DFA* translated_dfa = std::get<1>(automaton_translation_result);
-		vector<Bud> buds    = std::get<2>(automaton_translation_result);
+		list<Bud> buds_list = std::get<2>(automaton_translation_result);
 
 		// Fase 2: Bud Processing
-		this->runBudProcessing(translated_nfa, translated_dfa, buds);
+		this->runBudProcessing(translated_nfa, translated_dfa, buds_list);
 
 		// Restituzione del DFA tradotto
 		return translated_dfa;
@@ -49,8 +49,14 @@ namespace translated_automata {
 	 * Fornisce un'implementazione della seconda fase dell'algoritmo più generale "Embedded Subset Construction"
 	 * per la traduzione di automi (più specificamente, DFA).
 	 */
-	void EmbeddedSubsetConstruction::runBudProcessing(NFA* translated_nfa, DFA* translated_dfa, std::vector<Bud> buds) {
+	void EmbeddedSubsetConstruction::runBudProcessing(NFA* translated_nfa, DFA* translated_dfa, std::list<Bud> buds) {
 
+		// Finché la coda dei bud non si svuota
+		while (!buds.empty()) {
+
+			Bud current_bud = buds.front();
+
+		}
 	}
 
 } /* namespace translated_automata */

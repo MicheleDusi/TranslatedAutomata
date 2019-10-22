@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
 
 		// Traduco
 		DEBUG_MARK_PHASE( traduzione ) {
-			tuple<NFA*, DFA*, vector<Bud>> result = tau->translate(nfa);
+			tuple<NFA*, DFA*, list<Bud>> result = tau->translate(nfa);
 
 			DEBUG_LOG_SUCCESS("Traduzione completata!");
 

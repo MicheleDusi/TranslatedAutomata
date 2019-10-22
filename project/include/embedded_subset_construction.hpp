@@ -20,7 +20,7 @@ namespace translated_automata {
 	class EmbeddedSubsetConstruction {
 
 	private:
-		void runBudProcessing(NFA* translated_nfa, DFA* translated_dfa, std::vector<Bud> buds);
+		void runBudProcessing(NFA* translated_nfa, DFA* translated_dfa, std::list<Bud> buds);
 
 	public:
 		EmbeddedSubsetConstruction();

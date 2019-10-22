@@ -118,7 +118,7 @@ namespace translated_automata {
 					current_dfa_state->setDistance(front_distance);
 							/* Nota: l'operazione di settaggio della distanza viene fatta per escludere lo StateDFA corrente dalla lista
 							 * di genitori con la distanza minima durante il calcolo. Questo vincolo è necessario nella verifica delle
-							 * condizioni per la rule 4 (poco sotto), dove la minima distanza NON deve comprendere lo stato corrente. */
+							 * condizioni per la rule 4 (poco sotto), dove la minima distanza NON deve considerare lo stato corrente. */
 
 					// Se lo stato raggiunto NON è lo stato iniziale, e contemporaneamente
 					// non esistono altre transizioni entranti diverse da quella che arriva dal nodo corrente
@@ -192,13 +192,9 @@ namespace translated_automata {
 
 							}
 						}
-
 					}
-
 				}
-
 			}
-
 		}
 	}
 

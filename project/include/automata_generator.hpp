@@ -13,7 +13,7 @@
  *
  ******************************************************************************/
 
-#ifndef INLCUDE_AUTOMATA_GENERATOR_HPP_
+#ifndef INCLUDE_AUTOMATA_GENERATOR_HPP_
 #define INCLUDE_AUTOMATA_GENERATOR_HPP_
 
 #include "automaton.hpp"

@@ -48,6 +48,8 @@ namespace translated_automata {
 		Alphabet translate(Alphabet alpha);
 		template <class State> tuple<NFA*, DFA*, vector<Bud>> translate(Automaton<State> *automaton);
 
+		string toString();
+
 	};
 
 } /* namespace translated_automata */

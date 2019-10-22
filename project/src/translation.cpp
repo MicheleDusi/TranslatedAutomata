@@ -193,4 +193,19 @@ namespace translated_automata {
 	template tuple<NFA*, DFA*, vector<Bud>> Translation::translate<StateNFA>(Automaton<StateNFA> *nfa);
 	template tuple<NFA*, DFA*, vector<Bud>> Translation::translate<StateDFA>(Automaton<StateDFA> *dfa);
 
+	/**
+	 * Restituisce una descrizione testuale della traduzione, come lista
+	 * delle associazioni.
+	 */
+	string Translation::toString() {
+		string s = "";
+		for (auto &pair : this->m_translation_map) {
+			s += pair.first + " >> " + pair.second + "\n";
+		}
+		if (this->m_translation_map.empty()) {
+			s += "No explicit associations";
+		}
+		return s;
+	}
+
 } /* namespace translated_automata */

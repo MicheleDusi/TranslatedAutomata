@@ -102,7 +102,7 @@ namespace translated_automata {
      * dello stato in ingresso.
      * Se la rimozione avviene restituisce "TRUE", altrimenti se lo stato
      * non viene trovato restituisce "FALSE".
-	 * Questo metodo NON distrugge lo stato dell'automa.
+	 * Questo metodo NON distrugge lo stato.
      */
     template <class State>
     bool Automaton<State>::removeState(State* s) {
@@ -115,7 +115,7 @@ namespace translated_automata {
 	 * passata come parametro.
 	 * Se la rimozione avviene restituisce "TRUE", altrimenti se lo stato
 	 * non viene trovato restituisce "FALSE".
-	 * Questo metodo NON distrugge lo stato dell'automa.
+	 * Questo metodo NON distrugge lo stato.
 	 */
 	template <class State>
 	bool Automaton<State>::removeState(string name) {

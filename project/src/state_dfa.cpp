@@ -63,23 +63,11 @@ namespace translated_automata {
     ExtensionDFA StateDFA::subtractExtensions(const ExtensionDFA &ext1, const ExtensionDFA &ext2) {
         ExtensionDFA result;
 
-        // TODO Verificare se un'implementazione di questo tipo funziona ugualmente.
-        // L'implementazione sotto generava degli errori
         for (StateNFA* s : ext1) {
         	if (ext2.count(s) == 0) {
         		result.insert(s);
         	}
         }
-
-        /*
-        for (StateNFA* s : ext1) {
-
-            auto search = std::find_if(ext2.begin(), ext2.end(),
-                [s](StateNFA* n) { return *s == *n; });
-
-            if (search == ext2.end()) result.insert(s);
-        }
-        */
 
         return result;
     }
@@ -151,26 +139,6 @@ namespace translated_automata {
         return closure;
     }
 
-//    ExtensionDFA* StateDFA::lClosure(string l, NFA &nfa_mut) {
-//    	// Se l'automa è stato aggiornato, restituisco la l-closure calcolata nel modo "più semplice",
-//    	// dove ho più vincoli.
-//        if (m_updated) return lClosure(l);
-//
-//        ExtensionDFA* closure = new ExtensionDFA();
-//
-//        for (StateNFA* member: *m_extension) {
-//            StateNFA* member_mut = nfa_mut.getState(member);
-//
-//            if (member_mut != NULL) {
-//                for (StateNFA* child: member_mut->getChildren(l)) {
-//                    child->extendClosure(closure);
-//                }
-//            }
-//        }
-//
-//        return closure;
-//    }
-
     /**
      * Restituisce tutte le etichette delle transizioni uscenti dagli stati
      * dell'estensione.
@@ -231,6 +199,7 @@ namespace translated_automata {
     /**
      * Copia tutte le transizioni entranti in e uscenti da uno stato d
      * all'interno di questo stato.
+     * Le transizioni già esistenti non vengono duplicate.
      */
     void StateDFA::copyAllTransitionsFrom(StateDFA* state) {
         copyIncomingTransitionsOf(state);

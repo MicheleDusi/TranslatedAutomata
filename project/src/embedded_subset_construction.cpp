@@ -12,6 +12,8 @@
 
 #include "embedded_subset_construction.hpp"
 
+#include <algorithm>
+
 namespace translated_automata {
 
 	/** Costruttore vuoto */
@@ -49,7 +51,7 @@ namespace translated_automata {
 	 * Fornisce un'implementazione della seconda fase dell'algoritmo più generale "Embedded Subset Construction"
 	 * per la traduzione di automi (più specificamente, DFA).
 	 */
-	void EmbeddedSubsetConstruction::runBudProcessing(NFA* translated_nfa, DFA* translated_dfa, std::list<Bud> buds) {
+	void EmbeddedSubsetConstruction::runBudProcessing(NFA* translated_nfa, DFA* translated_dfa, list<Bud> buds) {
 		// Finché la coda dei bud non si svuota
 		while (!buds.empty()) {
 
@@ -80,8 +82,7 @@ namespace translated_automata {
 					// Aggiunta della transizione dallo stato corrente a quello appena trovato
 					StateDFA* child = translated_dfa->getState(l_closure_name);
 					current_dfa_state->connectChild(current_label, child);
-					child->setBetterDistancesRecursively(front_distance + 1);
-					// FIXME Al momento la DistanceRelocation viene fatta ricorsivamente. Nell'algoritmo, tuttavia, l'implementazione è iterativa.
+					this->runDistanceRelocation(child, front_distance + 1);
 
 				}
 				// Se nel DFA non c'è nessuno stato con l'estensione prevista
@@ -143,8 +144,7 @@ namespace translated_automata {
 							StateDFA* old_child = translated_dfa->getState(l_closure_name);
 							current_dfa_state->connectChild(current_label, old_child);
 							current_dfa_state->disconnectChild(current_label, child);
-							old_child->setBetterDistancesRecursively(front_distance + 1);
-							// FIXME Al momento la DistanceRelocation viene fatta ricorsivamente. Nell'algoritmo, tuttavia, l'implementazione è iterativa.
+							this->runDistanceRelocation(old_child, front_distance + 1);
 
 						}
 						// Se nel DFA non c'è nessuno stato con l'estensione prevista
@@ -198,4 +198,130 @@ namespace translated_automata {
 		}
 	}
 
+	/**
+	 * Metodo privato.
+	 * Fornisce un'implementazione della procedura "Distance Relocation".
+	 * Modifica la distanza di una sequenza di nodi secondo i valori passati come argomento. La modifica
+	 * viene poi propagata sui figli finché la nuova distanza risulta migliore. La propagazione avviene
+	 * in maniera "width-first".
+	 */
+	void EmbeddedSubsetConstruction::runDistanceRelocation(list<pair<StateDFA*, int>> relocation_sequence) {
+		while (!relocation_sequence.empty()) {
+			auto current = relocation_sequence.front();
+			relocation_sequence.pop_front();
+			StateDFA* current_state = current.first;
+
+			// Se la distanza "nuova" è inferiore
+			if (current_state->getDistance() > current.second) {
+				current_state->setDistance(current.second);
+
+				// Propago la modifica ai figli
+				for (auto &trans : current_state->getExitingTransitionsRef()) {
+					for (StateDFA* child : trans.second) {
+
+						// Aggiungo il figlio in coda
+						relocation_sequence.push_back(
+								pair<StateDFA*, int>(child, current.second + 1));
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Metodo privato.
+	 * Wrapper per la funzione "runDistanceRelocation" che richiede in ingresso una lista di coppie
+	 * (StateDFA*, int). Poiché più di una volta, all'interno dell'algoritmo "Bud Processing", viene
+	 * richiamata la procedura "Distance Relocation" con un singolo argomento, questo metodo fornisce
+	 * un'utile interfaccia per semplificare la costruzione dei parametri della chiamata.
+	 */
+	void EmbeddedSubsetConstruction::runDistanceRelocation(StateDFA* state, int new_distance) {
+		pair<StateDFA*, int> new_pair(state, new_distance);
+		list<pair<StateDFA*, int>> list;
+		list.push_back(new_pair);
+		this->runDistanceRelocation(list);
+	}
+
+	/**
+	 * Metodo privato.
+	 * Fornisce un'implementazione per la procedura "Extension Update", che modifica l'estensione di uno
+	 * stato DFA aggiungendo eventuali stati NFA non presenti.
+	 */
+	void EmbeddedSubsetConstruction::runExtensionUpdate(StateDFA* d_state, ExtensionDFA new_extension, list<Bud>& buds, DFA* dfa) {
+		// Computazione degli stati aggiuntivi dell'update
+		ExtensionDFA difference_states = StateDFA::subtractExtensions(new_extension, d_state->getExtension());
+
+		// Aggiornamento delle transizioni aggiuntive
+		for (StateNFA* nfa_state : difference_states) {
+			for (auto &trans : nfa_state->getExitingTransitionsRef()) {
+				string label = trans.first;
+
+				// Se il bud NON è contenuto nella lista di Bud
+				auto search = std::find_if(buds.begin(), buds.end(),
+						[d_state, label](Bud bud) {
+							return (bud.first == d_state && bud.second == label);
+						}
+				);
+
+				// Se non è stato trovato, lo aggiungo alla lista
+				if (search == buds.end()) {
+					buds.push_back(Bud(d_state, label));
+				}
+			}
+		}
+
+		// Aggiornamento dell'estensione dello stato DFA
+		d_state->replaceExtensionWith(new_extension);
+
+		// Verifica dell'esistenza di un secondo stato nel DFA che abbia estensione uguale a "new_extension"
+		StateDFA* equivalent_d_state = dfa->getState(StateDFA::createNameFromExtension(new_extension));
+		if (equivalent_d_state != NULL && equivalent_d_state != d_state) {
+
+			StateDFA* min_dist_state;
+			StateDFA* max_dist_state;
+
+			// Identificazione dello stato con distanza inferiore
+			if (d_state->getDistance() < equivalent_d_state->getDistance()) {
+				min_dist_state = d_state;
+				max_dist_state = equivalent_d_state;
+			} else {
+				min_dist_state = equivalent_d_state;
+				max_dist_state = d_state;
+			}
+
+			// Sotto-procedura di sostituzione dello stato con distanza massima con quello con distanza minima:
+
+			// Re-direzione di tutte le transizioni dello stato con distanza massima su quello con distanza minima
+			// (Le transizioni duplicate non vengono copiate)
+			min_dist_state->copyAllTransitionsFrom(max_dist_state);
+
+			// Rimozione dello stato dall'automa DFA
+			dfa->removeState(max_dist_state);		// Rimuove il riferimento dello stato
+			max_dist_state->detach();				// Rimuove tutte le sue transizioni
+
+			// All'interno della lista di bud, ogni occorrenza dello stato con dist.max. viene sostituita con quello con dist.min.
+			for (Bud bud : buds) {
+				if (bud.first == max_dist_state) {
+					bud.first = min_dist_state;
+				}
+			}
+
+			// Procedura "Distance Relocation" su tutti i figli dello stato con dist.min, poiché i figli "adottati" dallo stato
+			// con dist.max. devono essere modificati
+			list<pair<StateDFA*, int>> to_be_relocated_list;
+			for (auto &trans : min_dist_state->getExitingTransitionsRef()) {
+				for (StateDFA* child : trans.second) {
+					to_be_relocated_list.push_back(pair<StateDFA*, int>(child, min_dist_state->getDistance() + 1));
+				}
+			}
+			this->runDistanceRelocation(to_be_relocated_list);
+
+		}
+	}
+
 } /* namespace translated_automata */
+
+
+
+
+

@@ -9,10 +9,9 @@
  *
  ******************************************************************************/
 
-#include "nfa_generator.hpp"
-
 #include <vector>
 
+#include "automata_generator_nfa.hpp"
 #include "debug.hpp"
 
 namespace translated_automata {

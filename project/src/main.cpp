@@ -15,12 +15,13 @@
 #include <set>
 #include <tuple>
 
+#include "../include/automata_generator_nfa.hpp"
 #include "debug.hpp"
 
 #include "automaton_nfa.hpp"
 #include "automaton_dfa.hpp"
+#include "embedded_subset_construction.hpp"
 #include "subset_construction.hpp"
-#include "nfa_generator.hpp"
 #include "translation.hpp"
 #include "translation_generator.hpp"
 
@@ -78,13 +79,62 @@ int main(int argc, char **argv) {
 //
 //	}
 
-	DEBUG_MARK_PHASE( test traduzione ) {
+//	DEBUG_MARK_PHASE( test traduzione ) {
+//
+//		// Genero l'automa
+//		NFAGenerator *gen = new NFAGenerator();
+//		Alphabet alpha = gen->generateAlphabet("abcdefgh", 8);
+//		gen->setAlphabet(alpha);
+//		gen->setSize(4);
+//		gen->setFinalProbability(.4);
+//		gen->setTransitionPercentage(.5);
+//		NFA* nfa = gen->generateRandomAutomaton();
+//
+//		nfa->print();
+//
+//		// Genero la traduzione
+//		TranslationGenerator* t_gen = new TranslationGenerator();
+//		t_gen->setMixingFactor(0.5);
+//		t_gen->setOffset(2);
+//		Translation *tau = t_gen->generateRandomTranslation(alpha);
+//		std::cout << tau->toString();
+//
+//		// Traduco
+//		DEBUG_MARK_PHASE( traduzione ) {
+//			tuple<NFA*, DFA*, list<Bud>> result = tau->translate(nfa);
+//
+//			DEBUG_LOG_SUCCESS("Traduzione completata!");
+//
+//			std::cout << "\033[31;1m NFA \033[0m\n";
+//			NFA* translated_nfa = std::get<0>(result);
+//			DEBUG_ASSERT_NOT_NULL( translated_nfa );
+//			translated_nfa->print();
+//
+//			std::cout << "\033[31;1m DFA \033[0m\n";
+//			DFA* translated_dfa = std::get<1>(result);
+//			DEBUG_ASSERT_NOT_NULL( translated_dfa );
+//			translated_dfa->print();
+//
+//			// Applico subset construction
+//			std::cout << "\033[31;1m Constructed DFA with SC \033[0m\n";
+//			SubsetConstruction *sc = new SubsetConstruction();
+//			DFA *constructed_dfa = sc->run(translated_nfa);
+//			DEBUG_ASSERT_NOT_NULL( constructed_dfa );
+//			constructed_dfa->print();
+//			std::cout << "Numero di stati del DFA: " << constructed_dfa->size() << std::endl;
+//
+//		}
+//
+//
+//	}
+
+	DEBUG_MARK_PHASE( Test translated automaton ) {
 
 		// Genero l'automa
 		NFAGenerator *gen = new NFAGenerator();
-		Alphabet alpha = gen->generateAlphabet("abcdefgh", 8);
+		Alphabet alpha = gen->generateAlphabet("abcde", 5);
 		gen->setAlphabet(alpha);
-		gen->setSize(4);
+		gen->setSize(5);
 		gen->setFinalProbability(.4);
 		gen->setTransitionPercentage(.5);
 		NFA* nfa = gen->generateRandomAutomaton();
@@ -96,33 +146,11 @@ int main(int argc, char **argv) {
 		t_gen->setMixingFactor(0.5);
 		t_gen->setOffset(2);
 		Translation *tau = t_gen->generateRandomTranslation(alpha);
+
 		std::cout << tau->toString();
 
-		// Traduco
-		DEBUG_MARK_PHASE( traduzione ) {
-			tuple<NFA*, DFA*, list<Bud>> result = tau->translate(nfa);
+		EmbeddedSubsetConstruction *esc = new EmbeddedSubsetConstruction();
 
-			DEBUG_LOG_SUCCESS("Traduzione completata!");
-
-			std::cout << "\033[31;1m NFA \033[0m\n";
-			NFA* translated_nfa = std::get<0>(result);
-			DEBUG_ASSERT_NOT_NULL( translated_nfa );
-			translated_nfa->print();
-
-			std::cout << "\033[31;1m DFA \033[0m\n";
-			DFA* translated_dfa = std::get<1>(result);
-			DEBUG_ASSERT_NOT_NULL( translated_dfa );
-			translated_dfa->print();
-
-			// Applico subset construction
-			std::cout << "\033[31;1m Constructed DFA with SC \033[0m\n";
-			SubsetConstruction *sc = new SubsetConstruction();
-			DFA *constructed_dfa = sc->run(translated_nfa);
-			DEBUG_ASSERT_NOT_NULL( constructed_dfa );
-			constructed_dfa->print();
-			std::cout << "Numero di stati del DFA: " << constructed_dfa->size() << std::endl;
-
-		}
 
 
 	}

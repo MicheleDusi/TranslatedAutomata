@@ -20,7 +20,10 @@ namespace translated_automata {
 	class EmbeddedSubsetConstruction {
 
 	private:
-		void runBudProcessing(NFA* translated_nfa, DFA* translated_dfa, std::list<Bud> buds);
+		void runBudProcessing(NFA* translated_nfa, DFA* translated_dfa, list<Bud> buds);
+		void runDistanceRelocation(list<pair<StateDFA*, int>> relocation_sequence);
+		void runDistanceRelocation(StateDFA* state, int new_distance);
+		void runExtensionUpdate(StateDFA* state, ExtensionDFA new_extension, list<Bud>& buds, DFA* dfa);
 
 	public:
 		EmbeddedSubsetConstruction();

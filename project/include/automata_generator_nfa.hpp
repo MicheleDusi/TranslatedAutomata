@@ -1,5 +1,5 @@
 /******************************************************************************
- * nfa_generator.hpp
+ * automata_generator_nfa.hpp
  *
  * Project: TranslatedAutomata
  *
@@ -9,8 +9,8 @@
  *
  ******************************************************************************/
 
-#ifndef INCLUDE_NFA_GENERATOR_HPP_
-#define INCLUDE_NFA_GENERATOR_HPP_
+#ifndef INCLUDE_AUTOMATA_GENERATOR_NFA_HPP_
+#define INCLUDE_AUTOMATA_GENERATOR_NFA_HPP_
 
 #include "automata_generator.hpp"
 #include "automaton_nfa.hpp"
@@ -34,4 +34,4 @@ namespace translated_automata {
 
 } /* namespace translated_automata */
 
-#endif /* INCLUDE_NFA_GENERATOR_HPP_ */
+#endif /* INCLUDE_AUTOMATA_GENERATOR_NFA_HPP_ */

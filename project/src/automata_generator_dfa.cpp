@@ -1,39 +1,40 @@
 /******************************************************************************
- * nfa_generator.cpp
+ * automata_generator_dfa.hpp
  *
  * Project: TranslatedAutomata
  *
- * File sorgente della classe NFAGenerator, classe figlia di AutomataGenerator.
- * Fornisce le implementazioni delle funzioni create specificamente per la generazione di
- * automi NFA.
+ * File sorgente contenente la classe concreta "DFAGenerator", figlia della classe "AutomataGenerator<DFA>".
  *
  ******************************************************************************/
 
-#include <vector>
+#include "automata_generator_dfa.hpp"
 
-#include "automata_generator_nfa.hpp"
 #include "debug.hpp"
 
 namespace translated_automata {
 
-	NFAGenerator::NFAGenerator() {}
-
-	NFAGenerator::~NFAGenerator() {}
+	/**
+	 * Costruttore.
+	 */
+	DFAGenerator::DFAGenerator() {}
 
 	/**
-	 * Permette la creazione di un NFA secondo i parametri impostati tramite i metodi setter.
+	 * Distruttore
 	 */
-	NFA* NFAGenerator::generateRandomAutomaton() {
-		// Creo l'NFA
-		NFA* nfa = new NFA();
-		DEBUG_ASSERT_NOT_NULL(nfa);
+	DFAGenerator::~DFAGenerator() {}
+
+
+	DFA * DFAGenerator::generateRandomAutomaton() {
+		// Creo il DFA
+		DFA* dfa = new DFA();
+		DEBUG_ASSERT_NOT_NULL(dfa);
 
 		// Generazione degli stati
-		this->generateStates(nfa);
+		this->generateStates(dfa);
 
 		// Imposto lo stato iniziale
-		StateNFA *initial_state = nfa->getStatesList().front();		// Nota: in questo caso sto assumendo (correttamente) che lo stato che voglio impostare sia il primo in ordine alfabetico
-		nfa->setInitialState(initial_state);
+		StateDFA *initial_state = dfa->getStatesList().front();		// Nota: in questo caso sto assumendo (correttamente) che lo stato che voglio impostare sia il primo in ordine alfabetico
+		dfa->setInitialState(initial_state);
 
 		// Creazione delle transizioni
 
@@ -55,21 +56,21 @@ namespace translated_automata {
 		 *
 		 * 1.1) Viene preparata una coda di nodi "raggiungibili", alla quale viene aggiunto lo stato iniziale
 		 * dell'automa. */
-		vector<StateNFA*> reached_states;
+		vector<StateDFA*> reached_states;
 		reached_states.push_back(initial_state);
 
 		/* 1.2) Parallelamente, si tiene traccia dei nodi non ancora marcati come "raggiungibili".
 		 * All'inizio tutti gli stati appartengono a questa lista, tranne il nodo iniziale. */
-		list<StateNFA*> unreached_queue = nfa->getStatesList();
+		list<StateDFA*> unreached_queue = dfa->getStatesList();
 		unreached_queue.pop_front();
 
 		/* 1.3) Si estrae a caso uno stato "raggiungibile" e uno non "raggiungibile", e si crea una transizione
 		 * dal primo al secondo. */
 		while (!unreached_queue.empty()) {
-			StateNFA* from = reached_states[rand() % reached_states.size()];
-			StateNFA* to = unreached_queue.front();
-			string label = getRandomLabelFromAlphabet();
-			nfa->connectStates(from, to, label);
+			StateDFA* from = reached_states[rand() % reached_states.size()];
+			StateDFA* to = unreached_queue.front();
+			string label = getRandomLabelFromAlphabet(); // FIXME MEmorizzare quale label è stata usata
+			dfa->connectStates(from, to, label);
 
 		/* 1.4) Il secondo stato viene marcato come "raggiungibile". Viene perciò estratto dalla seconda coda e
 		 * inserito nella prima. */
@@ -90,23 +91,23 @@ namespace translated_automata {
 				transitions_created < transitions_number;
 				transitions_created++) {
 
-			StateNFA* from = this->getRandomState(nfa);
-			StateNFA* to = this->getRandomState(nfa);
-			string label = getRandomLabelFromAlphabet();
-			nfa->connectStates(from, to, label);
+			StateDFA* from = this->getRandomState(dfa); // FIXME prendere uno stato che non abbia già tutte le transizioni occupate
+			StateDFA* to = this->getRandomState(dfa);
+			string label = getRandomLabelFromAlphabet(); // FIXME prendere una label non occupata per lo stato from
+			dfa->connectStates(from, to, label);
 		}
 
-		return nfa;
+		return dfa;
 	}
 
 	/**
-	 * Genera una lista di oggetti StateNFA, ognuno dei quali con un nome univoco,
-	 * e inserisci questi stati all'interno dell'NFA passato come parametro.
+	 * Genera una lista di oggetti StateDFA, ognuno dei quali con un nome univoco,
+	 * e inserisci questi stati all'interno del DFA passato come parametro.
 	 * Gli stati non presentano transizioni.
 	 * Gli stati sono in numero pari alla dimensione prevista dai parametri dell'oggetto
-	 * NFAGenerator.
+	 * DFAGenerator.
 	 */
-	void NFAGenerator::generateStates(NFA* nfa) {
+	void DFAGenerator::generateStates(DFA* dfa) {
 		// Flag per l'esistenza di almeno uno stato final
 		bool hasFinalStates = false;
 
@@ -118,49 +119,40 @@ namespace translated_automata {
 			bool final = (this->generateNormalizedDouble() < this->getFinalProbability());
 			hasFinalStates |= final;
 
-			// Creo lo stato e lo aggiungo all'NFA
-			StateNFA *state = new StateNFA(name, final);
-			nfa->addState(state);
+			// Creo lo stato e lo aggiungo all'DFA
+			StateDFA *state = new StateDFA(name, final);
+			dfa->addState(state);
 		}
-		DEBUG_ASSERT_TRUE(nfa->size() == this->getSize());
+		DEBUG_ASSERT_TRUE(dfa->size() == this->getSize());
 
 		// Aggiunta forzata di almeno uno stato finale
 		if (!hasFinalStates) {
-			this->getRandomState(nfa)->setFinal(true);
+			this->getRandomState(dfa)->setFinal(true);
 		}
 	}
 
 	/**
-	 * Restituisce uno stato casuale all'interno della lista di stati dell'automa.
+	 * Estrae casualmente uno stato dall'automa.
 	 */
-	StateNFA* NFAGenerator::getRandomState(NFA* nfa) {
-		vector<StateNFA*> states = nfa->getStatesVector();
+	StateDFA* DFAGenerator::getRandomState(DFA* dfa) {
+		vector<StateDFA*> states = dfa->getStatesVector();
 		return states.at(rand() % states.size());
 	}
 
 	/**
 	 * Calcola il numero di transizioni da creare all'interno dell'automa.
 	 * Il calcolo è effettuato secondo il seguente algoritmo:
-	 * - Viene calcolato il numero massimo possibile di transizioni. Tale numero corrisponde alle transizioni orientate (!)
-	 *   di un grafo completo, ossia alla quantità [ N * (N - 1) ] dove N è il numero di stati dell'automa.
-	 *   (Notare che ogni transizione, essendo orientata, va conteggiata due volte).
+	 * - Viene calcolato il numero massimo possibile di transizioni. Tale numero corrisponde al numero massimo di transizioni
+	 * 	 per ogni stato moltiplicate per il numero N degli stati. Il numero massimo di transizioni di un singolo stato è dato
+	 * 	 dal numero L di label disponibili (uno stato DFA non può presentare due transizioni uscenti con la medesima label).
 	 * - Viene calcolata la percentuale richiesta su tale numero, arrotondata per difetto.
 	 * - Se il numero risultante è inferiore al numero necessario per connettere tutti gli stati, viene alzato
 	 *   fino al numero di stati - 1.
-	 *
-	 * In pratica, detta p la percentuale effettiva di transizioni e N il numero di stati, questo metodo accerta che:
-	 * 	[ p > 1 / N ].
-	 * Questa condizione, specialmente per valori molto grandi di N, è facilmente soddisfatta.
 	 */
-	unsigned long int NFAGenerator::computeTransitionsNumber() {
-		unsigned long int max_n_trans = (this->getSize() - 1) * (this->getSize());
+	unsigned long int DFAGenerator::computeTransitionsNumber() {
+		unsigned long int max_n_trans = (this->getSize()) * (this->getAlphabet().size());
 		unsigned long int n = (unsigned long int) (max_n_trans * this->getTransitionPercentage());
 		return (n < this->getSize() - 1) ? (this->getSize() - 1) : (n);
 	}
 
-
 } /* namespace translated_automata */
-
-
-
-

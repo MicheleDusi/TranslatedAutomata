@@ -48,7 +48,7 @@ namespace translated_automata {
             for (string l: state->getExitingLabels()) {
 
             	// Computo la l-closure dello stato e creo un nuovo stato DFA
-                StateDFA* new_state = new StateDFA(state->lClosure(l));
+                StateDFA* new_state = new StateDFA(state->computeLClosure(l));
 
                 // Verifico se lo stato DFA creato è vuoto
                 if (new_state->isEmpty()) {

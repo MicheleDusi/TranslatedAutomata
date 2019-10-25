@@ -57,7 +57,6 @@ namespace translated_automata {
         bool connectStates(State *from, State *to, string label);
         bool connectStates(string from, string to, string label);
         void print();
-        Automaton<State>* clone();
         bool operator==(Automaton<State>& other);
 
 	};

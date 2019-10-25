@@ -58,7 +58,7 @@ namespace translated_automata {
 	template <class S>
 	State<S>::~State () {
 		DEBUG_LOG( "Distruzione dell'oggetto State \"%s\"", m_name.c_str() );
-		detach();
+		detachAllTransitions();
 		DEBUG_LOG_SUCCESS( "Oggetto State distrutto correttamente" );
 	}
 
@@ -128,7 +128,7 @@ namespace translated_automata {
 	 * risultavano precedentemente connessi.
 	 */
 	template <class S>
-	void State<S>::detach() {
+	void State<S>::detachAllTransitions() {
 		// Rimuove le transizioni uscenti
 		for (auto pair: m_exiting_transitions) {
 			string label = pair.first;
@@ -320,16 +320,16 @@ namespace translated_automata {
 	 * passato come parametro.
 	 */
 	template <class S>
-	bool State<S>::hasSameTransitions(S* s) {
+	bool State<S>::hasSameTransitions(S* otherState) {
 		// Verifico che il numero di transizioni uscenti sia uguale
-		if (this->m_exiting_transitions.size() != s->m_exiting_transitions.size()) {
+		if (this->m_exiting_transitions.size() != otherState->m_exiting_transitions.size()) {
 			return false;
 		}
 
 		// Per tutte le transizioni uscenti
 		for (auto &pair: m_exiting_transitions) {
 			string label = pair.first;
-			set<S*> other_children = s->m_exiting_transitions[label];
+			set<S*> other_children = otherState->m_exiting_transitions[label];
 
 			// Verifico che il numero di figli sia uguale
 			if (pair.second.size() != other_children.size()) {
@@ -347,14 +347,14 @@ namespace translated_automata {
 		}
 
 		// Verifico che il numero di transizioni entranti sia uguale
-		if (this->m_incoming_transitions.size() != s->m_incoming_transitions.size()) {
+		if (this->m_incoming_transitions.size() != otherState->m_incoming_transitions.size()) {
 			return false;
 		}
 
 		// Per tutte le transizioni entranti
 		for (auto &pair: m_incoming_transitions) {
 			string label = pair.first;
-			set<S*> other_parents = s->m_incoming_transitions[label];
+			set<S*> other_parents = otherState->m_incoming_transitions[label];
 
 			// Verifico che il numero di padri sia uguale
 			if (pair.second.size() != other_parents.size()) {

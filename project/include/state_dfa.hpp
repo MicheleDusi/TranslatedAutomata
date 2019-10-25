@@ -41,8 +41,6 @@ namespace translated_automata {
 	private:
 		ExtensionDFA m_extension;								// Stati dell'NFA corrispondente
 		unsigned int m_distance = DEFAULT_VOID_DISTANCE;		// Distanza del nodo
-		bool m_updated = false;									// Flag che segnala l'aggiornamento
-		bool m_processed = false;								// Flag che segnala se è stato processato
 
     public:
 		static string createNameFromExtension(const ExtensionDFA &ext);
@@ -54,28 +52,22 @@ namespace translated_automata {
 		set<string> getExitingLabels();
 		void copyExitingTransitionsOf(StateDFA* state);
 		void copyIncomingTransitionsOf(StateDFA* state);
-		void copyAllTransitionsFrom(StateDFA* state);
+		void copyAllTransitionsOf(StateDFA* state);
 
-		ExtensionDFA lClosure(string l);
-//		ExtensionDFA lClosure(string l, NFA &nfa_mut);
+		ExtensionDFA computeLClosure(string l);
 		const ExtensionDFA& getExtension();
 		void replaceExtensionWith(ExtensionDFA new_ext);
 		bool hasExtension(const ExtensionDFA &ext);
 
-		int getDistance();
+		unsigned int getDistance();
 		void setDistance(int distance);
 		void initDistancesRecursively(int root_distance);
 	    void setBetterDistancesRecursively(int root_distance);
 	    int getMinimumParentsDistance();
 
-		void setProcessed();
-		bool isProcessed();
-		bool isUpdated();
-
 		bool isEmpty() const;
 		bool isFinal() const;
 		void setFinal(bool final);
-		StateDFA* duplicate() const;
 
     };
 

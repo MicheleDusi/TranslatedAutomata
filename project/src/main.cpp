@@ -145,7 +145,7 @@ int main(int argc, char **argv) {
 		TranslationGenerator* t_gen = new TranslationGenerator();
 		t_gen->setMixingFactor(0.5);
 		t_gen->setOffset(2);
-		Translation *tau = t_gen->generateRandomTranslation(alpha);
+		Translation *tau = t_gen->generateTranslation(alpha);
 
 		std::cout << tau->toString();
 

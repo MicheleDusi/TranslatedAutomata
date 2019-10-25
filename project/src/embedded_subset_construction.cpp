@@ -68,7 +68,7 @@ namespace translated_automata {
 
 			// Impostazione della front distance e della l-closure
 			int front_distance = current_dfa_state->getDistance();
-			ExtensionDFA l_closure = current_dfa_state->lClosure(current_label); // Nell'algoritmo è rappresentata con |N.
+			ExtensionDFA l_closure = current_dfa_state->computeLClosure(current_label); // Nell'algoritmo è rappresentata con |N.
 
 			// Se dallo stato corrente NON escono transizioni marcate dalla label corrente
 			if (current_exiting_transitions[current_label].empty()) {
@@ -175,7 +175,7 @@ namespace translated_automata {
 							for (StateDFA* parent : pair.second) {
 
 								// Preparazione delle informazioni sullo stato genitore
-								ExtensionDFA parent_x_closure = parent->lClosure(pair.first);
+								ExtensionDFA parent_x_closure = parent->computeLClosure(pair.first);
 								string x_closure_name = StateDFA::createNameFromExtension(parent_x_closure);
 
 								// Se lo stato genitore ha un'estensione differente dallo stato corrente
@@ -293,11 +293,11 @@ namespace translated_automata {
 
 			// Re-direzione di tutte le transizioni dello stato con distanza massima su quello con distanza minima
 			// (Le transizioni duplicate non vengono copiate)
-			min_dist_state->copyAllTransitionsFrom(max_dist_state);
+			min_dist_state->copyAllTransitionsOf(max_dist_state);
 
 			// Rimozione dello stato dall'automa DFA
 			dfa->removeState(max_dist_state);		// Rimuove il riferimento dello stato
-			max_dist_state->detach();				// Rimuove tutte le sue transizioni
+			max_dist_state->detachAllTransitions();	// Rimuove tutte le sue transizioni
 
 			// All'interno della lista di bud, ogni occorrenza dello stato con dist.max. viene sostituita con quello con dist.min.
 			for (Bud bud : buds) {

@@ -27,7 +27,6 @@ namespace translated_automata {
 	StateDFA::StateDFA(ExtensionDFA extension, bool processed) {
         m_extension = extension;
         m_name = createNameFromExtension(m_extension);
-        m_processed = processed;
     }
 
 	/**
@@ -94,13 +93,6 @@ namespace translated_automata {
     }
 
     /**
-     * Duplica il seguente stato.
-     */
-    StateDFA* StateDFA::duplicate() const {
-        return new StateDFA(m_extension);
-    }
-
-    /**
      * Restituisce l'estensione dello stato.
      */
     const ExtensionDFA& StateDFA::getExtension() {
@@ -114,8 +106,6 @@ namespace translated_automata {
     void StateDFA::replaceExtensionWith(ExtensionDFA new_ext) {
         m_extension = new_ext;
         m_name = createNameFromExtension(m_extension);
-        m_updated = true;
-        m_processed = true;
     }
 
     /**
@@ -126,7 +116,7 @@ namespace translated_automata {
      * Nota: Non è necessario estendere il tutto con epsilon transizioni,
      * poiché esse non vengono considerate.
      */
-    ExtensionDFA StateDFA::lClosure(string label) {
+    ExtensionDFA StateDFA::computeLClosure(string label) {
         ExtensionDFA closure;
 
         for (StateNFA* member : m_extension) {
@@ -201,23 +191,15 @@ namespace translated_automata {
      * all'interno di questo stato.
      * Le transizioni già esistenti non vengono duplicate.
      */
-    void StateDFA::copyAllTransitionsFrom(StateDFA* state) {
+    void StateDFA::copyAllTransitionsOf(StateDFA* state) {
         copyIncomingTransitionsOf(state);
         copyExitingTransitionsOf(state);
     }
 
     /**
-     * Verifica se uno stato è stato aggiornato.
-     */
-    bool StateDFA::isUpdated() {
-        return m_updated;
-    }
-
-
-    /**
      * Restituisce la distanza di questo stato.
      */
-    int StateDFA::getDistance() {
+    unsigned int StateDFA::getDistance() {
         return m_distance;
     }
 
@@ -318,14 +300,6 @@ namespace translated_automata {
      */
     bool StateDFA::hasExtension(const ExtensionDFA &ext) {
         return (getName() == createNameFromExtension(ext));
-    }
-
-    void StateDFA::setProcessed() {
-        m_processed = true;
-    }
-
-    bool StateDFA::isProcessed() {
-        return m_processed;
     }
 
 }

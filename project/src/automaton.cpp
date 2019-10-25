@@ -398,42 +398,6 @@ namespace translated_automata {
     }
 
     /**
-     * Crea una copia completa dell'automa.
-     *
-     * Nota: funziona solamente se l'automa di partenza è ben formato, ossia:
-     * - Tutti i suoi stati hanno transizioni uscenti solo verso stati dell'automa.
-     * - Tutti i suoi stati hanno transizioni entranti solo da stati dell'automa.
-     */
-    template <class State>
-    Automaton<State>* Automaton<State>::clone() {
-    	// Preparo il nuovo automa
-        Automaton<State>* aut = new Automaton<State>();
-
-        // Copio tutti gli stati
-        for (auto &pair: m_states) {
-            State* s = pair.second;
-            State* s_copy = s->duplicate();
-            aut->addState(s_copy);
-        }
-
-        // Copio tutte le transizioni
-        for (auto &pair: m_states) {
-            State* s = pair.second;
-            State* s_copy = aut->getState(s->getName());
-            for (auto &trans: s->getExitingTransitionsRef()) {
-                string label = trans.first;
-                for (State* child: trans.second)
-                	s_copy->connectChild(label, aut->getState(child->getName()));
-            }
-        }
-
-        // Copio lo stato iniziale
-        aut->setInitialState(m_initial_state->getName());
-
-        return aut;
-    }
-
-    /**
      * Metodo che confronta due stati. Il confronto non ha un significato nel dominio,
      * poiché è effettuato mediante puntatori, ma serve unicamente per avere un ordinamento
      * totale.

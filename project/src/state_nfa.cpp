@@ -50,14 +50,6 @@ namespace translated_automata {
 		m_final = final;
 	}
 
-	/**
-	 * Restituisce un duplicato dello stato.
-	 */
-	StateNFA* StateNFA::duplicate() const {
-        StateNFA* duplicate =  new StateNFA(m_name, m_final);
-        return duplicate;
-	}
-
 }
 
 

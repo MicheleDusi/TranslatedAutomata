@@ -53,11 +53,11 @@ namespace translated_automata {
         string getName() const;								// Restituisce il nome
 
 		virtual bool isFinal() const = 0;
-		virtual S* duplicate() const = 0;
+		virtual void setFinal(bool final) = 0;
 
 		void connectChild(string label, S* child);
 		void disconnectChild(string label, S* child);
-		void detach();
+		void detachAllTransitions();
 		set<S*> getChildren(string label);
 		S* getChild(string label);
 		set<S*> getParents(string label);
@@ -71,7 +71,7 @@ namespace translated_automata {
 		const map<string, set<S*>>& getIncomingTransitionsRef();
 		int getExitingTransitionsCount();
 		int getIncomingTransitionsCount();
-		bool hasSameTransitions(S* s);
+		bool hasSameTransitions(S* otherState);
 		string toString() const;
 
 		bool operator<(const S &other) const;

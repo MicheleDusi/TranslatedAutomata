@@ -42,7 +42,7 @@ namespace translated_automata {
 
         bool isFinal() const;
         void setFinal(bool final);
-        StateNFA* duplicate() const;
+
     };
 
 }

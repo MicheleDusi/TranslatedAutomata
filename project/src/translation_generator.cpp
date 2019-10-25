@@ -89,7 +89,7 @@ namespace translated_automata {
 	 * La generazione viene effettuata secondo i parametri pre-impostati con gli altri metodi
 	 * della classe (come il Mixing Factor, l'Offset, etc..).
 	 */
-	Translation* TranslationGenerator::generateRandomTranslation(Alphabet domain) {
+	Translation* TranslationGenerator::generateTranslation(Alphabet domain) {
 		map<string, string> translation_map;
 
 		// Parametri adattati all'alfabeto

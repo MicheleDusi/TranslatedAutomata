@@ -129,7 +129,7 @@ int main(int argc, char **argv) {
 		DFAGenerator *gen = new DFAGenerator();
 		Alphabet alpha = gen->generateAlphabet("abcde", 5);
 		gen->setAlphabet(alpha);
-		gen->setSize(10);
+		gen->setSize(40);
 		gen->setFinalProbability(.4);
 		gen->setTransitionPercentage(.2);
 		DFA* dfa = gen->generateRandomAutomaton();

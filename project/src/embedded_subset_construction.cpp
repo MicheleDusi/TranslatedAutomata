@@ -230,7 +230,7 @@ namespace translated_automata {
 					DEBUG_LOG("Considero la transizione:  %s --(%s)--> %s", current_dfa_state->getName().c_str(), current_label.c_str(), child->getName().c_str());
 
 					if (child->getName() == l_closure_name) {
-						DEBUG_LOG_ERROR("Ho incontrato lo stato |N| come figlio");
+						DEBUG_LOG("Ho incontrato lo stato |N| come figlio");
 						continue;
 					}
 

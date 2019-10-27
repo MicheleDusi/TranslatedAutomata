@@ -28,6 +28,8 @@ using std::string;
 using std::map;
 using std::set;
 
+#define DEFAULT_VOID_DISTANCE 1U<<30
+
 namespace translated_automata {
 
 	/**
@@ -46,20 +48,20 @@ namespace translated_automata {
 
 	protected:
 		string m_name = "";									// Nome dello stato
+		bool m_final = false;								// Flag che indica se lo stato è finale o meno
+		unsigned int m_distance = DEFAULT_VOID_DISTANCE;	// Distanza del nodo dal nodo iniziale
 
     public:
 		State();											// Costruttore
         virtual ~State();									// Distruttore (virtuale)
-        string getName() const;								// Restituisce il nome
 
-		virtual bool isFinal() const = 0;
-		virtual void setFinal(bool final) = 0;
-
+        string getName() const;
+        bool isFinal();
+        void setFinal(bool final);
 		void connectChild(string label, S* child);
 		void disconnectChild(string label, S* child);
 		void detachAllTransitions();
 		set<S*> getChildren(string label);
-		S* getChild(string label);
 		set<S*> getParents(string label);
 		bool hasExitingTransition(string label);
 		bool hasExitingTransition(string label, S* child);
@@ -71,12 +73,26 @@ namespace translated_automata {
 		const map<string, set<S*>>& getIncomingTransitionsRef();
 		int getExitingTransitionsCount();
 		int getIncomingTransitionsCount();
+		void copyExitingTransitionsOf(S* state);
+		void copyIncomingTransitionsOf(S* state);
+		void copyAllTransitionsOf(S* state);
 		bool hasSameTransitions(S* otherState);
+		unsigned int getDistance();
+		void setDistance(unsigned int distance);
+		void initDistancesRecursively(int root_distance);
+	    void setBetterDistancesRecursively(int root_distance); /// XXX
+	    int getMinimumParentsDistance();
 		string toString() const;
 
 		bool operator<(const S &other) const;
 		bool operator==(const S &other) const;
 		bool operator!=(const S &other) const;
+
+        struct Comparator {
+            bool operator() (const S* lhs, const S* rhs) const {
+                return lhs->getName() < rhs->getName();
+            }
+        };
 
     };
 

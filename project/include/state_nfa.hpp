@@ -16,7 +16,7 @@
 #define INCLUDE_STATE_NFA_HPP_
 
 #include "state.hpp"
-#include "automaton.hpp"
+#include "automaton.hpp" // XXX
 
 namespace translated_automata {
 
@@ -27,21 +27,9 @@ namespace translated_automata {
 	 */
     class StateNFA : public State<StateNFA> {
 
-	private:
-		bool m_final = false;
-
     public:
-        struct Comparator {
-            bool operator() (const StateNFA* lhs, const StateNFA* rhs) const {
-                return lhs->getName() < rhs->getName();
-            }
-        };
-
         StateNFA(string name, bool final = false);
 		~StateNFA();
-
-        bool isFinal() const;
-        void setFinal(bool final);
 
     };
 

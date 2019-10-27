@@ -25,14 +25,13 @@
 #include <list>
 
 #include "alphabet.hpp"
+#include "bud.hpp"
 #include "automaton_nfa.hpp"
 #include "automaton_dfa.hpp"
 
 using namespace std;
 
 namespace translated_automata {
-
-	using Bud = pair<StateDFA*, string>;
 
 	class Translation {
 
@@ -46,7 +45,6 @@ namespace translated_automata {
 
 		string translate(string label);
 		Alphabet translate(Alphabet alpha);
-		template <class State> tuple<NFA*, DFA*, list<Bud>> translate(Automaton<State> *automaton);
 
 		string toString();
 

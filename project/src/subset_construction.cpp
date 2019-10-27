@@ -12,6 +12,8 @@
 
 #include <queue>
 
+#include "constructed_state_dfa.hpp"
+
 namespace translated_automata {
 
     /**
@@ -26,32 +28,33 @@ namespace translated_automata {
         // Creo lo stato iniziale per il DFA
 		ExtensionDFA initial_dfa_extension;
 		initial_dfa_extension.insert(nfa->getInitialState());
-		StateDFA * initial_dfa_state = new StateDFA(initial_dfa_extension);
+		ConstructedStateDFA * initial_dfa_state = new ConstructedStateDFA(initial_dfa_extension);
 		// Inserisco lo stato all'interno del DFA
         dfa->addState(initial_dfa_state);
         dfa->setInitialState(initial_dfa_state);
 
         // Stack per i BUD
-        std::queue<StateDFA*> bud_stack;
+        std::queue<ConstructedStateDFA*> buds_stack;
 
         // Inserisco come bud di partenza il nodo iniziale
-        bud_stack.push(initial_dfa_state);
+        buds_stack.push(initial_dfa_state);
 
         // Finché nella queue sono presenti dei bud
-        while (! bud_stack.empty()) {
+        while (! buds_stack.empty()) {
 
         	// Estraggo il primo elemento della queue
-            StateDFA* state = bud_stack.front();			// Ottengo un riferimento all'elemento estratto
-            bud_stack.pop();								// Rimuovo l'elemento
+        	ConstructedStateDFA* state = buds_stack.front();			// Ottengo un riferimento all'elemento estratto
+            buds_stack.pop();								// Rimuovo l'elemento
 
             // Per tutte le label che marcano transizioni uscenti da questo stato
-            for (string l: state->getExitingLabels()) {
+            for (string l: state->getLabelsExitingFromExtension()) {
 
             	// Computo la l-closure dello stato e creo un nuovo stato DFA
-                StateDFA* new_state = new StateDFA(state->computeLClosure(l));
+            	ExtensionDFA l_closure = state->computeLClosureOfExtension(l);
+            	ConstructedStateDFA* new_state = new ConstructedStateDFA(l_closure);
 
                 // Verifico se lo stato DFA creato è vuoto
-                if (new_state->isEmpty()) {
+                if (new_state->isExtensionEmpty()) {
                 	// Se sì, lo elimino e procedo
                     delete new_state;
                     continue;
@@ -59,15 +62,15 @@ namespace translated_automata {
                 // Verifico se lo stato DFA creato è già presente nel DFA
                 else if (dfa->hasState(new_state)) {
                 	// Se sì, lo stato estratto dalla queue può essere eliminato
-                    StateDFA* tmp_state = new_state;
-                    new_state = dfa->getState(tmp_state->getName());
+                	ConstructedStateDFA* tmp_state = new_state;
+                    new_state = (ConstructedStateDFA*) dfa->getState(tmp_state->getName());
                     delete tmp_state;
                 }
                 // Se si tratta di uno stato "nuovo"
                 else {
                 	// Lo aggiungo al DFA e alla queue
                     dfa->addState(new_state);
-                    bud_stack.push(new_state);
+                    buds_stack.push(new_state);
                 }
 
                 // Effettuo la connessione:

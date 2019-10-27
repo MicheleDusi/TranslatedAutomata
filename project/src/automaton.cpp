@@ -13,6 +13,8 @@
 
 #include "automaton.hpp"
 
+#include <algorithm>
+
 #include "debug.hpp"
 #include "state_nfa.hpp"
 #include "state_dfa.hpp"
@@ -33,19 +35,13 @@ namespace translated_automata {
 
     /**
      * Distruttore della classe Automaton.
+     * Distrugge TUTTI gli stati contenuti nell'automa.
      */
     template <class State>
     Automaton<State>::~Automaton() {
-    	// Itero sulla mappa di stringhe e stati
-        for (auto iterator = m_states.begin(); iterator != m_states.end(); ++iterator) {
-        	// Verifico se lo stato associato ad una stringa è ancora NON nullo
-            if (iterator->second != NULL) {
-                delete iterator->second;
-            }
-            else {
-            	DEBUG_LOG_ERROR("Puntatore NULL per lo stato associato alla label %s", iterator->first.c_str() );
-            }
-        }
+    	for (State* s : m_states) {
+    		delete s;
+    	}
     }
 
     /**
@@ -62,8 +58,7 @@ namespace translated_automata {
      */
     template <class State>
     bool Automaton<State>::hasState(State* s) {
-        auto search = m_states.find(s->getName());
-        return search != m_states.end();
+        return m_states.find(s) != m_states.end();
     }
 
     /**
@@ -71,8 +66,12 @@ namespace translated_automata {
      */
     template <class State>
     bool Automaton<State>::hasState(string name) {
-        auto search = m_states.find(name);
-        return search != m_states.end();
+    	for (State* s : m_states) {
+    		if (s->getName() == name) {
+    			return true;
+    		}
+    	}
+    	return false;
     }
 
     /**
@@ -83,8 +82,12 @@ namespace translated_automata {
      */
     template <class State>
     State* Automaton<State>::getState(string name) {
-        State* state = m_states[name];
-        return state;
+    	for (State* s : m_states) {
+    		if (s->getName() == name) {
+    			return s;
+    		}
+    	}
+    	return NULL;
     }
 
     /**
@@ -93,7 +96,7 @@ namespace translated_automata {
      */
     template <class State>
     void Automaton<State>::addState(State* s) {
-        m_states[s->getName()] = s;
+        m_states.insert(s);
     }
 
     /**
@@ -106,42 +109,7 @@ namespace translated_automata {
      */
     template <class State>
     bool Automaton<State>::removeState(State* s) {
-       return m_states.erase(s->getName());
-    }
-
-    /**
-	 * Richiede in ingresso una stringa.
-	 * Rimuove dall'automa lo stato dell'automa che abbia come nome la stringa
-	 * passata come parametro.
-	 * Se la rimozione avviene restituisce "TRUE", altrimenti se lo stato
-	 * non viene trovato restituisce "FALSE".
-	 * Questo metodo NON distrugge lo stato.
-	 */
-	template <class State>
-	bool Automaton<State>::removeState(string name) {
-	   return m_states.erase(name);
-	}
-
-	/**
-	 * Richiede in ingresso una stringa.
-	 * Rimuove e distrugge dall'automa lo stato dell'automa che abbia come nome la stringa
-	 * passata come parametro.
-	 * Se la distruzione avviene restituisce "TRUE", altrimenti se lo stato
-	 * non viene trovato restituisce "FALSE".
-	 * Nota: occupandosi della distruzione dello stato, lo stato non sarà più raggiungibile.
-	 */
-    template <class State>
-    bool Automaton<State>::deleteState(string name) {
-        auto search = m_states.find(name);
-        if (search == m_states.end()) {
-            return false;
-        }
-
-        State* s = m_states[name];
-        m_states.erase(name);
-        delete s;
-
-        return true;
+       return m_states.erase(s);
     }
 
     /**
@@ -153,12 +121,19 @@ namespace translated_automata {
      *
      * Nota: non è possibile impostare come stato iniziale uno stato non appartenente all'automa.
      * In caso lo stato non faccia parte dell'automa, l'operazione non verrà effettuata.
+     *
+     * Inoltre, si suppone che questa operazione venga effettuata al termine dell'inserimento di tutti
+     * gli stati, poiché causa anche l'assegnamento delle distanze per ogni nodo raggiungibile dallo stato
+     * iniziale. Pertanto, al termine di questa chiamata, ogni stato conterrà la distanza dal nodo iniziale,
+     * a partire dal nodo iniziale che avrà distanza 0.
+     * L'assegnamento delle distanze NON ha effetto sugli stati NON raggiungibili dallo stato impostato come
+     * stato iniziale.
      */
     template <class State>
     void Automaton<State>::setInitialState(State* s) {
     	if (hasState(s)) {
 			m_initial_state = s;
-			m_states[s->getName()] = s;
+	    	s->initDistancesRecursively(0);
     	}
     }
 
@@ -170,11 +145,19 @@ namespace translated_automata {
      *
      * Nota: non è possibile impostare come stato iniziale uno stato non appartenente all'automa.
      * In caso lo stato non faccia parte dell'automa, l'operazione non verrà effettuata.
+     *
+     * Inoltre, si suppone che questa operazione venga effettuata al termine dell'inserimento di tutti
+     * gli stati, poiché causa anche l'assegnamento delle distanze per ogni nodo raggiungibile dallo stato
+     * iniziale. Pertanto, al termine di questa chiamata, ogni stato conterrà la distanza dal nodo iniziale,
+     * a partire dal nodo iniziale che avrà distanza 0.
+     * L'assegnamento delle distanze NON ha effetto sugli stati NON raggiungibili dallo stato impostato come
+     * stato iniziale.
      */
     template <class State>
     void Automaton<State>::setInitialState(string name) {
     	if (hasState(name)) {
-			m_initial_state = m_states[name];
+			m_initial_state = getState(name);
+	    	m_initial_state->initDistancesRecursively(0);
     	}
     }
 
@@ -190,8 +173,7 @@ namespace translated_automata {
      * Verifica se uno stato è impostato come stato iniziale.
      */
     template <class State>
-    bool Automaton<State>::isInitial(State* s)
-    {
+    bool Automaton<State>::isInitial(State* s) {
         return (m_initial_state == s);
         /* Nota:
          * Prima il confronto veniva effettuato tramite i nomi, ma poiché è stato definito
@@ -209,21 +191,6 @@ namespace translated_automata {
     }
 
     /**
-     * Rimuove e distrugge lo stato con nome "", se presente.
-     */
-    template <class State>
-    bool Automaton<State>::deleteEmptyState() {
-    	// Verifico se esiste uno stato con associato un nome vuoto
-        if (m_states.count("")) {
-            State* s = m_states[""];
-            m_states.erase("");
-            delete s;
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * Metodo privato.
      *
      * Rimuove da un insieme tutti i nodi che sono raggiungibili (leggi: CONNESSI) dal nodo s passato come parametro
@@ -235,7 +202,7 @@ namespace translated_automata {
     template <class State>
     void Automaton<State>::removeReachableStates(State* s, set<State*> &states) {
     	// Verifico se contengo lo stato s
-        if (states.count(s)) {
+        if (states.find(s) != states.end()) {
             states.erase(s);
             // Rimuovo lo stato dalla mappa. Se lo rimuovessi DOPO la chiamata ricorsiva, un ciclo
             // di transizioni sugli stati genererebbe uno stack di chiamate ricorsive illimitato.
@@ -262,10 +229,7 @@ namespace translated_automata {
     template <class State>
     set<State*> Automaton<State>::removeUnreachableStates() {
     	// Creo l'insieme di tutti gli stati dell'automa
-        set<State*> unreachable;
-        for (auto &pair: m_states) {
-            unreachable.insert(pair.second);
-        }
+        set<State*> unreachable = set<State*>(m_states);
 
         // Lavoro per differenza: rimuovo dall'insieme tutti gli stati raggiungibili
         removeReachableStates(m_initial_state, unreachable);
@@ -273,7 +237,7 @@ namespace translated_automata {
         // Mi restano tutti gli stati irrangiungibili, sui quali itero
         for (State* s: unreachable) {
         	// Rimuovo dalla mappa dell'automa ogni stato irraggiungibile
-            m_states.erase(s->getName());
+            m_states.erase(s);
         }
 
         return unreachable;
@@ -288,8 +252,8 @@ namespace translated_automata {
     template <class State>
     const list<State*> Automaton<State>::getStatesList() {
     	list<State*> states_list;
-    	for (auto &pair : m_states) {
-    		states_list.push_back(pair.second);
+    	for (State* s : m_states) {
+    		states_list.push_back(s);
     	}
         return states_list;
     }
@@ -302,8 +266,8 @@ namespace translated_automata {
     template <class State>
     const vector<State*> Automaton<State>::getStatesVector() {
     	vector<State*> states_vector;
-		for (auto &pair : m_states) {
-			states_vector.push_back(pair.second);
+		for (State* s : m_states) {
+			states_vector.push_back(s);
 		}
 		return states_vector;
     }
@@ -314,10 +278,10 @@ namespace translated_automata {
     template <class State>
     const set<string>& Automaton<State>::getLabels() {
         set<string> *labels;
-        for (auto &pair : m_states) {
-            State* s = pair.second;
-            for (auto &trans: s->getExitingTransitions())
+        for (State* s : m_states) {
+            for (auto &trans: s->getExitingTransitions()) {
                 labels->insert(trans.first);
+            }
         }
 
         return *labels;
@@ -347,7 +311,7 @@ namespace translated_automata {
 	 */
     template <class State>
     bool Automaton<State>::connectStates(string from, string to, string label) {
-    	return this->connectStates(m_states[from], m_states[to], label);
+    	return this->connectStates(getState(from), getState(to), label);
     }
 
     /**
@@ -357,56 +321,47 @@ namespace translated_automata {
      */
     template <class State>
     void Automaton<State>::print() {
+    	std::cout << "AUTOMATON (size = " << std::to_string(m_states.size()) << ")\n";
         std::cout << "Initial: " << m_initial_state->getName() << '\n';
 
         // Per ogni stato dell'automa
-        for (auto it = m_states.begin(); it != m_states.end(); ++it) {
-            std::cout << it->second->toString();
+        for (State* s : m_states) {
+            std::cout << s->toString();
         }
     }
 
-    /**
-     * Operatore di uguaglianza per automi.
-     */
-    template <class State>
-    bool Automaton<State>::operator==(Automaton<State>& other) {
-    	// Se gli stati iniziali non sono uguali, certamente i due automi non sono uguali
-        if (*m_initial_state != *other.m_initial_state) {
-        	return false;
-        }
-
-        // Se gli automi non hanno la stessa dimensione (= numero di stati), allora non sono certamente uguali
-        if (m_states.size() != other.m_states.size()) {
-        	return false;
-        }
-
-        // Effettuo il confronto stato per stato dei due automi.
-        // Essendo le mappe ordinate, posso basarmi sullo scorrimento degli stati delle due mappe.
-        auto ia = m_states.begin(), ib = other.m_states.begin();
-
-        while (ia != m_states.end() && ib != m_states.end()) {
-            if (ia->first != ib->first) {
-            	return false;
-            } else if (ia->second->hasSameTransitions(ib->second)) {
-            	return false;
-            }
-
-            ++ia; ++ib;
-        }
-
-        return true;
-    }
-
-    /**
-     * Metodo che confronta due stati. Il confronto non ha un significato nel dominio,
-     * poiché è effettuato mediante puntatori, ma serve unicamente per avere un ordinamento
-     * totale.
-     */
-    template <class State>
-    bool compareStates(State* lhs, State* rhs) {
-      return *lhs < *rhs;
-    }
-
+//    /**
+//     * Operatore di uguaglianza per automi.
+//     */
+//    template <class State>
+//    bool Automaton<State>::operator==(Automaton<State>& other) {
+//    	// Se gli stati iniziali non sono uguali, certamente i due automi non sono uguali
+//        if (*m_initial_state != *other.m_initial_state) {
+//        	return false;
+//        }
+//
+//        // Se gli automi non hanno la stessa dimensione (= numero di stati), allora non sono certamente uguali
+//        if (m_states.size() != other.m_states.size()) {
+//        	return false;
+//        }
+//
+//        // Effettuo il confronto stato per stato dei due automi.
+//        // Essendo gli insiemi ordinati, posso basarmi sullo scorrimento degli stati dei due insiemi.
+//        // TODO CORREGGERE
+//        auto ia = m_states.begin(), ib = other.m_states.begin();
+//
+//        while (ia != m_states.end() && ib != m_states.end()) {
+//            if (*ia != *ib) {
+//            	return false;
+//            } else if (ia->hasSameTransitions(ib)) {
+//            	return false;
+//            }
+//
+//            ++ia; ++ib;
+//        }
+//
+//        return true;
+//    }
 
     /*************
      * Nota: essendo la classe Automaton parametrizzata sul tipo "State",

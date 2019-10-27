@@ -13,7 +13,7 @@ OBJDIR = ./obj
 
 # Parametri di compilazione
 CC = g++
-CFLAGS=-I$(INCDIR)  #-std=c++11
+CFLAGS=-I$(INCDIR) -g #-std=c++11
 
 # Nomi (base) dei file da compilare
 SOURCES := $(shell find $(SRCDIR) -name '*.cpp')					# Sources ".cpp"
@@ -22,11 +22,11 @@ OBJECTS := $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(SOURCES))	# Objects ".o"
 
 # Compilazione dei sorgenti nei singoli file obj
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(HEADERS)
-	$(CC) $(CFLAGS) -g -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 # Compilazione e linking nell'eseguibile finale
 $(BINDIR)/$(OUTPUT): $(OBJECTS)
-	$(CC) $(CFLAGS) -g -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^
 
 
 # Pulizia dei file creati durante la compilazione

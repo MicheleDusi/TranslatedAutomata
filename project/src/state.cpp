@@ -71,6 +71,23 @@ namespace translated_automata {
 	}
 
 	/**
+	 * Restituisce TRUE se lo stato è marcato come stato finale.
+	 */
+	template <class S>
+	bool State<S>::isFinal() {
+		return m_final;
+	}
+
+	/**
+	 * Imposta lo stato come FINAL oppure NON_FINAL,
+	 * a seconda del valore passato come parametro.
+	 */
+	template <class S>
+	void State<S>::setFinal(bool final) {
+		m_final = final;
+	}
+
+	/**
 	 * Metodo privato.
 	 * Rimuove una transizione dallo stato al figlio.
 	 * Se non esiste non succede nulla.
@@ -167,24 +184,6 @@ namespace translated_automata {
 		} else {
 			// Restituisco un insieme vuoto
 			return set<S*>();
-		}
-	}
-
-	/**
-	 * Restituisce lo stato raggiunto da una transizione con una specifica etichetta.
-	 * In caso ne sia presente più di uno (caso NFA), restituisce solo il primo della lista.
-	 * Per ottenere tutti gli stati raggiunti, è opportuno chiamare il metodo "getChildren".
-	 */
-	template <class S>
-	S* State<S>::getChild(string label) {
-		auto search = m_exiting_transitions.find(label);
-		// Con "auto" sto esplicitando il processo di type-inference
-		if (search != m_exiting_transitions.end()) {
-			// Restituisco il primo nodo della lista
-			return *(m_exiting_transitions[label].begin());
-		}	else {
-			// Altrimenti non restituisco nulla
-			return NULL;
 		}
 	}
 
@@ -314,6 +313,58 @@ namespace translated_automata {
 		}
 		return count;
 	}
+    /**
+     * Guarda tutte le transizioni uscenti dallo stato "state".
+     * Se trova una transizione che questo stato non possiede,
+     * la aggiunge come transizione propria.
+     * Al termine dell'esecuzione, è garantito che questo stato
+     * contenga almeno tutte le transizioni uscenti dallo stato
+     * passato come parametro.
+     */
+	template <class S>
+	void State<S>::copyExitingTransitionsOf(S* state) {
+    	// Per tutte le transizioni uscenti dallo stato "state"
+        for (auto &pair: state->getExitingTransitions()) {
+            string label = pair.first;
+            for (S* child: pair.second) {
+                if (!this->hasExitingTransition(label, child)) {
+                    this->connectChild(label, child);
+                }
+            }
+        }
+    }
+
+    /**
+     * Guarda tutte le transizioni entranti nello stato "state".
+     * Se trova una transizione che questo stato non possiede,
+     * la aggiunge come transizione propria.
+     * Al termine dell'esecuzione, è garantito che questo stato
+     * contenga almeno tutte le transizioni entranti nello stato
+     * passato come parametro.
+     */
+	template <class S>
+	void State<S>::copyIncomingTransitionsOf(S* state) {
+    	// Per tutte le transizioni entranti nello stato "state"
+        for (auto &pair: state->getIncomingTransitions()) {
+            string label = pair.first;
+            for (S* parent: pair.second) {
+                if (!parent->hasExitingTransition(label, this->getThis())) {
+                    parent->connectChild(label, this->getThis());
+                }
+            }
+        }
+    }
+
+    /**
+     * Copia tutte le transizioni entranti in e uscenti da uno stato d
+     * all'interno di questo stato.
+     * Le transizioni già esistenti non vengono duplicate.
+     */
+	template <class S>
+	void State<S>::copyAllTransitionsOf(S* state) {
+        copyIncomingTransitionsOf(state);
+        copyExitingTransitionsOf(state);
+    }
 
 	/**
 	 * Verifica se lo stato ha le stesse transizioni (entranti E uscenti) dello stato
@@ -374,6 +425,80 @@ namespace translated_automata {
 		return true;
 	}
 
+    /**
+     * Restituisce la distanza di questo stato.
+     */
+	template <class S>
+    unsigned int State<S>::getDistance() {
+        return m_distance;
+    }
+
+    /**
+     * Imposta la distanza di questo stato.
+     */
+	template <class S>
+    void State<S>::setDistance(unsigned int distance) {
+        m_distance = distance;
+    }
+
+    /**
+     * Imposta i valori delle distanze partendo dallo stato corrente
+     * come radice, considerando ongi transizione come un incremento unitario sulla
+     * distanza.
+     * In realtà l'assegnamento delle distanze non è implementato con un algoritmo ricorsivo, ma si utilizza
+     * una coda che permette un'attraversamento dell'automa di tipo breadth-first (attraversamento in ampiezza).
+     * Nota: questo metodo viene richiamato appena terminata la costruzione di un automa, per definire le distanze
+     * di tutti gli stati; è quindi importante che tutti gli stati facciano parte dello stesso automa, e che tutti abbiano
+     * una distanza non ancora inizializzata (ossia uguale al valore di default).
+     */
+	template <class S>
+    void State<S>::initDistancesRecursively(int root_distance) {
+    	// Imposto la distanza corrente
+        this->setDistance(root_distance);
+        // Preparo la lista di nodi su cui effettuare l'aggiornamento della distanza
+        list<S*> updated_list;
+        updated_list.push_back(this->getThis());
+
+        while (updated_list.size() > 0) {		// Finché la queue non è vuota
+
+            S* current_state = updated_list.front();
+            updated_list.pop_front();
+
+            // Per tutte le transizioni uscenti dallo stato corrente
+            for (auto &trans: current_state->getExitingTransitionsRef()) {
+            	// Per tutti i figli raggiunti
+                for (S* child : trans.second) {
+                	// Se la distanza non vale quanto la distanza iniziale di default
+                    if (child->getDistance() == DEFAULT_VOID_DISTANCE) {
+                    	// Imposto la distanza del figlio = 1 + dist(padre)
+                        child->setDistance(current_state->getDistance() + 1);
+                        // Aggiungo il figlio alla lista, in modo da aggiornarlo in futuro
+                        updated_list.push_back(child);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Restituisce la minima distanza fra tutte le distanze dei genitori.
+     */
+	template <class S>
+    int State<S>::getMinimumParentsDistance() {
+    	int minimum = DEFAULT_VOID_DISTANCE;
+    	// Per tutte le transizioni entranti
+    	for (auto &pair : this->getIncomingTransitionsRef()) {
+    		// Per tutti gli stati genitori
+    		for (S* parent : pair.second) {
+    			// Se la distanza è inferiore
+    			if (parent->m_distance < minimum) {
+    				minimum = parent->m_distance;
+    			}
+    		}
+    	}
+    	return minimum;
+    }
+
 	/**
 	 * Restituisce una stringa contenente tutte le informazioni relative allo stato.
 	 */
@@ -383,13 +508,14 @@ namespace translated_automata {
 		string result = "";
 
 		// Inserisco il nome dello stato
-		result += "State: " + getThis()->getName();
+		result += "State: \033[33;1m" + getThis()->getName() + "\033[0m";
 
 		// Se lo stato è final, aggiungo un'etichetta alla stringa visualizzata
 		if (getThis()->isFinal()) {
-			result += "[FINAL]";
+			result += " [FINAL]";
 		}
-		result += "\n";
+
+		result += " (dist = " + std::to_string(m_distance) + ")\n";
 
 		if (!this->m_exiting_transitions.empty()) {
 			result += "\tExiting transitions:\n";
@@ -405,7 +531,7 @@ namespace translated_automata {
 		} else {
 			result += "\tNo exiting transitions.\n";
 		}
-
+/*
 		if (!this->m_incoming_transitions.empty()) {
 			result += "\tIncoming transitions:\n";
 			// Per tutte le label delle transizioni entranti
@@ -420,7 +546,7 @@ namespace translated_automata {
 		} else {
 			result += "\tNo incoming transitions.\n";
 		}
-
+*/
 		return result;
 	};
 

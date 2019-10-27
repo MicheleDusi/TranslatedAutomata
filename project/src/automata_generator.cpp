@@ -17,6 +17,7 @@
 
 #include "debug.hpp"
 #include "automaton_nfa.hpp"
+#include "automaton_dfa.hpp"
 
 namespace translated_automata {
 
@@ -267,5 +268,6 @@ namespace translated_automata {
      * è necessario comunicare al compilatore quali implementazioni verranno utilizzate.
      */
 	template class AutomataGenerator<NFA>;
+	template class AutomataGenerator<DFA>;
 
 } /* namespace translated_automata */

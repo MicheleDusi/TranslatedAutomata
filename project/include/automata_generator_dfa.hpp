@@ -25,6 +25,8 @@ namespace translated_automata {
 	private:
 		void generateStates(DFA* nfa);
 		StateDFA* getRandomState(DFA* nfa);
+		StateDFA* getRandomStateWithUnusedLabels(vector<StateDFA*> &states, map<StateDFA*, Alphabet> &unused_labels);
+		string extractRandomUnusedLabel(map<StateDFA*, Alphabet> &unused_labels, StateDFA* state);
 		unsigned long int computeTransitionsNumber();
 
 	public:

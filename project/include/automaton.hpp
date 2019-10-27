@@ -26,10 +26,10 @@ namespace translated_automata {
 	class Automaton {
 
 	private:
-		map<string, State*> m_states;
+		set<State*> m_states;
 		State *m_initial_state;
 
-        void removeReachableStates(State* s, set<State*> &states);
+        void removeReachableStates(State* s, set<State*> &states); // INUTILE
 
 	public:
 		Automaton();
@@ -37,11 +37,8 @@ namespace translated_automata {
 
         int size();
         void addState(State* s);
-        bool deleteState(string name);
-        bool deleteEmptyState();
         bool removeState(State* s);
-        bool removeState(string name);
-        set<State*> removeUnreachableStates();
+        set<State*> removeUnreachableStates(); // INUTILE
         bool hasState(State* s);
         bool hasState(string name);
         bool isInitial(State* s);
@@ -49,7 +46,6 @@ namespace translated_automata {
         void setInitialState(State* s);
         void setInitialState(string name);
         State* getInitialState();
-        State* getState(State* s);
         State* getState(string name);
         const list<State*> getStatesList();
         const vector<State*> getStatesVector();

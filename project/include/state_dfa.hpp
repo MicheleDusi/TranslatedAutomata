@@ -16,20 +16,14 @@
  *
  ******************************************************************************/
 
+#ifndef INCLUDE_STATE_DFA_H_
+#define INCLUDE_STATE_DFA_H_
+
 #include "state.hpp"
 #include "state_nfa.hpp"
 #include "automaton.hpp"
 
-#define DEFAULT_VOID_DISTANCE 1U<<30
-
 namespace translated_automata {
-
-	/**
-	 * Definisco l'estensione di uno stato StateDFA
-	 * come un'insieme di stati StateNFA, analogamente
-	 * a quanto succede nell'algoritmo Subset Construction.
-	 */
-    using ExtensionDFA = set<StateNFA*, StateNFA::Comparator>;
 
 	/**
 	 * Concrete class "StateDFA".
@@ -38,37 +32,14 @@ namespace translated_automata {
 	 */
     class StateDFA : public State<StateDFA> {
 
-	private:
-		ExtensionDFA m_extension;								// Stati dell'NFA corrispondente
-		unsigned int m_distance = DEFAULT_VOID_DISTANCE;		// Distanza del nodo
-
     public:
-		static string createNameFromExtension(const ExtensionDFA &ext);
-		static ExtensionDFA subtractExtensions(const ExtensionDFA &ext1, const ExtensionDFA &ext2);
-
-		StateDFA(ExtensionDFA extension, bool processed = false);
+		StateDFA(string name, bool final = false);
 		~StateDFA();
 
-		set<string> getExitingLabels();
-		void copyExitingTransitionsOf(StateDFA* state);
-		void copyIncomingTransitionsOf(StateDFA* state);
-		void copyAllTransitionsOf(StateDFA* state);
-
-		ExtensionDFA computeLClosure(string l);
-		const ExtensionDFA& getExtension();
-		void replaceExtensionWith(ExtensionDFA new_ext);
-		bool hasExtension(const ExtensionDFA &ext);
-
-		unsigned int getDistance();
-		void setDistance(int distance);
-		void initDistancesRecursively(int root_distance);
-	    void setBetterDistancesRecursively(int root_distance);
-	    int getMinimumParentsDistance();
-
-		bool isEmpty() const;
-		bool isFinal() const;
-		void setFinal(bool final);
+		StateDFA* getChild(string label);
 
     };
 
 }
+
+#endif /* INCLUDE_STATE_DFA_H_ */

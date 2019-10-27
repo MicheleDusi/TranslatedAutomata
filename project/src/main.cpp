@@ -15,11 +15,11 @@
 #include <set>
 #include <tuple>
 
-#include "../include/automata_generator_nfa.hpp"
-#include "debug.hpp"
-
+#include "automata_generator_nfa.hpp"
+#include "automata_generator_dfa.hpp"
 #include "automaton_nfa.hpp"
 #include "automaton_dfa.hpp"
+#include "debug.hpp"
 #include "embedded_subset_construction.hpp"
 #include "subset_construction.hpp"
 #include "translation.hpp"
@@ -30,11 +30,6 @@ using std::set;
 using namespace translated_automata;
 
 int main(int argc, char **argv) {
-	DEBUG_MARK_PHASE( saluti ) {
-
-		std::cout << "Hello world!" << std::endl;
-
-	}
 
 //	DEBUG_MARK_PHASE( subset construction ) {
 //
@@ -131,25 +126,50 @@ int main(int argc, char **argv) {
 	DEBUG_MARK_PHASE( Test translated automaton ) {
 
 		// Genero l'automa
-		NFAGenerator *gen = new NFAGenerator();
+		DFAGenerator *gen = new DFAGenerator();
 		Alphabet alpha = gen->generateAlphabet("abcde", 5);
 		gen->setAlphabet(alpha);
-		gen->setSize(5);
+		gen->setSize(10);
 		gen->setFinalProbability(.4);
-		gen->setTransitionPercentage(.5);
-		NFA* nfa = gen->generateRandomAutomaton();
+		gen->setTransitionPercentage(.2);
+		DFA* dfa = gen->generateRandomAutomaton();
 
-		nfa->print();
+//		DFA* dfa = new DFA();
+//		StateDFA *s0 = new StateDFA("s0", true);
+//		StateDFA *s1 = new StateDFA("s1", true);
+//		StateDFA *s2 = new StateDFA("s2", true);
+//		StateDFA *s3 = new StateDFA("s3", true);
+//		dfa->addState(s0);
+//		dfa->addState(s1);
+//		dfa->addState(s2);
+//		dfa->addState(s3);
+//		dfa->connectStates(s0, s1, "c");
+//		dfa->connectStates(s0, s2, "e");
+//		dfa->connectStates(s0, s3, "d");
+//		dfa->connectStates(s2, s1, "a");
+//		dfa->setInitialState(s0);
+
+		dfa->print();
 
 		// Genero la traduzione
 		TranslationGenerator* t_gen = new TranslationGenerator();
 		t_gen->setMixingFactor(0.5);
-		t_gen->setOffset(2);
+		t_gen->setOffset(0);
 		Translation *tau = t_gen->generateTranslation(alpha);
 
 		std::cout << tau->toString();
 
 		EmbeddedSubsetConstruction *esc = new EmbeddedSubsetConstruction();
+
+		DEBUG_MARK_PHASE( Effective translation )
+		DFA* translated_dfa = esc->run(dfa, tau);
+
+		printf("L'automa risultante ha %u stati:\n", translated_dfa->size());
+		for (StateDFA* s : translated_dfa->getStatesVector()) {
+			printf("%s\n", s->getName().c_str());
+		}
+		printf("Eccolo:\n\n" );
+		translated_dfa->print();
 
 
 

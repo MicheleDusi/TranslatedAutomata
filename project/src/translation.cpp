@@ -100,14 +100,31 @@ namespace translated_automata {
 	/**
 	 * Restituisce una descrizione testuale della traduzione, come lista
 	 * delle associazioni.
+	 * Le traduzioni identiche non vengono stampate.
 	 */
 	string Translation::toString() {
-		string s = "";
+		string s = "Translation:\n";
 		for (auto &pair : this->m_translation_map) {
-			s += pair.first + " >> " + pair.second + "\n";
+			s += " " + pair.first + " ⟼   " + pair.second + "\n";
 		}
 		if (this->m_translation_map.empty()) {
-			s += "No explicit associations";
+			s += "No explicit associations.";
+		}
+		return s;
+	}
+
+	/**
+	 * Restituisce una descrizione testuale della traduzione, come lista
+	 * delle associazioni in riferimento a tutte e solo le stringhe contenute
+	 * all'interno di un alfabeto.
+	 */
+	string Translation::toString(Alphabet &reference) {
+		string s = "Translation:\n";
+		for (auto label : reference) {
+			s += " " + label + " ⟼   " + this->translate(label) + "\n";
+		}
+		if (reference.empty()) {
+			s += "No labels in the alphabet.";
 		}
 		return s;
 	}

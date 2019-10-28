@@ -391,7 +391,6 @@ namespace translated_automata {
 			for (auto &child: pair.second) {
 				// Se il figlio non è contenuto nell'altra lista
 				if (other_children.count(child) <= 0) {
-					// TODO Verificare che il controllo sia corretto
 					return false;
 				}
 			}
@@ -416,7 +415,6 @@ namespace translated_automata {
 			for (auto &parent: pair.second) {
 				// Se il padre non è contenuto nell'altra lista
 				if (other_parents.count(parent) <= 0) {
-					// TODO Verificare che il controllo sia corretto
 					return false;
 				}
 			}
@@ -508,24 +506,26 @@ namespace translated_automata {
 		string result = "";
 
 		// Inserisco il nome dello stato
-		result += "State: \033[33;1m" + getThis()->getName() + "\033[0m";
+		result += "\033[33;1m" + getThis()->getName() + "\033[0m";
+
+		// Distanza dello stato
+		result += " (dist = " + std::to_string(m_distance) + ")";
 
 		// Se lo stato è final, aggiungo un'etichetta alla stringa visualizzata
 		if (getThis()->isFinal()) {
 			result += " [FINAL]";
 		}
 
-		result += " (dist = " + std::to_string(m_distance) + ")\n";
+		result += "\n";
 
 		if (!this->m_exiting_transitions.empty()) {
-			result += "\tExiting transitions:\n";
 			// Per tutte le label delle transizioni uscenti
 			for (auto &pair: m_exiting_transitions) {
 				string label = pair.first;
 				// Per tutti gli stati associati ad una label
 				for (S* state: pair.second) {
 					// Inserisco le informazioni riguardanti la transizione uscente
-					result += "\t\t━━(" + label + ")━━▶ " + state->getName() + '\n';
+					result += "\t━━┥" + label + "┝━━▶ " + state->getName() + '\n';
 				}
 			}
 		} else {

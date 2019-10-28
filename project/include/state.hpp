@@ -80,7 +80,6 @@ namespace translated_automata {
 		unsigned int getDistance();
 		void setDistance(unsigned int distance);
 		void initDistancesRecursively(int root_distance);
-	    void setBetterDistancesRecursively(int root_distance); /// XXX
 	    int getMinimumParentsDistance();
 		string toString() const;
 

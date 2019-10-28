@@ -47,6 +47,7 @@ namespace translated_automata {
 		Alphabet translate(Alphabet alpha);
 
 		string toString();
+		string toString(Alphabet &reference);
 
 	};
 

@@ -315,19 +315,23 @@ namespace translated_automata {
     }
 
     /**
-     * Stampa tutti gli stati appartenenti all'automa, evidenziando lo stato iniziale.
+     * Restituisce una descrizione testuale di tutti gli stati appartenenti all'automa,
+     * evidenziando lo stato iniziale.
      * Ogni stato deve essere stato istanziato correttamente.
      * Lo stato iniziale deve essere stato impostato correttamente.
      */
     template <class State>
-    void Automaton<State>::print() {
-    	std::cout << "AUTOMATON (size = " << std::to_string(m_states.size()) << ")\n";
-        std::cout << "Initial: " << m_initial_state->getName() << '\n';
+    string Automaton<State>::toString() {
+    	string result = "";
+    	result += "AUTOMATON (size = " + std::to_string(m_states.size()) + ")\n";
+        result += "Starting from state: " + m_initial_state->getName() + '\n';
 
         // Per ogni stato dell'automa
         for (State* s : m_states) {
-            std::cout << s->toString();
+            result += s->toString();
         }
+
+        return result;
     }
 
 //    /**

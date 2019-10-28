@@ -52,7 +52,7 @@ namespace translated_automata {
         const set<string>& getLabels();
         bool connectStates(State *from, State *to, string label);
         bool connectStates(string from, string to, string label);
-        void print();
+        string toString();
         bool operator==(Automaton<State>& other);
 
 	};

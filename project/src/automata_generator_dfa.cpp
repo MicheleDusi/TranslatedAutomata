@@ -4,12 +4,14 @@
  * Project: TranslatedAutomata
  *
  * File sorgente contenente la classe concreta "DFAGenerator", figlia della classe "AutomataGenerator<DFA>".
+ * Permette la generazione di un automa a stati finiti deterministico, secondo i parametri previsti dalla classe
+ * padre "AutomataGenerator".
  *
  ******************************************************************************/
 
 #include "automata_generator_dfa.hpp"
 
-#define DEBUG_MODE
+//#define DEBUG_MODE
 #include "debug.hpp"
 
 namespace translated_automata {
@@ -185,7 +187,7 @@ namespace translated_automata {
 				DEBUG_LOG("Elimino lo stato %s con poiché non ha labels inutilizzate", from->getName().c_str());
 				int previous_size = states.size();
 				states.erase(states.begin() + random_index);
-				DEBUG_ASSERT_TRUE( previous_size == states.size() - 1);
+				DEBUG_ASSERT_TRUE( previous_size < states.size());
 			}
 
 		} while (!from_state_has_unused_labels);

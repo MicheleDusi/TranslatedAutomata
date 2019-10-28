@@ -9,6 +9,7 @@
 
 #include "automata_generator_dfa.hpp"
 
+#define DEBUG_MODE
 #include "debug.hpp"
 
 namespace translated_automata {
@@ -52,6 +53,7 @@ namespace translated_automata {
 		 * (dove N è il numero di stati dell'automa). Questo numero, per come è stato costruito l'algoritmo,
 		 * garantisce la connessione. */
 		unsigned long int transitions_number = this->computeTransitionsNumber();
+		DEBUG_ASSERT_TRUE( transitions_number >= dfa->size() - 1 );
 
 		/* FASE (1) : Creazione di un albero di copertura
 		 *
@@ -69,17 +71,17 @@ namespace translated_automata {
 
 		/* 1.3) Parallelamente, si tiene traccia dei nodi non ancora marcati come "raggiungibili".
 		 * All'inizio tutti gli stati appartengono a questa lista, tranne il nodo iniziale. */
-		list<StateDFA*> unreached_queue = dfa->getStatesList();
-		unreached_queue.pop_front();
+		list<StateDFA*> unreached_states_queue = dfa->getStatesList();
+		unreached_states_queue.pop_front();
 
 		/* 1.4) Si estrae a caso uno stato "raggiungibile" e uno non "raggiungibile", e si crea una transizione
 		 * dal primo al secondo.
 		 * Una condizione importante è che lo stato "from" abbia ancora labels uscenti a disposizione per poter
 		 * generare la transizione. Se così non fosse, viene direttamente escluso dalla lista degli stati raggiungibili
 		 * poiché non più di alcuna utilità. */
-		while (!unreached_queue.empty()) {
+		while (!unreached_states_queue.empty()) {
 			StateDFA* from = this->getRandomStateWithUnusedLabels(reached_states, unused_labels);
-			StateDFA* to = unreached_queue.front();
+			StateDFA* to = unreached_states_queue.front();
 
 		/* 1.5) Oltre a ciò, viene anche estratta (ed eliminata) una label casuale fra quelle non utilizzate nello stato "from". */
 			string label = this->extractRandomUnusedLabel(unused_labels, from);
@@ -88,7 +90,7 @@ namespace translated_automata {
 
 		/* 1.6) Il secondo stato viene marcato come "raggiungibile". Viene perciò estratto dalla seconda coda e
 		 * inserito nella prima. */
-			unreached_queue.pop_front();
+			unreached_states_queue.pop_front();
 			reached_states.push_back(to);
 
 		/* 1.7) Se il numero corrente di transizioni è inferiore a N-1, si torna al punto (1.3).
@@ -176,10 +178,14 @@ namespace translated_automata {
 
 			// Verifica dell'esistenza di label inutilizzate ancora disponibili
 			if (unused_labels[from].size() > 0) {
+				DEBUG_LOG("Ho trovato lo stato %s con %lu labels non utilizzate", from->getName().c_str(), unused_labels[from].size());
 				from_state_has_unused_labels = true;
 			} else {
 				// Eliminazione dello stato dalla lista degli stati da cui attingere
+				DEBUG_LOG("Elimino lo stato %s con poiché non ha labels inutilizzate", from->getName().c_str());
+				int previous_size = states.size();
 				states.erase(states.begin() + random_index);
+				DEBUG_ASSERT_TRUE( previous_size == states.size() - 1);
 			}
 
 		} while (!from_state_has_unused_labels);
@@ -196,8 +202,12 @@ namespace translated_automata {
 			return NULL;
 		}
 		int label_random_index = rand() % unused_labels[state].size();
+		string extracted_label = unused_labels[state][label_random_index];
+		DEBUG_LOG("Estratta l'etichetta %s dallo stato %s", extracted_label.c_str(), state->getName().c_str());
+
+		// Cancellazione della label utilizzata
 		unused_labels[state].erase(unused_labels[state].begin() + label_random_index);
-		return (unused_labels[state][label_random_index]);
+		return extracted_label;
 	}
 
 	/**

@@ -1,8 +1,8 @@
 # TranslatedAutomata
-Repository per il progetto di ricerca sugli automi tradotti.
+Repository per il progetto di ricerca di tesi triennale sugli *automi tradotti*.
 
 ## Project
-Contiene tutti i file direttamente collegato con l'implementazione del progetto.
+Contiene i file sorgenti delle strutture dati e degli algoritmi, scritti in linguaggio C++.
 
 ## Testing
 Contiene i file di testing.

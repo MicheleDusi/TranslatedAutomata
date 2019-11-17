@@ -115,13 +115,17 @@ namespace translated_automata {
 	/**
 	 * Collega lo stato soggetto allo stato passato come parametro, con una transizione
 	 * etichettata dalla label "label" passata come parametro.
+	 * Nota: se la transizione esiste già, non viene aggiunta nuovamente.
 	 */
 	template <class S>
 	void State<S>::connectChild(string label, S* child)	{
-		// Aggiungo una transizione uscente da questo stato
-		m_exiting_transitions[label].insert(child);
-		// Aggiungo una transizione entrante allo stato di arrivo
-		child->m_incoming_transitions[label].insert(getThis());
+		// Se la transizione NON esiste già
+		if (m_exiting_transitions[label].find(child) == m_exiting_transitions[label].end()) {
+			// Aggiungo una transizione uscente da questo stato
+			m_exiting_transitions[label].insert(child);
+			// Aggiungo una transizione entrante allo stato di arrivo
+			child->m_incoming_transitions[label].insert(getThis());
+		}
 	}
 
 	/**
@@ -550,28 +554,36 @@ namespace translated_automata {
 		return result;
 	};
 
-	/**
-	 * Definisce un operatore "<" di confronto, basato sul confronto dei nomi.
-	 */
-	template <class S>
-	bool State<S>::operator<(const S &other) const	{
-		return getThis()->getName() < other.getName();
-	}
+//	/**
+//	 * Definisce un operatore "<" di confronto, basato sul confronto dei nomi.
+//	 */
+//	template <class S>
+//	bool State<S>::operator<(const S &other) const	{
+//		return getThis()->getName() < other.getName();
+//	}
+//
+//	/**
+//	 * Definisce un operatore di uguaglianza "==", basato sull'uguaglianza dei nomi.
+//	 */
+//	template <class S>
+//	bool State<S>::operator==(const S &other) const {
+//		return getThis()->getName() == other.getName();
+//	}
+//
+//	/**
+//	 * Definisce un operatore di disuguaglianza "!=", basato sul confronto dei nomi.
+//	 */
+//	template <class S>
+//	bool State<S>::operator!=(const S &other) const {
+//			return getThis()->getName() != other.getName();
+//	}
 
 	/**
-	 * Definisce un operatore di uguaglianza "==", basato sull'uguaglianza dei nomi.
+	 * Confronta due stati sulla base del loro nome.
 	 */
 	template <class S>
-	bool State<S>::operator==(const S &other) const {
-		return getThis()->getName() == other.getName();
-	}
-
-	/**
-	 * Definisce un operatore di disuguaglianza "!=", basato sul confronto dei nomi.
-	 */
-	template <class S>
-	bool State<S>::operator!=(const S &other) const {
-			return getThis()->getName() != other.getName();
+	int State<S>::compareNames(const S &other) const {
+		return getThis()->getName().compare(other.getName());
 	}
 
     /*************

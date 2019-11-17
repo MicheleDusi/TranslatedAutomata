@@ -47,13 +47,15 @@ namespace translated_automata {
         void setInitialState(string name);
         State* getInitialState();
         State* getState(string name);
+        const vector<State*> getStatesByName(string name);
         const list<State*> getStatesList();
         const vector<State*> getStatesVector();
         const set<string>& getLabels();
         bool connectStates(State *from, State *to, string label);
         bool connectStates(string from, string to, string label);
         string toString();
-        bool operator==(Automaton<State>& other);
+
+//        bool operator==(Automaton<State>& other);
 
 	};
 

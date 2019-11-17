@@ -151,7 +151,7 @@ namespace translated_automata {
 		// Finché la coda dei bud non si svuota
 		while (!buds.empty()) {
 
-			DEBUG_MARK_PHASE( Nuova iterazione per un nuovo bud ) {
+			DEBUG_MARK_PHASE( "Nuova iterazione per un nuovo bud" ) {
 
 			// Estrazione del primo elemento della coda
 			Bud current_bud = buds.front();
@@ -162,7 +162,10 @@ namespace translated_automata {
 			string current_label = current_bud.second;
 
 			DEBUG_LOG( "Bud corrente: (%s, %s)", current_dfa_state->getName().c_str(), current_label.c_str());
-			DEBUG_LOG( "Rimangono %lu buds nella lista", buds.size() );
+			DEBUG_LOG( "Rimangono %lu buds nella lista: ", buds.size() );
+			for (Bud b : buds) {
+				DEBUG_LOG( "\t(%s, %s)", b.first->getName().c_str(), b.second.c_str());
+			}
 
 			// Transizioni dello stato corrente
 			map<string, set<StateDFA*>> current_exiting_transitions = current_dfa_state->getExitingTransitions();
@@ -183,10 +186,12 @@ namespace translated_automata {
 				if (translated_dfa->hasState(l_closure_name)) { 																	/* RULE 1 */
 					DEBUG_LOG( "RULE 1" );
 
-
 					// Aggiunta della transizione dallo stato corrente a quello appena trovato
 					StateDFA* child = translated_dfa->getState(l_closure_name);
 					current_dfa_state->connectChild(current_label, child);
+					DEBUG_LOG("Creazione della transizione %s --(%s)--> %s",
+							current_dfa_state->getName().c_str(), current_label.c_str(), child->getName().c_str());
+
 					this->runDistanceRelocation(child, front_distance + 1);
 
 				}
@@ -203,6 +208,7 @@ namespace translated_automata {
 					// Per ogni transizione uscente dall'estensione, viene creato e aggiunto alla lista un nuovo Bud
 					// Nota: si sta prendendo a riferimento l'NFA associato
 					for (string label : new_state->getLabelsExitingFromExtension()) {
+						DEBUG_LOG("Aggiungo alla lista il bud (%s, %s)", new_state->getName().c_str(), label.c_str());
 						Bud new_bud = Bud(new_state, label);
 						buds.push_back(new_bud);
 					}
@@ -224,7 +230,8 @@ namespace translated_automata {
 					}
 
 					// Flag per la gestione delle condizioni
-					bool child_is_initial = (*child == *(translated_dfa->getInitialState()));
+					// (Effettuato mediante confronto di puntatori)
+					bool child_is_initial = (child == translated_dfa->getInitialState());
 
 					// Parametri per la gestione delle condizioni
 					current_dfa_state->setDistance(front_distance + 1);
@@ -240,7 +247,7 @@ namespace translated_automata {
 					if (!child_is_initial && child->getIncomingTransitionsCount() == 1) {												/* RULE 3 */
 						DEBUG_LOG( "RULE 3" );
 
-						DEBUG_MARK_PHASE( Extension Update )
+						DEBUG_MARK_PHASE( "Extension Update" )
 						// Aggiornamento dell'estensione
 						this->runExtensionUpdate(child, l_closure, buds, translated_dfa);
 
@@ -275,7 +282,7 @@ namespace translated_automata {
 							current_dfa_state->disconnectChild(current_label, child);
 							new_state->setDistance(front_distance + 1);
 
-							DEBUG_MARK_PHASE( Aggiunta di tutte le labels )
+							DEBUG_MARK_PHASE( "Aggiunta di tutte le labels" )
 							// Per ogni transizione uscente dall'estensione, viene creato e aggiunto alla lista un nuovo Bud
 							// Nota: si sta prendendo a riferimento l'NFA associato
 							for (string label : new_state->getLabelsExitingFromExtension()) {
@@ -301,6 +308,12 @@ namespace translated_automata {
 
 								DEBUG_LOG("Sto considerando la transizione :  %s --(%s)--> %s", parent->getName().c_str(), pair.first.c_str(), child->getName().c_str());
 
+								// Escludo la transizione corrente
+								if (parent == current_dfa_state && pair.first == current_label) {
+									DEBUG_LOG("Questa è la transizione corrente, non va considerata.");
+									continue;
+								}
+
 								// Preparazione delle informazioni sullo stato genitore
 								ExtensionDFA parent_x_closure = parent->computeLClosureOfExtension(pair.first);
 								string x_closure_name = ConstructedStateDFA::createNameFromExtension(parent_x_closure);
@@ -310,6 +323,7 @@ namespace translated_automata {
 								// Se lo stato genitore ha un'estensione differente dallo stato corrente
 								if (x_closure_name != l_closure_name) {
 
+									DEBUG_LOG("Le due estensioni sono differenti!");
 									DEBUG_LOG("Rimuovo la transizione :  %s --(%s)--> %s", parent->getName().c_str(), pair.first.c_str(), child->getName().c_str());
 									DEBUG_LOG("Aggiungo il BUD : (%s, %s)", parent->getName().c_str(), pair.first.c_str());
 
@@ -323,7 +337,7 @@ namespace translated_automata {
 							}
 						}
 
-						DEBUG_MARK_PHASE( Extension Update )
+						DEBUG_MARK_PHASE( "Extension Update" )
 						this->runExtensionUpdate(child, l_closure, buds, translated_dfa);
 					}
 				}
@@ -350,6 +364,7 @@ namespace translated_automata {
 
 			// Se la distanza "nuova" è inferiore
 			if (current_state->getDistance() > current.second) {
+				DEBUG_LOG("La distanza è stata effettivamente ridotta da %u a %u", current_state->getDistance(), current.second);
 				current_state->setDistance(current.second);
 
 				// Propago la modifica ai figli
@@ -395,7 +410,7 @@ namespace translated_automata {
 		for (StateNFA* nfa_state : difference_states) {
 			for (auto &trans : nfa_state->getExitingTransitionsRef()) {
 				string label = trans.first;
-				DEBUG_LOG("Devo aggiornare la transizione: %s --(%s)-->", nfa_state->getName().c_str(), label.c_str());
+				DEBUG_LOG("Devo aggiornare la transizione su N: %s --(%s)-->", nfa_state->getName().c_str(), label.c_str());
 
 
 				DEBUG_LOG("Verifico se il BUD (%s, %s) è nella lista dei buds", d_state->getName().c_str(), label.c_str());
@@ -411,6 +426,9 @@ namespace translated_automata {
 					DEBUG_LOG("Aggiungo il BUD (%s, %s) poiché NON è nella lista", d_state->getName().c_str(), label.c_str());
 					buds.push_back(Bud(d_state, label));
 				}
+				else {
+					DEBUG_LOG("NON aggiungo il BUD (%s, %s) poiché è già nella lista", d_state->getName().c_str(), label.c_str());
+				}
 			}
 		}
 
@@ -424,26 +442,23 @@ namespace translated_automata {
 
 		DEBUG_LOG("Verifico se esiste un altro stato in D con estensione pari a : %s", new_extension_name.c_str());
 
-		if (dfa->hasState(new_extension_name)) {
-			ConstructedStateDFA* equivalent_d_state = (ConstructedStateDFA*) dfa->getState(new_extension_name);
-			// Se lo stato trovato è equivalente a quello interessato, la procedura termina
-			if (equivalent_d_state == d_state) {
-				DEBUG_LOG("Esiste uno stato, ma è quello di prima");
-				return;
-			}
+		// Estrazione di tutti gli stati con il nome previsto
+		vector<StateDFA*> namesake_states = dfa->getStatesByName(new_extension_name);
 
-			DEBUG_LOG("Ho trovato un vecchio stato nell'automa con la stessa estensione!");
+		// Controllo se esiste più di uno stato con la medesima estensione
+		if (namesake_states.size() > 1) {
+			DEBUG_LOG("E' stato trovato più di uno stato con la stessa estensione \"%s\"", new_extension_name.c_str());
 
 			ConstructedStateDFA* min_dist_state;
 			ConstructedStateDFA* max_dist_state;
 
-			// Identificazione dello stato con distanza inferiore
-			if (d_state->getDistance() < equivalent_d_state->getDistance()) {
-				min_dist_state = d_state;
-				max_dist_state = equivalent_d_state;
+			// Identificazione dello stato con distanza minore / maggiore
+			if (namesake_states[0]->getDistance() < namesake_states[1]->getDistance()) {
+				min_dist_state = (ConstructedStateDFA*) namesake_states[0];
+				max_dist_state = (ConstructedStateDFA*) namesake_states[1];
 			} else {
-				min_dist_state = equivalent_d_state;
-				max_dist_state = d_state;
+				min_dist_state = (ConstructedStateDFA*) namesake_states[1];
+				max_dist_state = (ConstructedStateDFA*) namesake_states[0];
 			}
 
 			DEBUG_ASSERT_TRUE( min_dist_state->getDistance() <= max_dist_state->getDistance() );
@@ -459,18 +474,44 @@ namespace translated_automata {
 			max_dist_state->detachAllTransitions();					// Rimuove tutte le sue transizioni
 			DEBUG_ASSERT_TRUE( removed );
 
-			// All'interno della lista di bud, ogni occorrenza dello stato con dist.max. viene sostituita con quello con dist.min.
-			for (Bud bud : buds) {
-				if (bud.first == max_dist_state) {
-					bud.first = min_dist_state;
+			// All'interno della lista di bud, elimino ogni occorrenza allo stato con distanza massima,
+			// salvando tuttavia le label dei bud che erano presenti.
+			vector<string> max_dist_buds_labels;
+			auto bud = buds.begin();
+			while (bud != buds.end()) {
+			    if (bud->first == max_dist_state) {
+					DEBUG_LOG("Rimuovo (%s, %s) dalla lista dei bud, poiché legato allo stato omonimo con distanza massima",
+							bud->first->getName().c_str(), bud->second.c_str());
+					max_dist_buds_labels.push_back(bud->second);
+			        buds.erase(bud++);  // alternatively, i = items.erase(i);
+			    } else {
+			    	++bud;
+			    }
+			}
+			// Per tutte le label salvate, se il relativo bud legato allo stato con distanza minima NON è presente, lo aggiungo
+			for (string bud_label : max_dist_buds_labels) {
+				// Verifico se il bud è già presente
+				bool found_flag = false;
+				for (Bud bud : buds) {
+					if (bud.first == min_dist_state && bud.second == bud_label) {
+						found_flag = true;
+					}
+				}
+				// Se il bud NON è presente, lo aggiungo
+				if (!found_flag) {
+					buds.push_back(Bud(min_dist_state, bud_label));
 				}
 			}
 
-			// Procedura "Distance Relocation" su tutti i figli dello stato con dist.min, poiché i figli "adottati" dallo stato
+			// Distruzione dello stato con distanza massima
+			delete max_dist_state;
+
+			// Procedura "Distance Relocation" su tutti i figli dello stato con dist.min, poiché i figli acquisiti dallo stato
 			// con dist.max. devono essere modificati
 			list<pair<StateDFA*, int>> to_be_relocated_list;
 			for (auto &trans : min_dist_state->getExitingTransitionsRef()) {
 				for (StateDFA* child : trans.second) {
+					DEBUG_LOG("Aggiungo alla lista di cui fare la distance_relocation: (%s, %u)", child->getName().c_str(), min_dist_state->getDistance() + 1);
 					to_be_relocated_list.push_back(pair<StateDFA*, int>(child, min_dist_state->getDistance() + 1));
 				}
 			}

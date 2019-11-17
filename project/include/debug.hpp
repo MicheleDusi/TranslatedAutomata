@@ -23,7 +23,7 @@
  * Attiva o disattiva la modalità di DEBUG, a seconda che sia
  * rispettivamente decommentato o commentato.
  */
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 /***********************************************************/
 
@@ -54,10 +54,10 @@
 #define COLOR_CYAN( text ) 			"\033[1;36m" text "\033[0m"
 
 /** Tag facilmente identificabili per i messaggi di log */
-#define DEBUG_TAG 					TAG_BRACKETS( COLOR_CYAN( "DEBUG" ) )
-#define SUCCESS_TAG 				TAG_BRACKETS( COLOR_GREEN( "SUCCESS" ) )
-#define FAIL_TAG					TAG_BRACKETS( COLOR_YELLOW( "FAIL" ) )
-#define ERROR_TAG					TAG_BRACKETS( COLOR_RED( "ERROR" ) )
+#define DEBUG_TAG 					TAG_BRACKETS( COLOR_CYAN  ( "DEBUG"   ) )
+#define SUCCESS_TAG 				TAG_BRACKETS( COLOR_GREEN ( "SUCCESS" ) )
+#define FAIL_TAG					TAG_BRACKETS( COLOR_YELLOW( "FAIL"    ) )
+#define ERROR_TAG					TAG_BRACKETS( COLOR_RED   ( "ERROR"   ) )
 
 
 // Verifiche sull'attivazione della modalità debug.
@@ -265,10 +265,9 @@
 #define _DEBUG_MARK_PHASE( phase_name, counter_id)												\
 	int UNIQUE_ID = 0;																			\
 	for ( 																						\
-			DEBUG_LOG_SUCCESS( "entered phase \"%s\"", COLOR_PURPLE( #phase_name ) );			\
+			DEBUG_ENTERING_PHASE( phase_name );													\
 			UNIQUE_ID < 1; 																		\
-			DEBUG_LOG_SUCCESS( "ended phase \"%s\"", COLOR_PURPLE( #phase_name ) )				\
-				IF_DEBUG_ACTIVE(,) UNIQUE_ID++													\
+			DEBUG_EXITING_PHASE( phase_name ), UNIQUE_ID++										\
 		)
 	/* Commento:
 	 * L'idea è utilizzare il costrutto "for" per eseguire un pezzo di codice PRIMA
@@ -276,6 +275,12 @@
 	 * Il ciclo deve risultare "trasparente" all'esterno, quindi viene utilizzata una
 	 * variabile generata casualmente per eseguire una ed una sola iterazione.
 	 */
+
+#define DEBUG_ENTERING_PHASE( phase_name )														\
+	DEBUG_LOG_SUCCESS( "entered phase \"%s\"", COLOR_PURPLE( phase_name ) )
+
+#define DEBUG_EXITING_PHASE( phase_name )														\
+	DEBUG_LOG_SUCCESS( "ended phase \"%s\"",   COLOR_PURPLE( phase_name ) )
 
 #endif /* INCLUDE_DEBUG_HPP_ */
 

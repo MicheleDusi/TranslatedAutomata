@@ -15,6 +15,8 @@
 
 #include "constructed_state_dfa.hpp"
 
+#include "debug.hpp"
+
 namespace translated_automata {
 
 	/**
@@ -111,16 +113,24 @@ namespace translated_automata {
 	 * dell'estensione.
 	 */
 	set<string>& ConstructedStateDFA::getLabelsExitingFromExtension() {
-		static set<string> labels;
+		set<string> *labels = new set<string>;
+		DEBUG_ASSERT_TRUE(labels->size() == 0);
 
 		// Per ciascuno stato dell'estensione
 		for (StateNFA* member : m_extension) {
+			DEBUG_LOG("Per lo stato dell'estensione \"%s\"", member->getName().c_str());
 			// Inserisco le label delle transizioni uscenti
 			for (auto &pair: member->getExitingTransitionsRef()) {
-				labels.insert(pair.first);
+				// Se la label marca almeno una transizione
+				DEBUG_LOG("Numero di transizioni marcate dalla label %s: %lu", pair.first.c_str(), pair.second.size());
+				if (pair.second.size() > 0) {
+					DEBUG_LOG("Aggiungo la label \"%s\"", pair.first.c_str());
+					labels->insert(pair.first);
+				}
 			}
 		}
-		return labels;
+		DEBUG_LOG("Lunghezza finale dell'insieme di labels: %lu", labels->size());
+		return *labels;
 	}
 
 	/**

@@ -83,9 +83,10 @@ namespace translated_automata {
 	    int getMinimumParentsDistance();
 		string toString() const;
 
-		bool operator<(const S &other) const;
-		bool operator==(const S &other) const;
-		bool operator!=(const S &other) const;
+//		bool operator<(const S &other) const;
+//		bool operator==(const S &other) const;
+//		bool operator!=(const S &other) const;
+		int compareNames(const S &other) const;
 
         struct Comparator {
             bool operator() (const S* lhs, const S* rhs) const {

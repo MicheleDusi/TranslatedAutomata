@@ -24,10 +24,10 @@
 #include "translation.hpp"
 #include "translation_generator.hpp"
 
-#define ALPHABET_CARDINALITY 				10
+#define ALPHABET_CARDINALITY 				3
 #define AUTOMATON_SIZE 						5
 #define AUTOMATON_FINAL_PROBABILITY 		.3
-#define AUTOMATON_TRANSITION_PERCENTAGE 	.2
+#define AUTOMATON_TRANSITION_PERCENTAGE 	.8
 #define TRANSLATION_MIXING_FACTOR 			.7333
 #define TRANSLATION_OFFSET 					13.25
 
@@ -37,7 +37,7 @@ using namespace translated_automata;
 
 int main(int argc, char **argv) {
 
-	DEBUG_MARK_PHASE( Translated Automaton - Main ) {
+	DEBUG_MARK_PHASE( "Translated Automaton - Main" ) {
 
 		// Generazione dell'automa
 		DFAGenerator *gen = new DFAGenerator();
@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
 		std::cout << tau->toString(alpha);
 		std::cout << "\n - - - - - \n";
 
-		DEBUG_MARK_PHASE( Embedded Subset Construction ) {
+		DEBUG_MARK_PHASE( "Embedded Subset Construction" ) {
 
 			// Algoritmo "Embedded Subset Construction
 			EmbeddedSubsetConstruction *esc = new EmbeddedSubsetConstruction();

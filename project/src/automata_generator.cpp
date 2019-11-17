@@ -51,7 +51,10 @@ namespace translated_automata {
 		double m_final_probability = default_final_probability;
 
 		// Generazione del seme casuale
-		srand(time(0));
+		unsigned long int seed = time(0);
+//		unsigned long int seed = 1574001433;
+		srand(seed);
+		std::cout << "Seed = " << seed << std::endl;
 	}
 
 	/**

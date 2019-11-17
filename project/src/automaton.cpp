@@ -75,10 +75,14 @@ namespace translated_automata {
     }
 
     /**
-     * Ritorna - se presente - lo stato corrispondente alla
-     * label passata come parametro.
-     * In caso questo stato non faccia parte dell'automa, viene
-     * restituito un puntatore NULL.
+     * Ritorna - se presente - lo stato corrispondente alla label passata come parametro.
+     * In caso questo stato non faccia parte dell'automa, viene restituito un puntatore NULL.
+     *
+     * Nota: In alcuni casi (durante l'esecuzione di algoritmi di costruzione) esiste più di uno stato
+     * con lo stesso nome. Questa condizione si verifica solo all'interno di un'esecuzione e viene "corretta" al termine,
+     * ma tuttavia non permette il corretto funzionamento di questo metodo (che invece restituisce il primo stato trovato).
+     * Per evitare l'insorgere di problematiche legate a stati omonimi, si consiglia di utilizzare il metodo
+     * "getStatesByName" che restituisce un insieme contenente TUTTI gli stati con il medesimo nome.
      */
     template <class State>
     State* Automaton<State>::getState(string name) {
@@ -88,6 +92,23 @@ namespace translated_automata {
     		}
     	}
     	return NULL;
+    }
+
+    /**
+     * Restituisce l'insieme di tutti gli stati aventi il nome passato come parametro.
+     * Normalmente questo metodo restituisce un unico stato, poiché gli stati sono unici per nome.
+     * Tuttavia, durante l'esecuzione di algoritmi di costruzione, l'automa potrebbe trovarsi in condizioni particolari per cui
+     * esiste più di uno stato con lo stesso nome. In quel caso, è bene utilizzare questo metodo e non "getState".
+     */
+    template <class State>
+    const vector<State*> Automaton<State>::getStatesByName(string name) {
+    	vector<State*> namesake_states; // Insieme di stati omonimi
+    	for (State* s : m_states) {
+    		if (s->getName() == name) {
+    			namesake_states.push_back(s);
+    		}
+    	}
+    	return namesake_states;
     }
 
     /**

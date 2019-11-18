@@ -239,7 +239,7 @@
  *
  * Esempio di utilizzo:
  *
- *		DEBUG_MARK_PHASE( nome_della_fase_da_marcare ) {
+ *		DEBUG_MARK_PHASE( nome_della_fase_da_marcare , con , eventuali , parametri ) {
  *			...
  * 			statements
  *			...
@@ -257,17 +257,17 @@
  * non funzionare, poiché la macro function utilizza "__LINE__" e necessita che questo
  * valore sia diverso ad ogni chiamata.
  */
-#define DEBUG_MARK_PHASE( phase_name )															\
+#define DEBUG_MARK_PHASE( phase_name, ... )														\
 	IF_DEBUG_ACTIVE(																			\
-		_DEBUG_MARK_PHASE( phase_name, UNIQUE_ID )												\
+		_DEBUG_MARK_PHASE( UNIQUE_ID, phase_name, ##__VA_ARGS__ )								\
 	)
 
-#define _DEBUG_MARK_PHASE( phase_name, counter_id)												\
+#define _DEBUG_MARK_PHASE( counter_id, phase_name, ... )										\
 	int UNIQUE_ID = 0;																			\
 	for ( 																						\
-			DEBUG_ENTERING_PHASE( phase_name );													\
+			DEBUG_ENTERING_PHASE( phase_name, ##__VA_ARGS__ );									\
 			UNIQUE_ID < 1; 																		\
-			DEBUG_EXITING_PHASE( phase_name ), UNIQUE_ID++										\
+			DEBUG_EXITING_PHASE( phase_name, ##__VA_ARGS__ ), UNIQUE_ID++						\
 		)
 	/* Commento:
 	 * L'idea è utilizzare il costrutto "for" per eseguire un pezzo di codice PRIMA
@@ -276,11 +276,11 @@
 	 * variabile generata casualmente per eseguire una ed una sola iterazione.
 	 */
 
-#define DEBUG_ENTERING_PHASE( phase_name )														\
-	DEBUG_LOG_SUCCESS( "entered phase \"%s\"", COLOR_PURPLE( phase_name ) )
+#define DEBUG_ENTERING_PHASE( phase_name, ... )													\
+	DEBUG_LOG_SUCCESS( "Entering phase \"" COLOR_PURPLE( phase_name ) "\"", ##__VA_ARGS__ )
 
-#define DEBUG_EXITING_PHASE( phase_name )														\
-	DEBUG_LOG_SUCCESS( "ended phase \"%s\"",   COLOR_PURPLE( phase_name ) )
+#define DEBUG_EXITING_PHASE( phase_name, ... )													\
+	DEBUG_LOG_SUCCESS( "Exiting phase \"" COLOR_PURPLE( phase_name ) "\"", ##__VA_ARGS__ )
 
 #endif /* INCLUDE_DEBUG_HPP_ */
 

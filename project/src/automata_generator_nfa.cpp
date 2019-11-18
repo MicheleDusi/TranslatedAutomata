@@ -23,17 +23,16 @@ namespace translated_automata {
 	/**
 	 * Permette la creazione di un NFA secondo i parametri impostati tramite i metodi setter.
 	 */
-	NFA* NFAGenerator::generateRandomAutomaton() {
+	NFA NFAGenerator::generateRandomAutomaton() {
 		// Creo l'NFA
-		NFA* nfa = new NFA();
-		DEBUG_ASSERT_NOT_NULL(nfa);
+		NFA nfa = NFA();
 
 		// Generazione degli stati
 		this->generateStates(nfa);
 
 		// Imposto lo stato iniziale
-		StateNFA *initial_state = nfa->getStatesList().front();		// Nota: in questo caso sto assumendo (correttamente) che lo stato che voglio impostare sia il primo in ordine alfabetico
-		nfa->setInitialState(initial_state);
+		StateNFA *initial_state = nfa.getStatesList().front();		// Nota: in questo caso sto assumendo (correttamente) che lo stato che voglio impostare sia il primo in ordine alfabetico
+		nfa.setInitialState(initial_state);
 
 		// Creazione delle transizioni
 
@@ -60,7 +59,7 @@ namespace translated_automata {
 
 		/* 1.2) Parallelamente, si tiene traccia dei nodi non ancora marcati come "raggiungibili".
 		 * All'inizio tutti gli stati appartengono a questa lista, tranne il nodo iniziale. */
-		list<StateNFA*> unreached_queue = nfa->getStatesList();
+		list<StateNFA*> unreached_queue = nfa.getStatesList();
 		unreached_queue.pop_front();
 
 		/* 1.3) Si estrae a caso uno stato "raggiungibile" e uno non "raggiungibile", e si crea una transizione
@@ -69,7 +68,7 @@ namespace translated_automata {
 			StateNFA* from = reached_states[rand() % reached_states.size()];
 			StateNFA* to = unreached_queue.front();
 			string label = getRandomLabelFromAlphabet();
-			nfa->connectStates(from, to, label);
+			nfa.connectStates(from, to, label);
 
 		/* 1.4) Il secondo stato viene marcato come "raggiungibile". Viene perciò estratto dalla seconda coda e
 		 * inserito nella prima. */
@@ -93,7 +92,7 @@ namespace translated_automata {
 			StateNFA* from = this->getRandomState(nfa);
 			StateNFA* to = this->getRandomState(nfa);
 			string label = getRandomLabelFromAlphabet();
-			nfa->connectStates(from, to, label);
+			nfa.connectStates(from, to, label);
 		}
 
 		return nfa;
@@ -106,7 +105,7 @@ namespace translated_automata {
 	 * Gli stati sono in numero pari alla dimensione prevista dai parametri dell'oggetto
 	 * NFAGenerator.
 	 */
-	void NFAGenerator::generateStates(NFA* nfa) {
+	void NFAGenerator::generateStates(NFA& nfa) {
 		// Flag per l'esistenza di almeno uno stato final
 		bool hasFinalStates = false;
 
@@ -120,9 +119,9 @@ namespace translated_automata {
 
 			// Creo lo stato e lo aggiungo all'NFA
 			StateNFA *state = new StateNFA(name, final);
-			nfa->addState(state);
+			nfa.addState(state);
 		}
-		DEBUG_ASSERT_TRUE(nfa->size() == this->getSize());
+		DEBUG_ASSERT_TRUE(nfa.size() == this->getSize());
 
 		// Aggiunta forzata di almeno uno stato finale
 		if (!hasFinalStates) {
@@ -133,8 +132,8 @@ namespace translated_automata {
 	/**
 	 * Restituisce uno stato casuale all'interno della lista di stati dell'automa.
 	 */
-	StateNFA* NFAGenerator::getRandomState(NFA* nfa) {
-		vector<StateNFA*> states = nfa->getStatesVector();
+	StateNFA* NFAGenerator::getRandomState(NFA& nfa) {
+		vector<StateNFA*> states = nfa.getStatesVector();
 		return states.at(rand() % states.size());
 	}
 

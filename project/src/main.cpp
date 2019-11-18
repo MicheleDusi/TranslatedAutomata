@@ -46,20 +46,20 @@ int main(int argc, char **argv) {
 		gen->setSize(AUTOMATON_SIZE);
 		gen->setFinalProbability(AUTOMATON_FINAL_PROBABILITY);
 		gen->setTransitionPercentage(AUTOMATON_TRANSITION_PERCENTAGE);
-		DFA* dfa = gen->generateRandomAutomaton();
+		DFA dfa = gen->generateRandomAutomaton();
 
 		// Stampa iniziale
-		std::cout << dfa->toString();
+		std::cout << dfa.toString();
 		std::cout << "\n - - - - - \n";
 
 		// Generazione della traduzione
 		TranslationGenerator* t_gen = new TranslationGenerator();
 		t_gen->setMixingFactor(TRANSLATION_MIXING_FACTOR);
 		t_gen->setOffset(TRANSLATION_OFFSET);
-		Translation *tau = t_gen->generateTranslation(alpha);
+		Translation tau = t_gen->generateTranslation(alpha);
 
 		// Stampa della traduzione
-		std::cout << tau->toString(alpha);
+		std::cout << tau.toString(alpha);
 		std::cout << "\n - - - - - \n";
 
 		DEBUG_MARK_PHASE( "Embedded Subset Construction" ) {
@@ -67,10 +67,10 @@ int main(int argc, char **argv) {
 			// Algoritmo "Embedded Subset Construction
 			EmbeddedSubsetConstruction *esc = new EmbeddedSubsetConstruction();
 
-			DFA* translated_dfa = esc->run(dfa, tau);
+			DFA translated_dfa = esc->run(dfa, tau);
 
 			// Stampa del risultato
-			std::cout << translated_dfa->toString();
+			std::cout << translated_dfa.toString();
 
 		}
 

@@ -21,17 +21,17 @@ namespace translated_automata {
 	class EmbeddedSubsetConstruction {
 
 	private:
-		tuple<NFA*, DFA*, list<Bud>> runAutomatonTranslation(DFA *automaton, Translation *translation);
-		void runBudProcessing(NFA* translated_nfa, DFA* translated_dfa, list<Bud> buds);
+		void runAutomatonTranslation(DFA& automaton, Translation& translation, NFA& translated_nfa, DFA& translated_dfa, list<Bud>& buds_list);
+		void runBudProcessing(NFA& translated_nfa, DFA& translated_dfa, list<Bud>& buds);
 		void runDistanceRelocation(list<pair<StateDFA*, int>> relocation_sequence);
 		void runDistanceRelocation(StateDFA* state, int new_distance);
-		void runExtensionUpdate(ConstructedStateDFA* state, ExtensionDFA new_extension, list<Bud>& buds, DFA* dfa);
+		void runExtensionUpdate(ConstructedStateDFA* state, ExtensionDFA& new_extension, list<Bud>& buds, DFA& dfa);
 
 	public:
 		EmbeddedSubsetConstruction();
 		virtual ~EmbeddedSubsetConstruction();
 
-		DFA* run(DFA* dfa, Translation* tau);
+		DFA run(DFA& original_dfa, Translation& tau);
 
 	};
 

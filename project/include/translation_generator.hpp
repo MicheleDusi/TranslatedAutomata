@@ -33,7 +33,7 @@ namespace translated_automata {
 		void setMixingFactor(double mixing_factor);
 		void setOffset(double offset);
 
-		Translation* generateTranslation(Alphabet domain);
+		Translation generateTranslation(Alphabet& domain);
 
 	};
 

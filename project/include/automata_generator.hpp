@@ -68,7 +68,7 @@ namespace translated_automata {
 		void setFinalProbability(double probability);
 
 		Alphabet generateAlphabet(const char *chars, unsigned int cardinality);
-		virtual Automaton * generateRandomAutomaton() = 0;
+		virtual Automaton generateRandomAutomaton() = 0;
 
 	};
 

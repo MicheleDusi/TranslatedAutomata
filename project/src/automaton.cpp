@@ -250,7 +250,7 @@ namespace translated_automata {
     template <class State>
     set<State*> Automaton<State>::removeUnreachableStates() {
     	// Creo l'insieme di tutti gli stati dell'automa
-        set<State*> unreachable = set<State*>(m_states);
+        set<State*> unreachable = set<State*>(m_states.begin(), m_states.end());
 
         // Lavoro per differenza: rimuovo dall'insieme tutti gli stati raggiungibili
         removeReachableStates(m_initial_state, unreachable);
@@ -272,11 +272,7 @@ namespace translated_automata {
      */
     template <class State>
     const list<State*> Automaton<State>::getStatesList() {
-    	list<State*> states_list;
-    	for (State* s : m_states) {
-    		states_list.push_back(s);
-    	}
-        return states_list;
+    	return list<State*>(m_states.begin(), m_states.end());
     }
 
     /**
@@ -286,11 +282,7 @@ namespace translated_automata {
      */
     template <class State>
     const vector<State*> Automaton<State>::getStatesVector() {
-    	vector<State*> states_vector;
-		for (State* s : m_states) {
-			states_vector.push_back(s);
-		}
-		return states_vector;
+    	return vector<State*>(m_states.begin(), m_states.end());
     }
 
     /**
@@ -355,38 +347,36 @@ namespace translated_automata {
         return result;
     }
 
-//    /**
-//     * Operatore di uguaglianza per automi.
-//     */
-//    template <class State>
-//    bool Automaton<State>::operator==(Automaton<State>& other) {
-//    	// Se gli stati iniziali non sono uguali, certamente i due automi non sono uguali
-//        if (*m_initial_state != *other.m_initial_state) {
-//        	return false;
-//        }
-//
-//        // Se gli automi non hanno la stessa dimensione (= numero di stati), allora non sono certamente uguali
-//        if (m_states.size() != other.m_states.size()) {
-//        	return false;
-//        }
-//
-//        // Effettuo il confronto stato per stato dei due automi.
-//        // Essendo gli insiemi ordinati, posso basarmi sullo scorrimento degli stati dei due insiemi.
-//        // TODO CORREGGERE
-//        auto ia = m_states.begin(), ib = other.m_states.begin();
-//
-//        while (ia != m_states.end() && ib != m_states.end()) {
-//            if (*ia != *ib) {
-//            	return false;
-//            } else if (ia->hasSameTransitions(ib)) {
-//            	return false;
-//            }
-//
-//            ++ia; ++ib;
-//        }
-//
-//        return true;
-//    }
+    /**
+     * Operatore di uguaglianza per automi.
+     */
+    template <class State>
+    bool Automaton<State>::operator==(Automaton<State>& other) {
+    	// Se gli stati iniziali non sono uguali, certamente i due automi non sono uguali
+        if (*m_initial_state != *other.m_initial_state) {
+        	return false;
+        }
+
+        // Se gli automi non hanno la stessa dimensione (= numero di stati), allora non sono certamente uguali
+        if (m_states.size() != other.m_states.size()) {
+        	return false;
+        }
+
+        // Effettuo il confronto stato per stato dei due automi.
+        // Essendo gli insiemi ordinati, posso basarmi sullo scorrimento parallelo degli stati dei due insiemi.
+        for (	auto ia = m_states.begin(), ib = other.m_states.begin();
+        		ia != m_states.end() && ib != m_states.end();
+        		++ia, ++ib) {
+
+            if (*ia != *ib) {
+            	return false;
+            } else if (!(*ia)->hasSameTransitions(*ib)) {
+            	return false;
+            }
+        }
+
+        return true;
+    }
 
     /*************
      * Nota: essendo la classe Automaton parametrizzata sul tipo "State",

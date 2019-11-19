@@ -554,37 +554,37 @@ namespace translated_automata {
 		return result;
 	};
 
-//	/**
-//	 * Definisce un operatore "<" di confronto, basato sul confronto dei nomi.
-//	 */
-//	template <class S>
-//	bool State<S>::operator<(const S &other) const	{
-//		return getThis()->getName() < other.getName();
-//	}
-//
-//	/**
-//	 * Definisce un operatore di uguaglianza "==", basato sull'uguaglianza dei nomi.
-//	 */
-//	template <class S>
-//	bool State<S>::operator==(const S &other) const {
-//		return getThis()->getName() == other.getName();
-//	}
-//
-//	/**
-//	 * Definisce un operatore di disuguaglianza "!=", basato sul confronto dei nomi.
-//	 */
-//	template <class S>
-//	bool State<S>::operator!=(const S &other) const {
-//			return getThis()->getName() != other.getName();
-//	}
+	/**
+	 * Definisce un operatore "<" di confronto, basato sul confronto dei nomi.
+	 */
+	template <class S>
+	bool State<S>::operator<(const S &other) const	{
+		return getThis()->getName() < other.getName();
+	}
+
+	/**
+	 * Definisce un operatore di uguaglianza "==", basato sull'uguaglianza dei nomi.
+	 */
+	template <class S>
+	bool State<S>::operator==(const S &other) const {
+		return getThis()->getName() == other.getName();
+	}
+
+	/**
+	 * Definisce un operatore di disuguaglianza "!=", basato sul confronto dei nomi.
+	 */
+	template <class S>
+	bool State<S>::operator!=(const S &other) const {
+			return getThis()->getName() != other.getName();
+	}
 
 	/**
 	 * Confronta due stati sulla base del loro nome.
 	 */
-	template <class S>
-	int State<S>::compareNames(const S &other) const {
-		return getThis()->getName().compare(other.getName());
-	}
+//	template <class S>
+//	int State<S>::compareNames(const S &other) const {
+//		return getThis()->getName().compare(other.getName());
+//	}
 
     /*************
      * Nota: essendo la classe State parametrizzata sul tipo "S",

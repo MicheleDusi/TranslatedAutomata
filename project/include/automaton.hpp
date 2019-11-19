@@ -21,12 +21,13 @@ namespace translated_automata {
 
 	using std::vector;
 	using std::list;
+	using std::multiset;
 
 	template <class State>
 	class Automaton {
 
 	private:
-		set<State*> m_states;
+		multiset<State*> m_states;
 		State *m_initial_state;
 
         void removeReachableStates(State* s, set<State*> &states); // INUTILE
@@ -55,7 +56,7 @@ namespace translated_automata {
         bool connectStates(string from, string to, string label);
         string toString();
 
-//        bool operator==(Automaton<State>& other);
+        bool operator==(Automaton<State>& other);
 
 	};
 

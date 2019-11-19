@@ -3,13 +3,8 @@
  *
  * Project: TranslatedAutomata
  *
- * Semplice libreria che fornisce una comoda implementazione
- * delle più comuni funzioni di debug sotto forma di MACRO.
- *
- * Per attivare la modalità di debug -> agire sulla macro
- * DEBUG_MODE facendo in modo che sia definita (si veda sotto).
- * Per disattivare la modalità di debug -> agire sulla macro
- * DEBUG_MODE commentando la riga della sua definizione.
+ * Implementazioni delle funzioni ausiliarie di debug, che non possono essere
+ * rese come MACRO per via dell'utilizzo di strutture dati specifiche.
  *
  ******************************************************************************/
 

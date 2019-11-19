@@ -24,12 +24,12 @@
 #include "translation.hpp"
 #include "translation_generator.hpp"
 
-#define ALPHABET_CARDINALITY 				3
-#define AUTOMATON_SIZE 						3
+#define ALPHABET_CARDINALITY 				4
+#define AUTOMATON_SIZE 						6
 #define AUTOMATON_FINAL_PROBABILITY 		.3
 #define AUTOMATON_TRANSITION_PERCENTAGE 	.5
-#define TRANSLATION_MIXING_FACTOR 			.7333
-#define TRANSLATION_OFFSET 					13.25
+#define TRANSLATION_MIXING_FACTOR 			.5
+#define TRANSLATION_OFFSET 					3
 
 using std::set;
 

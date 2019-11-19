@@ -26,7 +26,7 @@ namespace translated_automata {
 	 * Attiva o disattiva la modalità di DEBUG, a seconda che sia
 	 * rispettivamente decommentato o commentato.
 	 */
-	#define DEBUG_MODE
+//	#define DEBUG_MODE
 
 	/***********************************************************/
 

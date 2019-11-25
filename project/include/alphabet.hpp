@@ -12,6 +12,9 @@
  * Questa soluzione permette una maggiore versatilità e non limita la cardinalità
  * dell'alfabeto al numero di lettere dell'alfabeto latino.
  *
+ * Questo header contiene anche la definizione della label epsilon, sebbene una label
+ * epsilon non sia mai contenuta all'interno dell'alfabeto.
+ *
  ******************************************************************************/
 
 #ifndef INCLUDE_ALPHABET_HPP_
@@ -19,6 +22,11 @@
 
 #include <string>
 #include <vector>
+
+// Definizione della label espilon
+#define EPSILON ""
+#define EPSILON_PRINT "\033[96mε\033[0m"
+#define SHOW( label ) ((label == EPSILON) ? (EPSILON_PRINT) : (label))
 
 namespace translated_automata {
 

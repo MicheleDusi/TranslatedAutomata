@@ -56,6 +56,7 @@ int main(int argc, char **argv) {
 		TranslationGenerator* t_gen = new TranslationGenerator();
 		t_gen->setMixingFactor(TRANSLATION_MIXING_FACTOR);
 		t_gen->setOffset(TRANSLATION_OFFSET);
+		t_gen->setEpsilonPercentage(0.25);
 		Translation tau = t_gen->generateTranslation(alpha);
 
 		// Stampa della traduzione

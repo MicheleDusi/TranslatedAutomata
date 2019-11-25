@@ -18,6 +18,7 @@
 #include <map>
 #include <set>
 
+#include "alphabet.hpp"
 #include "debug.hpp"
 #include "state_dfa.hpp"
 #include "state_nfa.hpp"
@@ -529,7 +530,7 @@ namespace translated_automata {
 				// Per tutti gli stati associati ad una label
 				for (S* state: pair.second) {
 					// Inserisco le informazioni riguardanti la transizione uscente
-					result += "\t━━┥" + label + "┝━━▶ " + state->getName() + '\n';
+					result += "\t━━┥" + SHOW(label) + "┝━━▶ " + state->getName() + '\n';
 				}
 			}
 		} else {

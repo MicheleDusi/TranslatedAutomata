@@ -19,11 +19,13 @@ namespace translated_automata {
 
 	const double TranslationGenerator::default_mixing_factor = 1.;
 	const double TranslationGenerator::default_offset = 0.;
+	const double TranslationGenerator::default_epsilon_percentage = 0.;
 
 	/** Costruttore */
 	TranslationGenerator::TranslationGenerator() {
 		this->m_mixing_factor = default_mixing_factor;
 		this->m_offset = default_offset;
+		this->m_epsilon_percentage = default_epsilon_percentage;
 	}
 
 	/** Distruttore */
@@ -41,6 +43,13 @@ namespace translated_automata {
 	 */
 	double TranslationGenerator::getOffset() {
 		return this->m_offset;
+	}
+
+	/**
+	 * Getter per la percentuale di label mappate su epsilon.
+	 */
+	double TranslationGenerator::getEpsilonPercentage() {
+		return this->m_epsilon_percentage;
 	}
 
 	/**
@@ -85,6 +94,25 @@ namespace translated_automata {
 	}
 
 	/**
+	 * Setter per la percentuale di label mappate su epsilon.
+	 *
+	 * La percentuale di epsilon in una traduzione esprime il rapporto fra il numero di epsilon del codominio
+	 * e la cardinalità del codominio.
+	 * Questo significa che:
+	 * 	· ep = 0 --> La traduzione non tradurrà alcun simbolo in epsilon (non saranno presenti epsilon nell'insieme immagine).
+	 * 	· ep = 1 --> La traduzione tradurrà ogni simbolo dell'alfabeto in epsilon (l'insieme immagine sarà composto solo da epsilon).
+	 *
+	 * Nota: il valore inserito verrà forzato all'intervallo [0;1].
+	 */
+	void TranslationGenerator::setEpsilonPercentage(double epsilon_percentage) {
+		this->m_epsilon_percentage = (epsilon_percentage < 0) ?
+				(0) :
+				((epsilon_percentage > 1) ?
+						(1) :
+						(epsilon_percentage));
+	}
+
+	/**
 	 * Genera casualmente e restituisce una traduzione sull'alfabeto passato come parametro.
 	 * La generazione viene effettuata secondo i parametri pre-impostati con gli altri metodi
 	 * della classe (come il Mixing Factor, l'Offset, etc..).
@@ -100,6 +128,9 @@ namespace translated_automata {
 		// Associazione delle stringhe tradotte
 		for (int i = 0; i < domain.size(); i++) {
 			translation_map[domain[i]] = domain[(int) (std::fmod(i * reduced_mixing_factor + reduced_offset, cardinality))];
+		}
+		for (int i = 0; i < domain.size() * m_epsilon_percentage; i++) {
+			translation_map[domain[i]] = EPSILON;
 		}
 
 		// Istanziazione dell'oggetto Translation

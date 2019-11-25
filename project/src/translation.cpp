@@ -105,7 +105,7 @@ namespace translated_automata {
 	string Translation::toString() {
 		string s = "Translation:\n";
 		for (auto &pair : this->m_translation_map) {
-			s += " " + pair.first + " ⟼   " + pair.second + "\n";
+			s += " " + SHOW(pair.first) + " ⟼   " + SHOW(pair.second) + "\n";
 		}
 		if (this->m_translation_map.empty()) {
 			s += "No explicit associations.";
@@ -121,7 +121,7 @@ namespace translated_automata {
 	string Translation::toString(Alphabet &reference) {
 		string s = "Translation:\n";
 		for (auto label : reference) {
-			s += " " + label + " ⟼   " + this->translate(label) + "\n";
+			s += " " + SHOW(label) + " ⟼   " + SHOW(this->translate(label)) + "\n";
 		}
 		if (reference.empty()) {
 			s += "No labels in the alphabet.";

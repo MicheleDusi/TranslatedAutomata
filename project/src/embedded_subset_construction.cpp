@@ -14,7 +14,6 @@
 
 #include <algorithm>
 
-//#define DEBUG_MODE
 #include "debug.hpp"
 
 namespace translated_automata {
@@ -293,10 +292,18 @@ namespace translated_automata {
 					else {																												/* RULE 6 */
 						DEBUG_LOG( "RULE 6" );
 
+						set<std::pair<ConstructedStateDFA*, string>> transitions_to_remove = set<std::pair<ConstructedStateDFA*, string>>();
+
 						// Per tutte le transizioni ENTRANTI nel figlio
 						for (auto &pair : child->getIncomingTransitionsRef()) {
-							for (StateDFA* parent_ : pair.second) {
-								ConstructedStateDFA* parent = (ConstructedStateDFA*) parent_;
+//						for (auto pair_iterator = child->getIncomingTransitions().begin();
+//								pair_iterator != child->getIncomingTransitions().end();
+//								pair_iterator++) {
+//							auto &pair = *pair_iterator;
+
+//							for (StateDFA* parent_ : pair.second) {
+							for (auto trans_iterator = pair.second.begin(); trans_iterator != pair.second.end(); trans_iterator++) {
+								ConstructedStateDFA* parent = (ConstructedStateDFA*) *trans_iterator;
 
 								DEBUG_ASSERT_NOT_NULL( parent );
 
@@ -321,14 +328,25 @@ namespace translated_automata {
 									DEBUG_LOG("Rimuovo la transizione :  %s --(%s)--> %s", parent->getName().c_str(), pair.first.c_str(), child->getName().c_str());
 									DEBUG_LOG("Aggiungo il BUD : (%s, %s)", parent->getName().c_str(), pair.first.c_str());
 
-									// Rimozione della transizione e aggiunta di un nuovo Bud
-									parent->disconnectChild(pair.first, child);
-									Bud new_bud = Bud(parent, pair.first);
-									buds_list.push_back(new_bud);
+									// Aggiungo lo stato "parent" alla lista dei nodi da eliminare
+									// NOTA: Non è possibile eliminarlo QUI perché creerebbe problemi al ciclo
+									auto t = std::pair<ConstructedStateDFA*, string>(parent, pair.first);
+									transitions_to_remove.insert(t);
 
 								}
 
 							}
+						}
+
+						for (auto &pair : transitions_to_remove) {
+							// Rimozione della transizione e aggiunta di un nuovo Bud
+							/*
+							 * pair.first = nodo genitore
+							 * pair.second = label
+							 */
+							pair.first->disconnectChild(pair.second, child);
+							Bud new_bud = Bud(pair.first, pair.second);
+							buds_list.push_back(new_bud);
 						}
 
 						DEBUG_MARK_PHASE( "Extension Update" )
@@ -497,8 +515,8 @@ namespace translated_automata {
 				}
 			}
 
-			// Distruzione dello stato con distanza massima
-			delete max_dist_state;
+			// Rimozione dello stato con distanza massima
+			dfa.removeState(max_dist_state);
 
 			// Procedura "Distance Relocation" su tutti i figli dello stato con dist.min, poiché i figli acquisiti dallo stato
 			// con dist.max. devono essere modificati

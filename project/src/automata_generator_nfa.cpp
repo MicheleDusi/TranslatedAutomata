@@ -16,7 +16,7 @@
 
 namespace translated_automata {
 
-	NFAGenerator::NFAGenerator() {}
+	NFAGenerator::NFAGenerator(Alphabet alphabet) : AutomataGenerator(alphabet) {}
 
 	NFAGenerator::~NFAGenerator() {}
 

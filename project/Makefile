@@ -13,7 +13,7 @@ OBJDIR = ./obj
 
 # Parametri di compilazione
 CC = g++
-CFLAGS=-I$(INCDIR) -g #-std=c++11
+CFLAGS=-I$(INCDIR) -g -std=c++17
 
 # Nomi (base) dei file da compilare
 SOURCES := $(shell find $(SRCDIR) -name '*.cpp')					# Sources ".cpp"

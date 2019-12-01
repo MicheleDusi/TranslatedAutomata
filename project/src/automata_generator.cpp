@@ -22,12 +22,6 @@
 namespace translated_automata {
 
 	template <typename Automaton>
-	const char* AutomataGenerator<Automaton>::letters = "abcdefghijklmnopqrstuvwxyz";
-
-	template <typename Automaton>
-	const unsigned int AutomataGenerator<Automaton>::default_alphabet_cardinality = 10U;
-
-	template <typename Automaton>
 	const unsigned long int AutomataGenerator<Automaton>::default_size = 2UL;
 
 	template <typename Automaton>
@@ -41,20 +35,18 @@ namespace translated_automata {
 
 	/**
 	 * Costruttore.
+	 * Poiché l'alfabeto viene generato di default da un'altra classe, è opportuno che la classe
+	 * che si occupa della generazione dell'automa venga resa indipendente da essa.
+	 * Per questo il costruttore accetta in ingresso un alfabeto già pronto.
+	 * Questo può tuttavia cambiare con i metodi setter.
 	 */
 	template <class Automaton>
-	AutomataGenerator<Automaton>::AutomataGenerator() {
-		this->m_alphabet = generateAlphabet(letters, default_alphabet_cardinality);
+	AutomataGenerator<Automaton>::AutomataGenerator(Alphabet alphabet) {
+		this->m_alphabet = alphabet;
 		this->m_size = default_size;
 		this->m_name_prefix	= default_name_prefix;
-		double m_transition_percentage = default_transition_percentage;
-		double m_final_probability = default_final_probability;
-
-		// Generazione del seme casuale
-		unsigned long int seed = time(0);
-//		unsigned long int seed = 1574001433;
-		srand(seed);
-		std::cout << "Seed = " << seed << std::endl;
+		this->m_transition_percentage = default_transition_percentage;
+		this->m_final_probability = default_final_probability;
 	}
 
 	/**
@@ -207,63 +199,6 @@ namespace translated_automata {
 		if (probability >= 0 && probability <= 1) {
 			this->m_final_probability = probability;
 		}
-	}
-
-	/**
-	 * Costruisce un alfabeto con la cardinalità (=numero di simboli dell'alfabeto) fissata,
-	 * partendo da una base di n caratteri passati come parametro.
-	 * [!] Nota che questi caratteri vengono passati come array di char e necessitano del carattere terminale '\0'.
-	 *
-	 * I simboli dell'alfabeto sono costruiti come combinazione e concatenazione dei caratteri,
-	 * cominciando con le combinazioni di lunghezza minore.
-	 *
-	 * Nota: come array di caratteri è possibile utilizzare l'array di caratteri "letters"
-	 * contenente tutte e sole le 26 lettere minuscole dell'alfabeto inglese.
-	 */
-	template <class Automaton>
-	Alphabet AutomataGenerator<Automaton>::generateAlphabet(const char *chars, unsigned int cardinality) {
-		std::vector<std::vector<string>> symbols;
-
-		// Inizializzo l'insieme delle stringhe di lunghezza zero
-		// Questa procedura serve unicamente come passo base, ma la stringa nulla sarà rimossa
-		// al termine della funzione poiché non è richiesto che nell'automa esistano epsilon transizioni.
-		std::vector<string> zero_length_strings;
-		zero_length_strings.push_back("");
-		symbols.push_back(zero_length_strings);
-
-		// Conteggia il numero di simboli inseriti nell'alfabeto (senza considerare la stringa vuota)
-		int counter = 0;
-		// Finché la dimensione dell'alfabeto è inferiore alla cardinalità
-		while (counter < cardinality) {
-
-			// Predispongo il vector che accoglierà le stringhe di uguale dimensione,
-			// generate concatenando un qualunque carattere con un qualunque simbolo dell'insieme
-			// di stringhe precedente.
-			std::vector<string> same_length_strings;
-
-			for (string prefix : symbols[symbols.size() - 1]) {
-
-				for (int l = 0; l < strlen(chars) && counter < cardinality; l++, counter++) {
-					string newlabel = (prefix + chars[l]);
-					same_length_strings.push_back(newlabel);
-				}
-			}
-
-			symbols.push_back(same_length_strings);
-		}
-
-		// Rimozione dell'insieme contenente la stringa vuota
-		symbols.erase(symbols.begin());
-
-		// Flattening del vettore di vettori di stringhe
-		Alphabet alpha;
-		for (std::vector<string> string_set : symbols) {
-			for (string s : string_set)
-			alpha.push_back(s);
-		}
-
-		DEBUG_ASSERT_TRUE(alpha.size() == cardinality);
-		return alpha;
 	}
 
     /*************

@@ -25,7 +25,7 @@ namespace translated_automata {
 		unsigned long int computeTransitionsNumber();
 
 	public:
-		NFAGenerator();
+		NFAGenerator(Alphabet alphabet);
 		~NFAGenerator();
 
 		NFA generateRandomAutomaton();

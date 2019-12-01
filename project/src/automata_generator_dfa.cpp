@@ -19,7 +19,7 @@ namespace translated_automata {
 	/**
 	 * Costruttore.
 	 */
-	DFAGenerator::DFAGenerator() {}
+	DFAGenerator::DFAGenerator(Alphabet alphabet) : AutomataGenerator(alphabet) {}
 
 	/**
 	 * Distruttore

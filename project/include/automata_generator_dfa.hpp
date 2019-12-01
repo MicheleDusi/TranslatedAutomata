@@ -20,7 +20,7 @@
 
 namespace translated_automata {
 
-	class DFAGenerator: public AutomataGenerator<DFA> {
+	class DFAGenerator : public AutomataGenerator<DFA> {
 
 	private:
 		void generateStates(DFA& nfa);
@@ -30,7 +30,7 @@ namespace translated_automata {
 		unsigned long int computeTransitionsNumber();
 
 	public:
-		DFAGenerator();
+		DFAGenerator(Alphabet alphabet);
 		~DFAGenerator();
 
 		DFA generateRandomAutomaton();

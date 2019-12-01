@@ -17,19 +17,23 @@
 #include <iostream>
 #include <tuple>
 
+#include "alphabet_generator.hpp"
 #include "automata_generator_dfa.hpp"
 #include "automaton_dfa.hpp"
 #include "debug.hpp"
 #include "embedded_subset_construction.hpp"
+#include "problem_generator.hpp"
+#include "problem_solver.hpp"
 #include "translation.hpp"
 #include "translation_generator.hpp"
 
 #define ALPHABET_CARDINALITY 				4
-#define AUTOMATON_SIZE 						6
+#define AUTOMATON_SIZE 						8
 #define AUTOMATON_FINAL_PROBABILITY 		.3
 #define AUTOMATON_TRANSITION_PERCENTAGE 	.5
 #define TRANSLATION_MIXING_FACTOR 			.5
 #define TRANSLATION_OFFSET 					3
+#define TRANSLATION_EPSILON_PERCENTAGE		.25
 
 using std::set;
 
@@ -39,41 +43,18 @@ int main(int argc, char **argv) {
 
 	DEBUG_MARK_PHASE( "Translated Automaton - Main" ) {
 
-		// Generazione dell'automa
-		DFAGenerator *gen = new DFAGenerator();
-		Alphabet alpha = gen->generateAlphabet(DFAGenerator::letters, ALPHABET_CARDINALITY);
-		gen->setAlphabet(alpha);
-		gen->setSize(AUTOMATON_SIZE);
-		gen->setFinalProbability(AUTOMATON_FINAL_PROBABILITY);
-		gen->setTransitionPercentage(AUTOMATON_TRANSITION_PERCENTAGE);
-		DFA dfa = gen->generateRandomAutomaton();
+		// Creazione del problema
+		ProblemGenerator* generator = new ProblemGenerator();
+		generator->getDFAGenerator()->setSize(AUTOMATON_SIZE);
+		generator->getDFAGenerator()->setFinalProbability(AUTOMATON_FINAL_PROBABILITY);
+		generator->getDFAGenerator()->setTransitionPercentage(AUTOMATON_TRANSITION_PERCENTAGE);
+		generator->getTranslationGenerator()->setMixingFactor(TRANSLATION_MIXING_FACTOR);
+		generator->getTranslationGenerator()->setOffset(TRANSLATION_OFFSET);
+		generator->getTranslationGenerator()->setEpsilonPercentage(TRANSLATION_EPSILON_PERCENTAGE);
 
-		// Stampa iniziale
-		std::cout << dfa.toString();
-		std::cout << "\n - - - - - \n";
-
-		// Generazione della traduzione
-		TranslationGenerator* t_gen = new TranslationGenerator();
-		t_gen->setMixingFactor(TRANSLATION_MIXING_FACTOR);
-		t_gen->setOffset(TRANSLATION_OFFSET);
-		t_gen->setEpsilonPercentage(0.25);
-		Translation tau = t_gen->generateTranslation(alpha);
-
-		// Stampa della traduzione
-		std::cout << tau.toString(alpha);
-		std::cout << "\n - - - - - \n";
-
-		DEBUG_MARK_PHASE( "Embedded Subset Construction" ) {
-
-			// Algoritmo "Embedded Subset Construction
-			EmbeddedSubsetConstruction *esc = new EmbeddedSubsetConstruction();
-
-			DFA translated_dfa = esc->run(dfa, tau);
-
-			// Stampa del risultato
-			std::cout << translated_dfa.toString();
-
-		}
+		// Risoluzione del problema
+		ProblemSolver* solver = new ProblemSolver(*generator);
+		solver->solveSeries(1);
 
 	}
 

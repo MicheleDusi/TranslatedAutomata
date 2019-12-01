@@ -40,7 +40,10 @@ namespace translated_automata {
     template <class State>
     Automaton<State>::~Automaton() {
     	for (State* s : m_states) {
-    		delete s;
+    		s->detachAllTransitions();
+    	}
+    	for (State* s : m_states) {
+//    		this->m_states.erase(s);
     	}
     }
 
@@ -130,7 +133,8 @@ namespace translated_automata {
      */
     template <class State>
     bool Automaton<State>::removeState(State* s) {
-       return m_states.erase(s);
+    	s->detachAllTransitions();
+    	return m_states.erase(s);
     }
 
     /**
@@ -286,18 +290,26 @@ namespace translated_automata {
     }
 
     /**
-     * Restituisce l'insieme di etichette usate nelle transizioni di questo automa.
+     * Restituisce l'alfabeto dell'automa.
+     * NOTA: Questo metodo non restituisce necessariamente tutto l'alfabeto su cui è stato
+     * definito in principio l'automa, poiché un automa NON mantiene un riferimento a tale
+     * alfabeto.
+     * Al contrario, computa l'alfabeto analizzando tutte le labels presenti in tutte le transizioni
+     * dell'automa. Per questo motivo, può essere dispendioso in termini di performance.
      */
     template <class State>
-    const set<string>& Automaton<State>::getLabels() {
-        set<string> *labels;
+    const Alphabet Automaton<State>::getAlphabet() {
+        Alphabet alphabet = Alphabet();
         for (State* s : m_states) {
-            for (auto &trans: s->getExitingTransitions()) {
-                labels->insert(trans.first);
+            for (auto &trans: s->getExitingTransitionsRef()) {
+            	auto iterator = std::find(alphabet.begin(), alphabet.end(), trans.first);
+            	if (iterator == alphabet.end()) {
+            		alphabet.push_back(trans.first);
+            	}
             }
         }
 
-        return *labels;
+        return alphabet;
     }
 
     /**

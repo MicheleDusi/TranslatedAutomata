@@ -24,7 +24,7 @@
 #include <vector>
 
 // Definizione della label espilon
-#define EPSILON ""
+#define EPSILON "ε"
 #define EPSILON_PRINT "\033[96mε\033[0m"
 #define SHOW( label ) ((label == EPSILON) ? (EPSILON_PRINT) : (label))
 

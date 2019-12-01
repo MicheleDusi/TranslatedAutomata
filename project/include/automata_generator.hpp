@@ -49,10 +49,8 @@ namespace translated_automata {
 		string getRandomLabelFromAlphabet();
 
 	public:
-		static const char *letters;
-		static const unsigned int default_alphabet_cardinality;
 
-		AutomataGenerator();
+		AutomataGenerator(Alphabet alphabet);
 		virtual ~AutomataGenerator();
 
 		Alphabet getAlphabet();
@@ -67,7 +65,6 @@ namespace translated_automata {
 		void setTransitionPercentage(double percentage);
 		void setFinalProbability(double probability);
 
-		Alphabet generateAlphabet(const char *chars, unsigned int cardinality);
 		virtual Automaton generateRandomAutomaton() = 0;
 
 	};

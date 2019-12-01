@@ -16,6 +16,7 @@
 #include <list>
 
 #include "state.hpp"
+#include "alphabet.hpp"
 
 namespace translated_automata {
 
@@ -51,7 +52,7 @@ namespace translated_automata {
         const vector<State*> getStatesByName(string name);
         const list<State*> getStatesList();
         const vector<State*> getStatesVector();
-        const set<string>& getLabels();
+        const Alphabet getAlphabet();
         bool connectStates(State *from, State *to, string label);
         bool connectStates(string from, string to, string label);
         string toString();

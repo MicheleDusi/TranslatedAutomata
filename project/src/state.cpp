@@ -59,8 +59,6 @@ namespace translated_automata {
 	template <class S>
 	State<S>::~State () {
 		DEBUG_LOG( "Distruzione dell'oggetto State \"%s\"", m_name.c_str() );
-		detachAllTransitions();
-		DEBUG_LOG_SUCCESS( "Oggetto State distrutto correttamente" );
 	}
 
 	/**
@@ -95,7 +93,10 @@ namespace translated_automata {
 	 */
 	template <class S>
 	void State<S>::removeChild(string label, S* child)	{
-		m_exiting_transitions[label].erase(child);
+		auto iterator = m_exiting_transitions[label].find(child);
+		if (iterator != m_exiting_transitions[label].end()) {
+			m_exiting_transitions[label].extract(iterator);
+		}
 		if (m_exiting_transitions[label].empty()) {
 			m_exiting_transitions.erase(label);
 		}
@@ -107,7 +108,10 @@ namespace translated_automata {
 	 */
 	template <class S>
 	void State<S>::removeParent(string label, S* parent) {
-		m_incoming_transitions[label].erase(parent);
+		auto finder = m_incoming_transitions[label].find(parent);
+		if (finder != m_incoming_transitions[label].end()) {
+			m_incoming_transitions[label].extract(finder);
+		}
 		if (m_incoming_transitions[label].empty()) {
 			m_incoming_transitions.erase(label);
 		}
@@ -120,10 +124,18 @@ namespace translated_automata {
 	 */
 	template <class S>
 	void State<S>::connectChild(string label, S* child)	{
+		bool flag_new_insertion = false;
+		// Verifico se la label ha già un set associato;
+		// In caso il set non ci sia, viene creato
+		if (this->m_exiting_transitions.count(label) == 0) {
+			this->m_exiting_transitions[label] = std::set<S*>();
+			child->m_incoming_transitions[label] = std::set<S*>();
+			flag_new_insertion = true;
+		}
 		// Se la transizione NON esiste già
-		if (m_exiting_transitions[label].find(child) == m_exiting_transitions[label].end()) {
+		if (flag_new_insertion || this->m_exiting_transitions[label].find(child) == this->m_exiting_transitions[label].end()) {
 			// Aggiungo una transizione uscente da questo stato
-			m_exiting_transitions[label].insert(child);
+			this->m_exiting_transitions[label].insert(child);
 			// Aggiungo una transizione entrante allo stato di arrivo
 			child->m_incoming_transitions[label].insert(getThis());
 		}

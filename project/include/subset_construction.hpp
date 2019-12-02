@@ -14,8 +14,7 @@
 #ifndef INCLUDE_SUBSET_CONSTRUCTION_HPP_
 #define INCLUDE_SUBSET_CONSTRUCTION_HPP_
 
-#include "automaton_nfa.hpp"
-#include "automaton_dfa.hpp"
+#include "automaton.hpp"
 
 namespace translated_automata {
 

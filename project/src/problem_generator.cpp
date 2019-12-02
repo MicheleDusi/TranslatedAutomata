@@ -63,7 +63,7 @@ namespace translated_automata {
 
 		// Impostazione dell'alfabeto comune
 		AlphabetGenerator* alphabet_generator = new AlphabetGenerator();
-		alphabet_generator->setCardinality(4); // FIXME
+		alphabet_generator->setCardinality(26); // FIXME
 		this->m_alphabet = alphabet_generator->generate();
 		delete alphabet_generator;
 

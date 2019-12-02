@@ -13,7 +13,7 @@
 #ifndef INCLUDE_PROBLEM_GENERATOR_HPP_
 #define INCLUDE_PROBLEM_GENERATOR_HPP_
 
-#include "automaton_dfa.hpp"
+#include "automaton.hpp"
 #include "automata_generator_dfa.hpp"
 #include "translation.hpp"
 #include "translation_generator.hpp"

@@ -16,12 +16,11 @@
 #ifndef INCLUDE_AUTOMATA_GENERATOR_HPP_
 #define INCLUDE_AUTOMATA_GENERATOR_HPP_
 
-#include "automaton.hpp"
-
 #include <vector>
 #include <string>
 
 #include "alphabet.hpp"
+#include "automaton.hpp"
 
 namespace translated_automata {
 

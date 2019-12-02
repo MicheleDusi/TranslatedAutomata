@@ -16,8 +16,8 @@
 #include <algorithm>
 
 #include "debug.hpp"
-#include "state_nfa.hpp"
 #include "state_dfa.hpp"
+#include "state_nfa.hpp"
 
 namespace translated_automata {
 
@@ -340,26 +340,6 @@ namespace translated_automata {
     }
 
     /**
-     * Restituisce una descrizione testuale di tutti gli stati appartenenti all'automa,
-     * evidenziando lo stato iniziale.
-     * Ogni stato deve essere stato istanziato correttamente.
-     * Lo stato iniziale deve essere stato impostato correttamente.
-     */
-    template <class State>
-    string Automaton<State>::toString() {
-    	string result = "";
-    	result += "AUTOMATON (size = " + std::to_string(m_states.size()) + ")\n";
-        result += "Starting from state: " + m_initial_state->getName() + '\n';
-
-        // Per ogni stato dell'automa
-        for (State* s : m_states) {
-            result += s->toString();
-        }
-
-        return result;
-    }
-
-    /**
      * Operatore di uguaglianza per automi.
      */
     template <class State>
@@ -394,7 +374,7 @@ namespace translated_automata {
      * Nota: essendo la classe Automaton parametrizzata sul tipo "State",
      * è necessario comunicare al compilatore quali implementazioni verranno utilizzate.
      */
-    template class Automaton<StateNFA>;
     template class Automaton<StateDFA>;
+    template class Automaton<StateNFA>;
 
 } /* namespace translated_automata */

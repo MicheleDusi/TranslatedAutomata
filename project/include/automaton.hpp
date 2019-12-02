@@ -15,7 +15,8 @@
 #include <vector>
 #include <list>
 
-#include "state.hpp"
+#include "state_dfa.hpp"
+#include "state_nfa.hpp"
 #include "alphabet.hpp"
 
 namespace translated_automata {
@@ -55,11 +56,16 @@ namespace translated_automata {
         const Alphabet getAlphabet();
         bool connectStates(State *from, State *to, string label);
         bool connectStates(string from, string to, string label);
-        string toString();
 
         bool operator==(Automaton<State>& other);
 
 	};
+
+	/* Classi specifiche per Automi */
+
+	class DFA : public Automaton<StateDFA> {};
+	class NFA : public Automaton<StateNFA> {};
+
 
 } /* namespace translated_automata */
 

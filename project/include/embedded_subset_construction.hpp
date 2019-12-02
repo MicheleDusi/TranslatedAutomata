@@ -11,8 +11,7 @@
 #ifndef INCLUDE_EMBEDDED_SUBSET_CONSTRUCTION_HPP_
 #define INCLUDE_EMBEDDED_SUBSET_CONSTRUCTION_HPP_
 
-#include "automaton_dfa.hpp"
-#include "automaton_nfa.hpp"
+#include "automaton.hpp"
 #include "constructed_state_dfa.hpp"
 #include "translation.hpp"
 

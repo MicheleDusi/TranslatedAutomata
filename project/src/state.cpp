@@ -14,18 +14,20 @@
 
 #include "state.hpp"
 
-#include <string>
+#include <list>
 #include <map>
 #include <set>
+#include <string>
 
 #include "alphabet.hpp"
 #include "debug.hpp"
 #include "state_dfa.hpp"
 #include "state_nfa.hpp"
 
-using std::string;
+using std::list;
 using std::map;
 using std::set;
+using std::string;
 
 namespace translated_automata {
 

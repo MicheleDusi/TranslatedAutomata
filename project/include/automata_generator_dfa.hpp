@@ -16,7 +16,7 @@
 #define INCLUDE_AUTOMATA_GENERATOR_DFA_HPP_
 
 #include "automata_generator.hpp"
-#include "automaton_dfa.hpp"
+#include "automaton.hpp"
 
 namespace translated_automata {
 

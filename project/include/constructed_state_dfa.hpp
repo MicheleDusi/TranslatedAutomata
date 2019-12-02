@@ -19,6 +19,7 @@
 #define INCLUDE_CONSTRUCTED_STATE_DFA_HPP_
 
 #include "state_dfa.hpp"
+#include "state_nfa.hpp"
 
 namespace translated_automata {
 

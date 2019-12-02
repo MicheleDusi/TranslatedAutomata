@@ -19,7 +19,7 @@
 
 #include "alphabet_generator.hpp"
 #include "automata_generator_dfa.hpp"
-#include "automaton_dfa.hpp"
+#include "automaton.hpp"
 #include "debug.hpp"
 #include "embedded_subset_construction.hpp"
 #include "problem_generator.hpp"
@@ -28,7 +28,7 @@
 #include "translation_generator.hpp"
 
 #define ALPHABET_CARDINALITY 				4
-#define AUTOMATON_SIZE 						8
+#define AUTOMATON_SIZE 						10
 #define AUTOMATON_FINAL_PROBABILITY 		.3
 #define AUTOMATON_TRANSITION_PERCENTAGE 	.5
 #define TRANSLATION_MIXING_FACTOR 			.5

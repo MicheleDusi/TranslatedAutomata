@@ -20,8 +20,6 @@
 #define INCLUDE_STATE_DFA_H_
 
 #include "state.hpp"
-#include "state_nfa.hpp"
-#include "automaton.hpp"
 
 namespace translated_automata {
 

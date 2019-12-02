@@ -16,8 +16,6 @@
 #include <vector>
 
 #include "debug.hpp"
-#include "automaton_nfa.hpp"
-#include "automaton_dfa.hpp"
 
 namespace translated_automata {
 

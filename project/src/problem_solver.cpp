@@ -8,6 +8,7 @@
 
 #include <cstdio>
 
+#include "automata_drawer_impl.hpp"
 //#define DEBUG_MODE
 #include "debug.hpp"
 
@@ -39,7 +40,8 @@ namespace translated_automata {
 	void ProblemSolver::solve(Problem& problem) {
 		DEBUG_MARK_PHASE("Stampa del problema") {
 			std::cout << "PROBLEMA:\n";
-			std::cout << problem.getDFA().toString();
+			DFADrawer drawer = DFADrawer(problem.getDFA());
+			std::cout << drawer.asString();
 			Alphabet computed_alpha = problem.getDFA().getAlphabet();
 			std::cout << problem.getTranslation().toString(computed_alpha);
 			std::cout << "- - - - - - - - - - - - -\n";
@@ -60,8 +62,8 @@ namespace translated_automata {
 			long int esc_end_time = time(NULL);
 
 			printf("\nEMBEDDED SUBSET CONSTRUCTION\nTempo impiegato = %ld\n",(esc_end_time - esc_start_time));
-			std::cout << "Risultato:\n";
-			std::cout << esc_result.toString();
+//			std::cout << "Risultato:\n";
+//			std::cout << esc_result.toString();
 		}
 
 //		DEBUG_MARK_PHASE("Controllo finale") {

@@ -25,9 +25,8 @@
 #include <list>
 
 #include "alphabet.hpp"
+#include "automaton.hpp"
 #include "bud.hpp"
-#include "automaton_nfa.hpp"
-#include "automaton_dfa.hpp"
 
 using namespace std;
 

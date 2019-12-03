@@ -19,6 +19,7 @@
 #include <ctime>
 
 #include "alphabet_generator.hpp"
+#define DEBUG_MODE
 #include "debug.hpp"
 
 namespace translated_automata {
@@ -59,11 +60,11 @@ namespace translated_automata {
 	 */
 	ProblemGenerator::ProblemGenerator() {
 		// Istanzio un nuovo gestore di randomicità
-		RandomnessManager random = RandomnessManager();
+		RandomnessManager* random = new RandomnessManager();
 
 		// Impostazione dell'alfabeto comune
 		AlphabetGenerator* alphabet_generator = new AlphabetGenerator();
-		alphabet_generator->setCardinality(26); // FIXME
+		alphabet_generator->setCardinality(4); // FIXME
 		this->m_alphabet = alphabet_generator->generate();
 		delete alphabet_generator;
 
@@ -130,6 +131,7 @@ namespace translated_automata {
 	void RandomnessManager::newSeed() {
 		this->m_seed = time(0);
 		srand(this->m_seed);
+		DEBUG_LOG("Impostazione di un nuovo seme casuale: %lu", this->m_seed);
 	}
 
 	/**
@@ -144,6 +146,7 @@ namespace translated_automata {
 	 */
 	void RandomnessManager::setSeed(unsigned long int new_seed) {
 		this->m_seed = new_seed;
+		srand(this->m_seed);
 	}
 
 	/**

@@ -28,12 +28,12 @@
 #include "translation_generator.hpp"
 
 #define ALPHABET_CARDINALITY 				4
-#define AUTOMATON_SIZE 						10
+#define AUTOMATON_SIZE 						5
 #define AUTOMATON_FINAL_PROBABILITY 		.3
 #define AUTOMATON_TRANSITION_PERCENTAGE 	.5
 #define TRANSLATION_MIXING_FACTOR 			.5
 #define TRANSLATION_OFFSET 					3
-#define TRANSLATION_EPSILON_PERCENTAGE		.25
+#define TRANSLATION_EPSILON_PERCENTAGE		0
 
 using std::set;
 

@@ -69,6 +69,16 @@ namespace translated_automata {
 //		DEBUG_MARK_PHASE("Controllo finale") {
 //			// TODO Confronto dei due automi
 //		}
+
+		DEBUG_MARK_PHASE("Stampa della soluzione") {
+			std::cout << "SOLUZIONE di ESC:\n";
+			DFADrawer drawer = DFADrawer(esc_result);
+			std::cout << drawer.asString();
+
+//			std::cout << "SOLUZIONE di SC:\n";
+//			DFADrawer drawer = DFADrawer(sc_result);
+//			std::cout << drawer.asString();
+		}
 	}
 
 	/**

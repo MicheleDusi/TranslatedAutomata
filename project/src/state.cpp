@@ -37,15 +37,6 @@ namespace translated_automata {
 	 */
 
 	/**
-	 * Metodo privato.
-	 * Restituisce il puntatore all'oggetto corrente.
-	 */
-	template <class S>
-	S* State<S>::getThis() const {
-		return (S*) this;
-	}
-
-	/**
 	 * Costruttore della classe State.
 	 * Inizializza come vuoti gli insiemi di transizioni entranti e uscenti.
 	 */
@@ -61,6 +52,16 @@ namespace translated_automata {
 	template <class S>
 	State<S>::~State () {
 		DEBUG_LOG( "Distruzione dell'oggetto State \"%s\"", m_name.c_str() );
+	}
+
+	/**
+	 * Metodo privato.
+	 * Restituisce il puntatore all'oggetto corrente, automaticamente
+	 * castato con il tipo corretto.
+	 */
+	template <class S>
+	S* State<S>::getThis() const {
+		return (S*) this;
 	}
 
 	/**
@@ -89,37 +90,6 @@ namespace translated_automata {
 	}
 
 	/**
-	 * Metodo privato.
-	 * Rimuove una transizione dallo stato al figlio.
-	 * Se non esiste non succede nulla.
-	 */
-	template <class S>
-	void State<S>::removeChild(string label, S* child)	{
-		auto iterator = m_exiting_transitions[label].find(child);
-		if (iterator != m_exiting_transitions[label].end()) {
-			m_exiting_transitions[label].extract(iterator);
-		}
-		if (m_exiting_transitions[label].empty()) {
-			m_exiting_transitions.erase(label);
-		}
-	}
-
-	/**
-	 * Metodo privato.
-	 * Come "removeChild", ma rimuovo una transizione entrante.
-	 */
-	template <class S>
-	void State<S>::removeParent(string label, S* parent) {
-		auto finder = m_incoming_transitions[label].find(parent);
-		if (finder != m_incoming_transitions[label].end()) {
-			m_incoming_transitions[label].extract(finder);
-		}
-		if (m_incoming_transitions[label].empty()) {
-			m_incoming_transitions.erase(label);
-		}
-	}
-
-	/**
 	 * Collega lo stato soggetto allo stato passato come parametro, con una transizione
 	 * etichettata dalla label "label" passata come parametro.
 	 * Nota: se la transizione esiste già, non viene aggiunta nuovamente.
@@ -127,15 +97,32 @@ namespace translated_automata {
 	template <class S>
 	void State<S>::connectChild(string label, S* child)	{
 		bool flag_new_insertion = false;
-		// Verifico se la label ha già un set associato;
+		// Verifico se la label ha già un set associato nello stato CORRENTE.
 		// In caso il set non ci sia, viene creato
 		if (this->m_exiting_transitions.count(label) == 0) {
 			this->m_exiting_transitions[label] = std::set<S*>();
+			flag_new_insertion = true;
+		}
+
+		// Verifico se la label ha già un set associato nello stato FIGLIO
+		// In caso il set non ci sia, viene creato
+		if (child->m_incoming_transitions.count(label) == 0) {
 			child->m_incoming_transitions[label] = std::set<S*>();
 			flag_new_insertion = true;
 		}
-		// Se la transizione NON esiste già
-		if (flag_new_insertion || this->m_exiting_transitions[label].find(child) == this->m_exiting_transitions[label].end()) {
+
+		// FIXME Migliorare l'implementazione
+		bool flag_found = false;
+		for (auto iterator = this->m_exiting_transitions[label].begin();
+				!flag_new_insertion && iterator != this->m_exiting_transitions[label].end();
+				iterator++) {
+			if ((*iterator)->getName() == child->getName()) {
+				flag_found = true;
+			}
+		}
+
+		// Se la label è un nuovo inserimento || Se per tale label, lo stato non è ancora presente
+		if (flag_new_insertion || !flag_found) {
 			// Aggiungo una transizione uscente da questo stato
 			this->m_exiting_transitions[label].insert(child);
 			// Aggiungo una transizione entrante allo stato di arrivo
@@ -151,10 +138,22 @@ namespace translated_automata {
 	 */
 	template <class S>
 	void State<S>::disconnectChild(string label, S* child) {
-		// Rimuovo la transizione uscente da questo stato
-		removeChild(label, child);
-		// Rimuovo la transizione entrante dal
-		child->removeParent(label, getThis());
+		// Ricerca del figlio da disconnettere
+		auto iterator = this->m_exiting_transitions[label].find(child);
+
+		if (iterator != this->m_exiting_transitions[label].end()) {
+			this->m_exiting_transitions[label].erase(iterator);
+			child->m_incoming_transitions[label].erase(getThis());
+		}
+
+		// Se le transizioni uscenti per la label si svuotano, elimino il set vuoto di stati
+		if (m_exiting_transitions[label].empty()) {
+			m_exiting_transitions.erase(label);
+		}
+		// Se le transizioni entranti del figlio per la label si svuotano, elimino il set vuoto di stati
+		if (child->m_incoming_transitions[label].empty()) {
+			child->m_incoming_transitions.erase(label);
+		}
 	}
 
 	/**
@@ -166,18 +165,18 @@ namespace translated_automata {
 	template <class S>
 	void State<S>::detachAllTransitions() {
 		// Rimuove le transizioni uscenti
-		for (auto pair: m_exiting_transitions) {
+		for (auto &pair: m_exiting_transitions) {
 			string label = pair.first;
 			for (S* child : pair.second) {
-				child->removeParent(label, getThis());
+				getThis()->disconnectChild(label, child);
 			}
 		}
 
 		// Rimuove le transizioni entranti
-		for (auto pair: m_incoming_transitions) {
+		for (auto &pair: m_incoming_transitions) {
 			string label = pair.first;
 			for (S* parent: pair.second) {
-				parent->removeChild(label, getThis());
+				parent->disconnectChild(label, getThis());
 			}
 		}
 	}
@@ -343,7 +342,7 @@ namespace translated_automata {
 	template <class S>
 	void State<S>::copyExitingTransitionsOf(S* state) {
     	// Per tutte le transizioni uscenti dallo stato "state"
-        for (auto &pair: state->getExitingTransitions()) {
+        for (auto &pair: state->getExitingTransitionsRef()) {
             string label = pair.first;
             for (S* child: pair.second) {
                 if (!this->hasExitingTransition(label, child)) {
@@ -364,7 +363,7 @@ namespace translated_automata {
 	template <class S>
 	void State<S>::copyIncomingTransitionsOf(S* state) {
     	// Per tutte le transizioni entranti nello stato "state"
-        for (auto &pair: state->getIncomingTransitions()) {
+        for (auto &pair: state->getIncomingTransitionsRef()) {
             string label = pair.first;
             for (S* parent: pair.second) {
                 if (!parent->hasExitingTransition(label, this->getThis())) {
@@ -388,18 +387,20 @@ namespace translated_automata {
 	/**
 	 * Verifica se lo stato ha le stesse transizioni (entranti E uscenti) dello stato
 	 * passato come parametro.
+	 * Le transizioni vengono confrontate tramite puntatore; gli stati devono perciò essere
+	 * effettivamente gli stessi.
 	 */
 	template <class S>
-	bool State<S>::hasSameTransitions(S* otherState) {
+	bool State<S>::hasSameTransitionsOf(S* other_state) {
 		// Verifico che il numero di transizioni uscenti sia uguale
-		if (this->m_exiting_transitions.size() != otherState->m_exiting_transitions.size()) {
+		if (this->m_exiting_transitions.size() != other_state->m_exiting_transitions.size()) {
 			return false;
 		}
 
 		// Per tutte le transizioni uscenti
 		for (auto &pair: m_exiting_transitions) {
 			string label = pair.first;
-			set<S*> other_children = otherState->m_exiting_transitions[label];
+			set<S*> other_children = other_state->m_exiting_transitions[label];
 
 			// Verifico che il numero di figli sia uguale
 			if (pair.second.size() != other_children.size()) {
@@ -416,14 +417,14 @@ namespace translated_automata {
 		}
 
 		// Verifico che il numero di transizioni entranti sia uguale
-		if (this->m_incoming_transitions.size() != otherState->m_incoming_transitions.size()) {
+		if (this->m_incoming_transitions.size() != other_state->m_incoming_transitions.size()) {
 			return false;
 		}
 
 		// Per tutte le transizioni entranti
 		for (auto &pair: m_incoming_transitions) {
 			string label = pair.first;
-			set<S*> other_parents = otherState->m_incoming_transitions[label];
+			set<S*> other_parents = other_state->m_incoming_transitions[label];
 
 			// Verifico che il numero di padri sia uguale
 			if (pair.second.size() != other_parents.size()) {
@@ -438,7 +439,82 @@ namespace translated_automata {
 				}
 			}
 		}
+		return true;
+	}
 
+	/**
+	 * Metodo che verifica se le transizioni presenti nello stato corrispondono (solo
+	 * a livello di nome) con le transizioni dello stato passato come parametro.
+	 * Questo metodo è utilizzato per confrontare due automi isomorfi, senza che siano
+	 * presenti stati in comune fra essi, ma solamente stati omonimi.
+	 */
+	template <class S>
+	bool State<S>::hasSameTransitionsNamesOf(S* other_state) {
+		// Verifico che il numero di transizioni uscenti sia uguale
+		if (this->m_exiting_transitions.size() != other_state->m_exiting_transitions.size()) {
+			return false;
+		}
+
+		// Per tutte le transizioni uscenti
+		for (auto &pair : m_exiting_transitions) {
+			string label = pair.first;
+			set<S*> other_children = other_state->m_exiting_transitions[label];
+
+			// Verifico che il numero di figli sia uguale
+			if (pair.second.size() != other_children.size()) {
+				return false;
+			}
+
+			// Verifico che tutti i figli siano coincidenti
+			for (auto &child : pair.second) {
+				// Se il figlio non è contenuto nell'altra lista
+				bool found_flag = false;
+				for (auto other_child : other_children) {
+					// Appena trovo una corrispondenza, esco dal ciclo
+					if (*child == *other_child) {
+						found_flag = true;
+						break;
+					}
+				}
+				// Se non ho trovato corrispondenze, esco
+				if (!found_flag) {
+					return false;
+				}
+			}
+		}
+
+		// Verifico che il numero di transizioni entranti sia uguale
+		if (this->m_incoming_transitions.size() != other_state->m_incoming_transitions.size()) {
+			return false;
+		}
+
+		// Per tutte le transizioni entranti
+		for (auto &pair: m_incoming_transitions) {
+			string label = pair.first;
+			set<S*> other_parents = other_state->m_incoming_transitions[label];
+
+			// Verifico che il numero di padri sia uguale
+			if (pair.second.size() != other_parents.size()) {
+				return false;
+			}
+
+			// Verifico che tutti i genitori siano coincidenti
+			for (auto &parent : pair.second) {
+				// Se il genitore non è contenuto nell'altra lista
+				bool found_flag = false;
+				for (auto other_parent : other_parents) {
+					// Appena trovo una corrispondenza, esco dal ciclo
+					if (*parent == *other_parent) {
+						found_flag = true;
+						break;
+					}
+				}
+				// Se non ho trovato corrispondenze, esco
+				if (!found_flag) {
+					return false;
+				}
+			}
+		}
 		return true;
 	}
 
@@ -535,8 +611,7 @@ namespace translated_automata {
 			result += " [FINAL]";
 		}
 
-		result += "\n";
-
+		result += "\n\t" + (std::to_string(getThis()->getExitingTransitionsCount())) + " exiting transitions:\n";
 		if (!this->m_exiting_transitions.empty()) {
 			// Per tutte le label delle transizioni uscenti
 			for (auto &pair: m_exiting_transitions) {
@@ -544,28 +619,26 @@ namespace translated_automata {
 				// Per tutti gli stati associati ad una label
 				for (S* state: pair.second) {
 					// Inserisco le informazioni riguardanti la transizione uscente
-					result += "\t━━┥" + SHOW(label) + "┝━━▶ " + state->getName() + '\n';
+					result += "\t━━┥" + SHOW(label) + "┝━━▶ " + state->getName() + "\n";
+//					result += "\t━━┥" + SHOW(label) + "┝━━▶ " + state->getName() + "\033[35m[id = " + (std::to_string((long int)state)) + "]\033[0m" + "\n";
 				}
 			}
-		} else {
-			result += "\tNo exiting transitions.\n";
 		}
 /*
+		result += "\n\t" + (std::to_string(getThis()->getIncomingTransitionsCount())) + " incoming transitions:\n";
 		if (!this->m_incoming_transitions.empty()) {
-			result += "\tIncoming transitions:\n";
 			// Per tutte le label delle transizioni entranti
 			for (auto &pair: m_incoming_transitions) {
 				string label = pair.first;
 				// Per tutti gli stati associati ad una label
 				for (S* state: pair.second) {
 					// Inserisco le informazioni riguardanti la transizione entrante
-					result += "\t\t" + state->getName() + " ━━(" + label + ")━━▶" + '\n';
+					result += "\t\t" + state->getName() + " ━━(" + SHOW(label) + ")━━▶" + '\n';
 				}
 			}
-		} else {
-			result += "\tNo incoming transitions.\n";
 		}
 */
+
 		return result;
 	};
 

@@ -43,8 +43,6 @@ namespace translated_automata {
         map<string, set<S*>> m_incoming_transitions;	// Transizioni entranti nello stato
 
         S* getThis() const;
-        void removeChild(string label, S* child);
-        void removeParent(string label, S* parent);
 
 	protected:
 		string m_name = "";									// Nome dello stato
@@ -63,6 +61,7 @@ namespace translated_automata {
 		void detachAllTransitions();
 		set<S*> getChildren(string label);
 		set<S*> getParents(string label);
+
 		bool hasExitingTransition(string label);
 		bool hasExitingTransition(string label, S* child);
 		bool hasIncomingTransition(string label);
@@ -73,14 +72,18 @@ namespace translated_automata {
 		const map<string, set<S*>>& getIncomingTransitionsRef();
 		int getExitingTransitionsCount();
 		int getIncomingTransitionsCount();
-		void copyExitingTransitionsOf(S* state);
-		void copyIncomingTransitionsOf(S* state);
-		void copyAllTransitionsOf(S* state);
-		bool hasSameTransitions(S* otherState);
+		void copyExitingTransitionsOf(S* other_state);
+		void copyIncomingTransitionsOf(S* other_state);
+		void copyAllTransitionsOf(S* other_state);
+
+		bool hasSameTransitionsOf(S* other_state);
+		bool hasSameTransitionsNamesOf(S* other_state);
+
 		unsigned int getDistance();
 		void setDistance(unsigned int distance);
 		void initDistancesRecursively(int root_distance);
 	    int getMinimumParentsDistance();
+
 		string toString() const;
 
 		bool operator<(const S &other) const;
@@ -88,7 +91,7 @@ namespace translated_automata {
 		bool operator!=(const S &other) const;
 //		int compareNames(const S &other) const;
 
-        struct Comparator {
+		struct Comparator {
             bool operator() (const S* lhs, const S* rhs) const {
                 return lhs->getName() < rhs->getName();
             }

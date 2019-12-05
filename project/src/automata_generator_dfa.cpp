@@ -27,17 +27,17 @@ namespace translated_automata {
 	DFAGenerator::~DFAGenerator() {}
 
 
-	DFA DFAGenerator::generateRandomAutomaton() {
+	DFA* DFAGenerator::generateRandomAutomaton() {
 		// Creo il DFA
-		DFA dfa = DFA();
+		DFA* dfa = new DFA();
 
 		// Generazione degli stati
-		this->generateStates(dfa);
-		DEBUG_ASSERT_TRUE( this->getSize() == dfa.size() );
+		this->generateStates(*dfa);
+		DEBUG_ASSERT_TRUE( this->getSize() == dfa->size() );
 
 		// Ottengo un riferimento allo stato iniziale
-		StateDFA *initial_state = dfa.getStatesList().front();		// Nota: in questo caso sto assumendo (correttamente) che lo stato che voglio impostare sia il primo in ordine alfabetico
-		dfa.setInitialState(initial_state);
+		StateDFA *initial_state = dfa->getStatesList().front();		// Nota: in questo caso sto assumendo (correttamente) che lo stato che voglio impostare sia il primo in ordine alfabetico
+		dfa->setInitialState(initial_state);
 
 		// Creazione delle transizioni
 
@@ -54,7 +54,7 @@ namespace translated_automata {
 		 * (dove N è il numero di stati dell'automa). Questo numero, per come è stato costruito l'algoritmo,
 		 * garantisce la connessione. */
 		unsigned long int transitions_number = this->computeTransitionsNumber();
-		DEBUG_ASSERT_TRUE( transitions_number >= dfa.size() - 1 );
+		DEBUG_ASSERT_TRUE( transitions_number >= dfa->size() - 1 );
 
 		/* FASE (1) : Creazione di un albero di copertura
 		 *
@@ -66,13 +66,13 @@ namespace translated_automata {
 		/* 1.2) Una mappa tiene traccia delle label usate per ciascuno stato, in modo che non si abbiano stati con
 		 * transizioni uscenti marcate dalla stessa label.  */
 		map<StateDFA*, Alphabet> unused_labels;
-		for (StateDFA* state : dfa.getStatesVector()) {
+		for (StateDFA* state : dfa->getStatesVector()) {
 			unused_labels[state] = Alphabet(this->getAlphabet());
 		}
 
 		/* 1.3) Parallelamente, si tiene traccia dei nodi non ancora marcati come "raggiungibili".
 		 * All'inizio tutti gli stati appartengono a questa lista, tranne il nodo iniziale. */
-		list<StateDFA*> unreached_states_queue = dfa.getStatesList();
+		list<StateDFA*> unreached_states_queue = dfa->getStatesList();
 		unreached_states_queue.pop_front();
 
 		/* 1.4) Si estrae a caso uno stato "raggiungibile" e uno non "raggiungibile", e si crea una transizione
@@ -87,7 +87,7 @@ namespace translated_automata {
 		/* 1.5) Oltre a ciò, viene anche estratta (ed eliminata) una label casuale fra quelle non utilizzate nello stato "from". */
 			string label = this->extractRandomUnusedLabel(unused_labels, from);
 
-			dfa.connectStates(from, to, label);
+			dfa->connectStates(from, to, label);
 
 		/* 1.6) Il secondo stato viene marcato come "raggiungibile". Viene perciò estratto dalla seconda coda e
 		 * inserito nella prima. */
@@ -109,13 +109,13 @@ namespace translated_automata {
 				transitions_created++) {
 
 			StateDFA* from = this->getRandomStateWithUnusedLabels(reached_states, unused_labels);
-			StateDFA* to = this->getRandomState(dfa);
+			StateDFA* to = this->getRandomState(*dfa);
 			string label = this->extractRandomUnusedLabel(unused_labels, from);
-			dfa.connectStates(from, to, label);
+			dfa->connectStates(from, to, label);
 		}
 
 		// Impostazione delle distanza a partire dallo stato iniziale
-		dfa.getInitialState()->initDistancesRecursively(0);
+		dfa->getInitialState()->initDistancesRecursively(0);
 
 		return dfa;
 	}

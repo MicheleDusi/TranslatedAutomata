@@ -28,15 +28,15 @@ namespace translated_automata {
 	class Problem {
 
 	private:
-		DFA m_dfa;
-		Translation m_translation;
+		DFA* m_dfa;
+		Translation* m_translation;
 
 	public:
-		Problem(DFA& dfa, Translation& translation);
+		Problem(DFA* dfa, Translation* translation);
 		~Problem();
 
-		DFA& getDFA();
-		Translation& getTranslation();
+		DFA* getDFA();
+		Translation* getTranslation();
 	};
 
 	/**
@@ -59,7 +59,7 @@ namespace translated_automata {
 		DFAGenerator* getDFAGenerator();
 		TranslationGenerator* getTranslationGenerator();
 
-		Problem generate();
+		Problem* generate();
 
 	};
 

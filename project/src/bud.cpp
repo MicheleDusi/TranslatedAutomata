@@ -10,7 +10,6 @@
 
 #include "bud.hpp"
 
-#define DEBUG_MODE
 #include "debug.hpp"
 
 namespace translated_automata {

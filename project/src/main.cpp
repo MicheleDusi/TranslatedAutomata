@@ -28,7 +28,7 @@
 #include "translation_generator.hpp"
 
 #define ALPHABET_CARDINALITY 				4
-#define AUTOMATON_SIZE 						5
+#define AUTOMATON_SIZE 						10
 #define AUTOMATON_FINAL_PROBABILITY 		.3
 #define AUTOMATON_TRANSITION_PERCENTAGE 	.5
 #define TRANSLATION_MIXING_FACTOR 			.5
@@ -42,9 +42,12 @@ using namespace translated_automata;
 int main(int argc, char **argv) {
 
 	DEBUG_MARK_PHASE( "Translated Automaton - Main" ) {
+		ProblemGenerator* generator;
+
+		DEBUG_MARK_PHASE("Creazione dei generatori") {
 
 		// Creazione del problema
-		ProblemGenerator* generator = new ProblemGenerator();
+		generator = new ProblemGenerator();
 		generator->getDFAGenerator()->setSize(AUTOMATON_SIZE);
 		generator->getDFAGenerator()->setFinalProbability(AUTOMATON_FINAL_PROBABILITY);
 		generator->getDFAGenerator()->setTransitionPercentage(AUTOMATON_TRANSITION_PERCENTAGE);
@@ -52,9 +55,16 @@ int main(int argc, char **argv) {
 		generator->getTranslationGenerator()->setOffset(TRANSLATION_OFFSET);
 		generator->getTranslationGenerator()->setEpsilonPercentage(TRANSLATION_EPSILON_PERCENTAGE);
 
+		}
+		DEBUG_MARK_PHASE("Risoluzione dei problemi") {
+
 		// Risoluzione del problema
-		ProblemSolver* solver = new ProblemSolver(*generator);
-		solver->solveSeries(1);
+		ProblemSolver* solver = new ProblemSolver(generator);
+		solver->solveSeries(10);
+
+		delete generator;
+
+		}
 
 	}
 

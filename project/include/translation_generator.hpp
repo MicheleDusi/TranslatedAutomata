@@ -37,7 +37,7 @@ namespace translated_automata {
 		void setOffset(double offset);
 		void setEpsilonPercentage(double epsilon_percentage);
 
-		Translation generateTranslation(Alphabet& domain);
+		Translation* generateTranslation(Alphabet& domain);
 
 	};
 

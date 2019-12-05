@@ -18,7 +18,7 @@ namespace translated_automata {
 	class DFADrawer : public AutomataDrawer<DFA> {
 
 	public:
-		DFADrawer(const DFA& automaton) : AutomataDrawer(automaton) {};
+		DFADrawer(DFA* automaton) : AutomataDrawer(automaton) {};
 
 	};
 
@@ -29,22 +29,9 @@ namespace translated_automata {
 	class NFADrawer : public AutomataDrawer<NFA> {
 
 	public:
-		NFADrawer(const NFA& automaton) : AutomataDrawer(automaton) {};
+		NFADrawer(NFA* automaton) : AutomataDrawer(automaton) {};
 
 	};
-
-
-	/**
-	 * Costruttore. Richiama il costruttore della classe genitore.
-	 */
-//	DFADrawer::DFADrawer(const DFA& automaton)
-//	: AutomataDrawer(automaton) {};
-
-	/**
-	 * Costruttore. Richiama il costruttore della classe genitore.
-	 */
-//	NFADrawer::NFADrawer(const NFA& automaton)
-//	: AutomataDrawer(automaton) {};
 
 }
 

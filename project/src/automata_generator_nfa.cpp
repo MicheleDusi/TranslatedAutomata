@@ -23,16 +23,16 @@ namespace translated_automata {
 	/**
 	 * Permette la creazione di un NFA secondo i parametri impostati tramite i metodi setter.
 	 */
-	NFA NFAGenerator::generateRandomAutomaton() {
+	NFA* NFAGenerator::generateRandomAutomaton() {
 		// Creo l'NFA
-		NFA nfa = NFA();
+		NFA* nfa = new NFA();
 
 		// Generazione degli stati
-		this->generateStates(nfa);
+		this->generateStates(*nfa);
 
 		// Imposto lo stato iniziale
-		StateNFA *initial_state = nfa.getStatesList().front();		// Nota: in questo caso sto assumendo (correttamente) che lo stato che voglio impostare sia il primo in ordine alfabetico
-		nfa.setInitialState(initial_state);
+		StateNFA *initial_state = nfa->getStatesList().front();		// Nota: in questo caso sto assumendo (correttamente) che lo stato che voglio impostare sia il primo in ordine alfabetico
+		nfa->setInitialState(initial_state);
 
 		// Creazione delle transizioni
 
@@ -59,7 +59,7 @@ namespace translated_automata {
 
 		/* 1.2) Parallelamente, si tiene traccia dei nodi non ancora marcati come "raggiungibili".
 		 * All'inizio tutti gli stati appartengono a questa lista, tranne il nodo iniziale. */
-		list<StateNFA*> unreached_queue = nfa.getStatesList();
+		list<StateNFA*> unreached_queue = nfa->getStatesList();
 		unreached_queue.pop_front();
 
 		/* 1.3) Si estrae a caso uno stato "raggiungibile" e uno non "raggiungibile", e si crea una transizione
@@ -68,7 +68,7 @@ namespace translated_automata {
 			StateNFA* from = reached_states[rand() % reached_states.size()];
 			StateNFA* to = unreached_queue.front();
 			string label = getRandomLabelFromAlphabet();
-			nfa.connectStates(from, to, label);
+			nfa->connectStates(from, to, label);
 
 		/* 1.4) Il secondo stato viene marcato come "raggiungibile". Viene perciò estratto dalla seconda coda e
 		 * inserito nella prima. */
@@ -89,10 +89,10 @@ namespace translated_automata {
 				transitions_created < transitions_number;
 				transitions_created++) {
 
-			StateNFA* from = this->getRandomState(nfa);
-			StateNFA* to = this->getRandomState(nfa);
+			StateNFA* from = this->getRandomState(*nfa);
+			StateNFA* to = this->getRandomState(*nfa);
 			string label = getRandomLabelFromAlphabet();
-			nfa.connectStates(from, to, label);
+			nfa->connectStates(from, to, label);
 		}
 
 		return nfa;

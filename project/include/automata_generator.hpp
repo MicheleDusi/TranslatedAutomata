@@ -64,7 +64,7 @@ namespace translated_automata {
 		void setTransitionPercentage(double percentage);
 		void setFinalProbability(double probability);
 
-		virtual Automaton generateRandomAutomaton() = 0;
+		virtual Automaton* generateRandomAutomaton() = 0;
 
 	};
 

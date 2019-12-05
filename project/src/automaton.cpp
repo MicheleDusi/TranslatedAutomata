@@ -15,9 +15,9 @@
 
 #include <algorithm>
 
-#include "debug.hpp"
 #include "state_dfa.hpp"
 #include "state_nfa.hpp"
+#include "debug.hpp"
 
 namespace translated_automata {
 
@@ -39,11 +39,15 @@ namespace translated_automata {
      */
     template <class State>
     Automaton<State>::~Automaton() {
+    	DEBUG_MARK_PHASE("Distruzione di un automa con %lu stati", this->m_states.size()) {
+
     	for (State* s : m_states) {
     		s->detachAllTransitions();
     	}
     	for (State* s : m_states) {
 //    		this->m_states.erase(s);
+    	}
+
     	}
     }
 
@@ -57,7 +61,9 @@ namespace translated_automata {
 
     /**
      * Verifica se un automa contiene lo stato s al suo interno.
-     * I confronti avvengono tramite il nome dello stato.
+     * I confronti avvengono tramite puntatore, NON tramite nome.
+     * Per effettuare un confronto tramite nomi è opportuno utilizzare
+     * l'omonimo metodo che accetta in ingresso una stringa.
      */
     template <class State>
     bool Automaton<State>::hasState(State* s) {
@@ -65,7 +71,9 @@ namespace translated_automata {
     }
 
     /**
-     * Verifica se un automa contiene uno stato associato alla label "name" al suo interno.
+     * Verifica se un automa contiene uno stato con un nome specifico al suo interno.
+     * I confronti vengono effettuati tramite nome, non tramite puntatore.
+     * In caso di stati ominimi, questo metodo restituirebbe comunque un risultato affermativo.
      */
     template <class State>
     bool Automaton<State>::hasState(string name) {
@@ -133,7 +141,9 @@ namespace translated_automata {
      */
     template <class State>
     bool Automaton<State>::removeState(State* s) {
+    	DEBUG_MARK_PHASE("Function \"detachAllTransitions\" sullo stato %s", s->getName().c_str())
     	s->detachAllTransitions();
+    	DEBUG_LOG("Verifica dello stato dopo la funzione \"detachAllTransitions\" e prima di essere rimosso:\n%s", s->toString().c_str());
     	return m_states.erase(s);
     }
 
@@ -159,6 +169,8 @@ namespace translated_automata {
     	if (hasState(s)) {
 			m_initial_state = s;
 	    	s->initDistancesRecursively(0);
+    	} else {
+    		DEBUG_LOG_ERROR("Impossibile impostare %s come stato iniziale poiché non appartenente all'automa", s->getName().c_str());
     	}
     }
 
@@ -344,29 +356,40 @@ namespace translated_automata {
      */
     template <class State>
     bool Automaton<State>::operator==(Automaton<State>& other) {
+    	DEBUG_MARK_PHASE("Confronto di due automi") {
+
     	// Se gli stati iniziali non sono uguali, certamente i due automi non sono uguali
         if (*m_initial_state != *other.m_initial_state) {
+        	DEBUG_LOG("Lo stato %s è diverso da %s", m_initial_state->getName().c_str(), other.m_initial_state->getName().c_str());
         	return false;
         }
 
         // Se gli automi non hanno la stessa dimensione (= numero di stati), allora non sono certamente uguali
         if (m_states.size() != other.m_states.size()) {
+        	DEBUG_LOG("Il primo automa ha %lu stati, il secondo ne ha %lu", m_states.size(), other.m_states.size());
         	return false;
         }
 
         // Effettuo il confronto stato per stato dei due automi.
-        // Essendo gli insiemi ordinati, posso basarmi sullo scorrimento parallelo degli stati dei due insiemi.
-        for (	auto ia = m_states.begin(), ib = other.m_states.begin();
-        		ia != m_states.end() && ib != m_states.end();
-        		++ia, ++ib) {
+        // Per ciascuno stato del primo automa, verifico che esista anche nell'altro.
+        // Non c'è bisogno di fare il processo inverso, poiché il numero di stati è uguale.
+        for (auto state : m_states) {
 
-            if (*ia != *ib) {
-            	return false;
-            } else if (!(*ia)->hasSameTransitions(*ib)) {
-            	return false;
-            }
+        	// Cerco uno stato con lo stesso nome nell'altro automa
+        	State* sakename_state;
+        	if ((sakename_state = other.getState(state->getName())) != NULL) {
+
+        		// Verifico che abbia le stesse transizioni a stati con lo stesso nome (!)
+        		if (!state->hasSameTransitionsNamesOf(sakename_state)) {
+        			return false;
+        		}
+
+        	} else {
+        		return false;
+        	}
         }
 
+    	}
         return true;
     }
 

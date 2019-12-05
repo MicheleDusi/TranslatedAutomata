@@ -160,8 +160,9 @@ namespace translated_automata {
 	 * sugli stati dell'NFA che sono contenuti nella nuova estensione.
 	 */
 	void ConstructedStateDFA::replaceExtensionWith(ExtensionDFA &new_ext) {
-		m_extension = new_ext;
-		m_name = createNameFromExtension(m_extension);
+		this->m_extension = new_ext;
+		this->m_name = createNameFromExtension(m_extension);
+		this->m_final = hasFinalStates(m_extension);
 	}
 
 	/**

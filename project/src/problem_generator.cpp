@@ -19,7 +19,6 @@
 #include <ctime>
 
 #include "alphabet_generator.hpp"
-#define DEBUG_MODE
 #include "debug.hpp"
 
 namespace translated_automata {
@@ -29,8 +28,16 @@ namespace translated_automata {
 	 * Richiede un automa DFA da tradurre e una traduzione
 	 * sull'alfabeto.
 	 */
-	Problem::Problem(DFA& dfa, Translation& translation)
-	: m_dfa(dfa), m_translation(translation) {}
+	Problem::Problem(DFA* dfa, Translation* translation) {
+		DEBUG_MARK_PHASE("Creazione di un nuovo oggetto Problem") {
+
+		DEBUG_ASSERT_NOT_NULL(dfa);
+		this->m_dfa = dfa;
+		DEBUG_ASSERT_NOT_NULL(translation);
+		this->m_translation = translation;
+
+		}
+	}
 
 	/**
 	 * Distruttore.
@@ -42,14 +49,14 @@ namespace translated_automata {
 	/**
 	 * Restituisce l'automa DFA del problema.
 	 */
-	DFA& Problem::getDFA() {
+	DFA* Problem::getDFA() {
 		return this->m_dfa;
 	}
 
 	/**
 	 * Restituisce la traduzione del problema.
 	 */
-	Translation& Problem::getTranslation() {
+	Translation* Problem::getTranslation() {
 		return this->m_translation;
 	}
 
@@ -61,6 +68,10 @@ namespace translated_automata {
 	ProblemGenerator::ProblemGenerator() {
 		// Istanzio un nuovo gestore di randomicità
 		RandomnessManager* random = new RandomnessManager();
+
+// DEBUG
+//		random->setSeed(1575460404);
+//		random->printSeed();
 
 		// Impostazione dell'alfabeto comune
 		AlphabetGenerator* alphabet_generator = new AlphabetGenerator();
@@ -100,13 +111,17 @@ namespace translated_automata {
 	/**
 	 * Genera un nuovo problema, richiamando i generatori delegati.
 	 */
-	Problem ProblemGenerator::generate() {
+	Problem* ProblemGenerator::generate() {
+		DEBUG_MARK_PHASE("Generazione di un problema mediante ProblemGenerator") {
 
-		DFA automaton = this->m_dfa_generator->generateRandomAutomaton();
-		Translation translation = this->m_translation_generator->generateTranslation(this->m_alphabet);
+		DEBUG_LOG("Generazione dell'automa");
+		DFA* automaton = this->m_dfa_generator->generateRandomAutomaton();
 
-		Problem problem = Problem(automaton, translation);
-		return problem;
+		DEBUG_LOG("Generazione della traduzione");
+		Translation* translation = this->m_translation_generator->generateTranslation(this->m_alphabet);
+
+		return new Problem(automaton, translation);
+		}
 	}
 
 	/* Classe RandomnessManager */

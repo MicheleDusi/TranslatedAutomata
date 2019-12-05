@@ -18,15 +18,15 @@ namespace translated_automata {
 
 	class ProblemSolver {
 	private:
-		ProblemGenerator generator;			// Generatore di problemi
+		ProblemGenerator* generator;			// Generatore di problemi
 		EmbeddedSubsetConstruction* esc; 	// Algoritmo Embedded Subset Construction
 		SubsetConstruction* sc;				// Algoritmo Subset Construction
 
 	public:
-		ProblemSolver(ProblemGenerator& generator);
+		ProblemSolver(ProblemGenerator* generator);
 		~ProblemSolver();
 
-		void solve(Problem& problem);
+		void solve(Problem* problem);
 		void solve();
 		void solveSeries(unsigned int number);
 	};

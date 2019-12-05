@@ -98,6 +98,44 @@ namespace translated_automata {
 	}
 
 	/**
+	 * Traduce un automa creandone una copia con tutte le label tradotte.
+	 * Poiché possono generarsi punti di non determinismo (transizioni uscenti
+	 * dallo stesso stato marcate con la medesima label) l'automa restituito
+	 * in output è un NFA.
+	 */
+	NFA* Translation::translate(DFA* dfa) {
+		// Istanzio un automa NFA, che verrà restituito in output al termine
+		NFA* translated_nfa = new NFA();
+		// Istanzio un dizionario per associare agli stati originali quelli nuovi.
+		std::map<StateDFA*, StateNFA*> states_map = map<StateDFA*, StateNFA*>();
+
+		// Creo le copie degli stati, per il momento senza transizioni
+		for (StateDFA* state : dfa->getStatesVector()) {
+			StateNFA* new_state = new StateNFA(state->getName(), state->isFinal());
+			states_map[state] = new_state;
+			translated_nfa->addState(new_state);
+		}
+
+		// Creo e collego le transizioni (tradotte!)
+		for (auto &states_pair : states_map) {
+
+			// Per ciascuna transizione uscente dallo stato DFA originale
+			for (auto &trans_pair : states_pair.first->getExitingTransitionsRef()) {
+				for (StateDFA* child : trans_pair.second) {
+
+					// Creo la transizione corrispondente nello stato NFA associato
+					states_pair.second->connectChild(this->translate(trans_pair.first), states_map[child]);
+					// Nota: questo crea anche le transizioni entranti nei figli, in automatico.
+				}
+			}
+		}
+		// Impostazione dello stato iniziale
+		translated_nfa->setInitialState(states_map[dfa->getInitialState()]);
+
+		return translated_nfa;
+	}
+
+	/**
 	 * Restituisce una descrizione testuale della traduzione, come lista
 	 * delle associazioni.
 	 * Le traduzioni identiche non vengono stampate.

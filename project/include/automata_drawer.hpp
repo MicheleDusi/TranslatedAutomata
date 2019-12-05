@@ -24,10 +24,10 @@ namespace translated_automata {
 	class AutomataDrawer {
 
 	private:
-		Automaton m_automaton;
+		Automaton* m_automaton;
 
 	public:
-		AutomataDrawer(const Automaton& automaton);
+		AutomataDrawer(Automaton* automaton);
 		virtual ~AutomataDrawer();
 
 		string asString();

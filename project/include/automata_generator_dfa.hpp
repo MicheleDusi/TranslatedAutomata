@@ -33,7 +33,7 @@ namespace translated_automata {
 		DFAGenerator(Alphabet alphabet);
 		~DFAGenerator();
 
-		DFA generateRandomAutomaton();
+		DFA* generateRandomAutomaton();
 
 	};
 

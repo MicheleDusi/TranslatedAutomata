@@ -30,7 +30,7 @@ namespace translated_automata {
 
 	private:
 		multiset<State*> m_states;
-		State *m_initial_state;
+		State* m_initial_state;
 
         void removeReachableStates(State* s, set<State*> &states); // INUTILE
 

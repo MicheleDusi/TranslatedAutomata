@@ -117,7 +117,7 @@ namespace translated_automata {
 	 * La generazione viene effettuata secondo i parametri pre-impostati con gli altri metodi
 	 * della classe (come il Mixing Factor, l'Offset, etc..).
 	 */
-	Translation TranslationGenerator::generateTranslation(Alphabet& domain) {
+	Translation* TranslationGenerator::generateTranslation(Alphabet& domain) {
 		map<string, string> translation_map;
 
 		// Parametri adattati all'alfabeto
@@ -134,8 +134,7 @@ namespace translated_automata {
 		}
 
 		// Istanziazione dell'oggetto Translation
-		Translation translation = Translation(domain, translation_map);
-		return translation;
+		return new Translation(domain, translation_map);
 	}
 
 } /* namespace translated_automata */

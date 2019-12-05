@@ -28,7 +28,7 @@ namespace translated_automata {
 		NFAGenerator(Alphabet alphabet);
 		~NFAGenerator();
 
-		NFA generateRandomAutomaton();
+		NFA* generateRandomAutomaton();
 
 	};
 

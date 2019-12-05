@@ -44,6 +44,7 @@ namespace translated_automata {
 
 		string translate(string label);
 		Alphabet translate(Alphabet alpha);
+		NFA* translate(DFA* automaton);
 
 		string toString();
 		string toString(Alphabet &reference);

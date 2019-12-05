@@ -20,7 +20,7 @@ namespace translated_automata {
 	 * Precondizione: l'automa non deve essere nullo.
 	 */
 	template <class Automaton>
-	AutomataDrawer<Automaton>::AutomataDrawer(const Automaton& automaton) {
+	AutomataDrawer<Automaton>::AutomataDrawer(Automaton* automaton) {
 		this->m_automaton = automaton;
 	}
 
@@ -30,7 +30,7 @@ namespace translated_automata {
 	 */
 	template <class Automaton>
 	AutomataDrawer<Automaton>::~AutomataDrawer() {
-		DEBUG_LOG("Sto eliminando l'oggetto \"AUTOMATA DRAWER\", assicurarsi che non si stia eliminando l'automa membro.");
+		DEBUG_LOG("Sto eliminando l'oggetto \"Automata Drawer\"");
 	}
 
 	/**
@@ -43,11 +43,11 @@ namespace translated_automata {
 	template <class Automaton>
 	string AutomataDrawer<Automaton>::asString() {
     	string result = "";
-    	result += "AUTOMATON (size = " + std::to_string(this->m_automaton.size()) + ")\n";
-        result += "Initial state: " + this->m_automaton.getInitialState()->getName() + '\n';
+    	result += "AUTOMATON (size = " + std::to_string(this->m_automaton->size()) + ")\n";
+        result += "Initial state: " + this->m_automaton->getInitialState()->getName() + '\n';
 
         // Per ogni stato dell'automa
-        for (auto s : this->m_automaton.getStatesVector()) {
+        for (auto s : this->m_automaton->getStatesVector()) {
             result += s->toString();
         }
 

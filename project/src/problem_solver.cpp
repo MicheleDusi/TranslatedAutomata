@@ -7,6 +7,7 @@
 #include "problem_solver.hpp"
 
 #include <cstdio>
+#include <chrono>
 
 #include "automata_drawer_impl.hpp"
 #include "debug.hpp"
@@ -58,25 +59,33 @@ namespace translated_automata {
 		DFA* esc_result;
 
 		DEBUG_MARK_PHASE("Subset Construction") {
-			long int esc_start_time = time(NULL);
+			auto sc_start_time = chrono::high_resolution_clock::now();
+
 			// Fase di traduzione
 			NFA* nfa = problem->getTranslation()->translate(problem->getDFA());
 			// Fase di costruzione
 			sc_result = this->sc->run(nfa);
-			long int esc_end_time = time(NULL);
+
+			auto sc_end_time = chrono::high_resolution_clock::now();
+			auto sc_duration = (sc_end_time - sc_start_time);
+			auto sc_ms = std::chrono::duration_cast<std::chrono::milliseconds>(sc_duration).count();
 
 			if (DO_PRINT_RESULTS) {
-				printf(" SC - time = %ld\n",(esc_end_time - esc_start_time));
+				std::cout << " SC - time = " << sc_ms << std::endl;
 			}
 		}
 
 		DEBUG_MARK_PHASE("Embedded Subset Construction") {
-			long int esc_start_time = time(NULL);
+			auto esc_start_time = chrono::high_resolution_clock::now();
+
 			esc_result = this->esc->run(problem->getDFA(), problem->getTranslation());
-			long int esc_end_time = time(NULL);
+
+			auto esc_end_time = chrono::high_resolution_clock::now();
+			auto esc_duration = (esc_end_time - esc_start_time);
+			auto esc_ms = std::chrono::duration_cast<std::chrono::milliseconds>(esc_duration).count();
 
 			if (DO_PRINT_RESULTS) {
-				printf("ESC - time = %ld\n",(esc_end_time - esc_start_time));
+				std::cout << "ESC - time = " << esc_ms << std::endl;
 			}
 		}
 

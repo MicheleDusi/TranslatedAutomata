@@ -29,7 +29,7 @@
 
 #define ALPHABET_CARDINALITY 				10
 
-#define AUTOMATON_SIZE 						100
+#define AUTOMATON_SIZE 						20
 #define AUTOMATON_FINAL_PROBABILITY 		.5
 #define AUTOMATON_TRANSITION_PERCENTAGE 	.45
 
@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
 
 		// Risoluzione del problema
 		ProblemSolver* solver = new ProblemSolver(generator);
-		solver->solveSeries(10);
+		solver->solveSeries(1);
 
 		delete generator;
 

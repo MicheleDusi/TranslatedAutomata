@@ -62,7 +62,47 @@ namespace translated_automata {
      */
 	template <class Automaton>
 	void AutomataDrawer<Automaton>::asDotFile(string filename) {
+		// Apro lo stream su file
+		std::ofstream out(filename, std::ios_base::out | std::ios_base::trunc);
 
+		// Se il file non è aperto, restituisco un errore
+		if (!out.is_open()) {
+			DEBUG_LOG_ERROR("Impossibile scrivere il file \"%s\"", filename.c_str());
+			return;
+		}
+
+		// Prefisso per la rappresentazione dell'automa
+		out << "digraph finite_state_machine {\n"
+				"rankdir=LR;\n"
+				"size=\"8,5\"\n";
+
+		// Rappresentazione di tutti gli stati
+		for (auto state : this->m_automaton->getStatesVector()) {
+			// Verifico se lo stato è final
+			if (state->isFinal()) {
+				out << "node [shape = doublecircle, label = \"" << state->getName() << "\", fontsize = 10] \"" << state->getName() << "\";\n";
+			} else {
+				out << "node [shape = circle, label = \"" << state->getName() << "\", fontsize = 10] \"" << state->getName() << "\";\n";
+			}
+		}
+
+		// Rappresentazione dello stato iniziale
+		out << "node [shape = point]; init\n";
+		out << "init -> \"" << this->m_automaton->getInitialState()->getName() << "\"\n";
+
+		// Rappresentazione delle transizioni
+		for (auto state : this->m_automaton->getStatesVector()) {
+			for (auto &pair : state->getExitingTransitions()) {
+				for (auto child : pair.second) {
+					out << "\"" << state->getName() << "\" -> \"" << child->getName() << "\" [ label = \"" << pair.first << "\" ];\n";
+				}
+			}
+		}
+
+		out << "}";
+
+		// Chiusura del file
+		out.close();
 	}
 
 	/* Istanziazione della classe DFADrawer */

@@ -12,7 +12,7 @@
 #include "automata_drawer_impl.hpp"
 #include "debug.hpp"
 
-#define DO_PRINT_AUTOMATA false
+#define DO_PRINT_AUTOMATA true
 #define DO_PRINT_RESULTS true
 
 namespace translated_automata {
@@ -71,7 +71,7 @@ namespace translated_automata {
 			auto sc_ms = std::chrono::duration_cast<std::chrono::milliseconds>(sc_duration).count();
 
 			if (DO_PRINT_RESULTS) {
-				std::cout << " SC - time = " << sc_ms << std::endl;
+				std::cout << " SC - time = " << sc_ms << " - size = " << std::to_string(sc_result->size()) << std::endl;
 			}
 		}
 
@@ -85,7 +85,7 @@ namespace translated_automata {
 			auto esc_ms = std::chrono::duration_cast<std::chrono::milliseconds>(esc_duration).count();
 
 			if (DO_PRINT_RESULTS) {
-				std::cout << "ESC - time = " << esc_ms << std::endl;
+				std::cout << "ESC - time = " << esc_ms << " - size = " << std::to_string(esc_result->size()) << std::endl;
 			}
 		}
 
@@ -100,13 +100,22 @@ namespace translated_automata {
 		if (DO_PRINT_AUTOMATA)
 		DEBUG_MARK_PHASE("Stampa della soluzione") {
 
+			// [SC] Stampa in formato testuale
 			std::cout << "SOLUZIONE di SC:\n";
 			DFADrawer sc_drawer = DFADrawer(sc_result);
 			std::cout << std::endl << sc_drawer.asString() << std::endl;
 
+			// [ESC] Stampa in formato testuale
 			std::cout << "SOLUZIONE di ESC:\n";
 			DFADrawer esc_drawer = DFADrawer(esc_result);
 			std::cout << std::endl << esc_drawer.asString() << std::endl;
+
+			// [ESC] Stampa su file
+			string filename = "esc_solution.gv";
+			esc_drawer.asDotFile(filename);
+			string command = "dot -Tpdf \"" + filename + "\" -o esc_result.pdf";
+			system(command.c_str());
+
 		}
 
 	}

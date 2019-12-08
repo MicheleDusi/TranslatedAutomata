@@ -142,6 +142,15 @@ namespace translated_automata {
 	}
 
 	/**
+	 * Restituisce la massima distanza di uno stato all'interno dell'automa.
+	 * Questo parametro è utilizzato solo per la generazione di automi stratificati.
+	 */
+	template <class Automaton>
+	unsigned int AutomataGenerator<Automaton>::getMaxDistance() {
+		return this->m_max_distance;
+	}
+
+	/**
 	 * Setter per l'alfabeto dell'automa da generare.
 	 * Si richiede che l'alfabeto contenga almeno un simbolo.
 	 */
@@ -197,6 +206,16 @@ namespace translated_automata {
 		if (probability >= 0 && probability <= 1) {
 			this->m_final_probability = probability;
 		}
+	}
+
+	/**
+	 * Imposta la massima distanza di uno stato all'interno dell'automa da costruire.
+	 * Questo parametro è utilizzato solamente nella generazione di automi stratificati,
+	 * non di automi generici.
+	 */
+	template <class Automaton>
+	void AutomataGenerator<Automaton>::setMaxDistance(unsigned int max_distance) {
+		this->m_max_distance = max_distance;
 	}
 
     /*************

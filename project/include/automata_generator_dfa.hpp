@@ -34,6 +34,7 @@ namespace translated_automata {
 		~DFAGenerator();
 
 		DFA* generateRandomAutomaton();
+		DFA* generateStratifiedAutomaton();
 
 	};
 

@@ -7,11 +7,15 @@
  * Permette la generazione di un automa a stati finiti deterministico, secondo i parametri previsti dalla classe
  * padre "AutomataGenerator".
  *
+ * - "generateRandomAutomaton" genera un automa in maniera casuale, senza specifiche caratteristiche topologiche,
+ * 	rispettandone la dimensione e la percentuale di transizioni.
+ * - "generateStratifiedAutomaton" genera un automa a strati, dove "max_distance" è il numero di strati previsto.
+ * 	Se il parametro "max_distance" non viene impostato, risulta pari alla dimensione stessa.
+ *
  ******************************************************************************/
 
 #include "automata_generator_dfa.hpp"
 
-//#define DEBUG_MODE
 #include "debug.hpp"
 
 namespace translated_automata {
@@ -116,6 +120,150 @@ namespace translated_automata {
 
 		// Impostazione delle distanza a partire dallo stato iniziale
 		dfa->getInitialState()->initDistancesRecursively(0);
+
+		return dfa;
+	}
+
+	/**
+	 * Metodo che restituisce un automa stratificato.
+	 * Il numero di strati è dato dalla massima distanza (parametro "max_distance") impostata nel generatore.
+	 * Ogni strato ha la stessa dimensione, con l'eccezione dello strato con distanza 0 (contenente solo il nodo
+	 * iniziale) e l'ultimo (che contiene gli stati rimasti, non necessariamente in numero pari al resto).
+	 * Si garantisce che:
+	 * - L'automa ha il numero di stati previsto dal parametro "size".
+	 * - L'automa sia deterministico.
+	 * - L'automa la percentuale di transizioni impostata rispetto al totale.
+	 * - Ogni strato contenga nodi con la stessa distanza.
+	 * - Ogni nodo abbia transizioni verso nodi dello stesso strato o dello strato successivo.
+	 */
+	DFA* DFAGenerator::generateStratifiedAutomaton() {
+		// Creo il DFA
+		DFA* dfa = new DFA();
+
+		// Generazione degli stati
+		this->generateStates(*dfa);
+		DEBUG_ASSERT_TRUE( this->getSize() == dfa->size() );
+
+		// Ottengo un riferimento allo stato iniziale
+		StateDFA *initial_state = dfa->getStatesList().front();		// Nota: in questo caso sto assumendo (correttamente) che lo stato che voglio impostare sia il primo in ordine alfabetico
+		dfa->setInitialState(initial_state);
+
+		// Verifico se la massima distanza è stata impostata
+		if (this->getMaxDistance() == 0 || this->getMaxDistance() >= this->getSize()) {
+			// In caso il valore non sia corretto, la imposto al valore massimo.
+			// L'automa che se ne otterrà sarà una lunga catena di stati.
+			this->setMaxDistance(this->getSize() - 1);
+		}
+
+		/* Computo il numero di nodi per ciascuno strato
+		 * Il numero sarà dato dal numero di nodi NON iniziali = (N - 1),
+		 * dove N è la dimensione ("size") dell'automa, diviso per la massima
+		 * distanza e arrotondato per eccesso.
+		 */
+		unsigned int strata_size = (unsigned int)((this->getSize() - 1) / this->getMaxDistance());
+		/* Computo il numero di strati che avranno un nodo in più, a causa della
+		 * divisione intera.
+		 */
+		unsigned int slightly_bigger_strata_number = (this->getSize() - 1) % this->getMaxDistance();
+
+		/* Verifico che sia possibile creare un automa DETERMINISTICO con quel numero di nodi per ciascuno
+		 * strato con le label a disposizione nell'alfabeto.
+		 */
+		DEBUG_LOG("Alpha size = %lu", this->getAlphabet().size());
+		DEBUG_LOG("Strata size = %u", strata_size);
+		DEBUG_ASSERT_FALSE(this->getAlphabet().size() < (strata_size + ((slightly_bigger_strata_number) ? 1 : 0)));
+		if (this->getAlphabet().size() < (strata_size + ((slightly_bigger_strata_number) ? 1 : 0))) {
+			DEBUG_LOG_ERROR("Impossibile creare un automa deterministico con un numero di nodi per strato così alto e un numero di label insufficiente");
+			// Per il momento, viene generato un errore e il metodo si interrompe
+			return NULL;
+		}
+
+		// Suddivisione degli stati in strati
+
+		// Inizializzazione degli strati
+		vector<vector<StateDFA*>> strata = vector<vector<StateDFA*>>();
+		vector<StateDFA*> states = dfa->getStatesVector();
+
+		// Rimuovo lo stato iniziale e lo inserisco come primo strato (a distanza 0)
+		strata.push_back(vector<StateDFA*>());
+		strata[0].push_back(*(states.begin()));
+		states.erase(states.begin());
+
+		// Per tutti gli altri stati, li suddivido equamente
+		int stratus_index = 1;
+		strata.push_back(vector<StateDFA*>());
+		for (StateDFA* state : states) {
+			// Inserisco lo stato nello strato corrente
+			strata[stratus_index].push_back(state);
+
+			// Se ho raggiunto la dimensione massima per lo strato
+			if (strata[stratus_index].size() > (strata_size + ((stratus_index > slightly_bigger_strata_number) ? -1 : 0))) {
+				// Passo a quello successivo
+				stratus_index++;
+				strata.push_back(vector<StateDFA*>());
+			}
+		}
+
+		// DEBUG - Stampa degli strati
+		IF_DEBUG_ACTIVE(
+		for (auto stratus : strata) {
+			std::cout << "STRATO { ";
+			for (StateDFA* state : stratus) {
+				std::cout << state->getName() << " ";
+			}
+			std::cout << "}\n";
+		})
+
+		/* Una mappa tiene traccia delle label usate per ciascuno stato, in modo che non si abbiano stati con
+		 * transizioni uscenti marcate dalla stessa label.
+		 */
+		map<StateDFA*, Alphabet> unused_labels;
+		for (StateDFA* state : dfa->getStatesVector()) {
+			unused_labels[state] = Alphabet(this->getAlphabet());
+		}
+
+		// Soddisfacimento della RAGGIUNGIBILITA'
+		/* L'iterazione su uno strato [i] prevede che i nodi dello strato vengano
+		 * connessi con transizioni entranti a quelli dello strato precedente.
+		 */
+		for (int stratus_index = 1; stratus_index <= this->getMaxDistance(); stratus_index++) {
+			// Rendo gli stati di questo strato raggiungibili
+			for (StateDFA* state : strata[stratus_index]) {
+				StateDFA* parent = this->getRandomStateWithUnusedLabels(strata[stratus_index - 1], unused_labels);
+				string label = extractRandomUnusedLabel(unused_labels, parent);
+				dfa->connectStates(parent, state, label);
+			}
+		}
+
+		// Impostazione delle distanze
+		initial_state->initDistancesRecursively(0);
+
+		// Soddisfacimento della PERCENTUALE DI TRANSIZIONI
+
+		/* Viene calcolato il numero di transizioni da generare, considerandone il numero massimo
+		 * (ossia il numero di transizioni di un grafo completo, per ciascuna possibile etichetta) e
+		 * la percentuale di transizioni desiderata.
+		 */
+		unsigned long int transitions_number = this->computeTransitionsNumber();
+		DEBUG_ASSERT_TRUE( transitions_number >= dfa->size() - 1 );
+
+		for (	unsigned long int transitions_created = this->getSize() - 1;
+				transitions_created < transitions_number;
+				transitions_created++) {
+
+			// Estraggo lo stato genitore
+			StateDFA* from = this->getRandomStateWithUnusedLabels(states, unused_labels);
+			unsigned int from_dist = from->getDistance();
+			// Calcolo la distanza dello stato raggiunto (quindi lo strato di appartenenza)
+			unsigned int to_dist = (rand() % 2) ? (from_dist) : (from_dist + 1);
+			if (to_dist > this->getMaxDistance()) {
+				to_dist = this->getMaxDistance();
+			}
+			// Estraggo lo stato figlio
+			StateDFA* to = this->getRandomStateWithUnusedLabels(strata[to_dist], unused_labels);
+			string label = this->extractRandomUnusedLabel(unused_labels, from);
+			dfa->connectStates(from, to, label);
+		}
 
 		return dfa;
 	}

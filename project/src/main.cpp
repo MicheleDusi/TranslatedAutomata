@@ -32,6 +32,7 @@
 #define AUTOMATON_SIZE 						20
 #define AUTOMATON_FINAL_PROBABILITY 		.5
 #define AUTOMATON_TRANSITION_PERCENTAGE 	.45
+#define AUTOMATON_MAX_DISTANCE			 	5
 
 #define TRANSLATION_MIXING_FACTOR 			.357
 #define TRANSLATION_OFFSET 					1
@@ -53,6 +54,7 @@ int main(int argc, char **argv) {
 		generator->getDFAGenerator()->setSize(AUTOMATON_SIZE);
 		generator->getDFAGenerator()->setFinalProbability(AUTOMATON_FINAL_PROBABILITY);
 		generator->getDFAGenerator()->setTransitionPercentage(AUTOMATON_TRANSITION_PERCENTAGE);
+		generator->getDFAGenerator()->setMaxDistance(AUTOMATON_MAX_DISTANCE);
 		generator->getTranslationGenerator()->setMixingFactor(TRANSLATION_MIXING_FACTOR);
 		generator->getTranslationGenerator()->setOffset(TRANSLATION_OFFSET);
 		generator->getTranslationGenerator()->setEpsilonPercentage(TRANSLATION_EPSILON_PERCENTAGE);

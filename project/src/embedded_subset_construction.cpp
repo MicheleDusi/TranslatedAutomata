@@ -14,8 +14,9 @@
 
 #include <algorithm>
 
-#include "debug.hpp"
 #include "automata_drawer_impl.hpp"
+//#define DEBUG_MODE
+#include "debug.hpp"
 
 namespace translated_automata {
 
@@ -341,6 +342,8 @@ namespace translated_automata {
 									auto t = std::pair<ConstructedStateDFA*, string>(parent, pair.first);
 									transitions_to_remove.insert(t);
 
+								} else {
+									DEBUG_LOG("Le due estensioni sono uguali, non rimuovo nulla");
 								}
 
 							}
@@ -476,7 +479,13 @@ namespace translated_automata {
 
 			// Re-direzione di tutte le transizioni dello stato con distanza massima su quello con distanza minima
 			// (Le transizioni duplicate non vengono copiate)
+			DEBUG_MARK_PHASE("Copia delle transizioni") {
+//			std::cout << "MIN:\n" << min_dist_state->toString() << std::endl;
+//			std::cout << "MAX:\n" << max_dist_state->toString() << std::endl;
 			min_dist_state->copyAllTransitionsOf(max_dist_state);
+//			std::cout << "MIN:\n" << min_dist_state->toString() << std::endl;
+//			std::cout << "MAX:\n" << max_dist_state->toString() << std::endl;
+			}
 
 			// Rimozione dello stato dall'automa DFA
 			bool removed = dfa->removeState(max_dist_state);		// Rimuove il riferimento dello stato

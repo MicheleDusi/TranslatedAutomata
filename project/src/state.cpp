@@ -111,18 +111,19 @@ namespace translated_automata {
 			flag_new_insertion = true;
 		}
 
-		// FIXME Migliorare l'implementazione
-		bool flag_found = false;
-		for (auto iterator = this->m_exiting_transitions[label].begin();
-				!flag_new_insertion && iterator != this->m_exiting_transitions[label].end();
-				iterator++) {
-			if ((*iterator)->getName() == child->getName()) {
-				flag_found = true;
-			}
-		}
+//		// FIXME Migliorare l'implementazione
+//		bool flag_found = false;
+//		for (auto iterator = this->m_exiting_transitions[label].begin();
+//				!flag_new_insertion && iterator != this->m_exiting_transitions[label].end();
+//				iterator++) {
+//			if ((*iterator)->getName() == child->getName()) {
+//				flag_found = true;
+//			}
+//		}
 
 		// Se la label è un nuovo inserimento || Se per tale label, lo stato non è ancora presente
-		if (flag_new_insertion || !flag_found) {
+//		if (flag_new_insertion || !flag_found) {
+		if (flag_new_insertion || !this->hasExitingTransition(label, child)) {
 			// Aggiungo una transizione uscente da questo stato
 			this->m_exiting_transitions[label].insert(child);
 			// Aggiungo una transizione entrante allo stato di arrivo
@@ -236,9 +237,8 @@ namespace translated_automata {
 	 */
 	template <class S>
 	bool State<S>::hasExitingTransition(string label, S* child) {
-		auto search = m_exiting_transitions.find(label);
-		if (search != m_exiting_transitions.end()) {
-			return search->second.count(child);
+		if (this->m_exiting_transitions.count(label)) {
+			return (this->m_exiting_transitions[label].find(child) != this->m_exiting_transitions[label].end());
 		} else {
 			return false;
 		}
@@ -256,13 +256,12 @@ namespace translated_automata {
 
 	/**
 	 * Verifica se lo stato soggetto ha una transizione ENTRANTE
-	 * che parta dallo stato "child" e che sia marcata con l'etichetta "label".
+	 * che parta dallo stato "parent" e che sia marcata con l'etichetta "label".
 	 */
 	template <class S>
-	bool State<S>::hasIncomingTransition(string label, S* child) {
-		auto search = m_incoming_transitions.find(label);
-		if (search != m_incoming_transitions.end()) {
-			return search->second.count(child);
+	bool State<S>::hasIncomingTransition(string label, S* parent) {
+		if (this->m_incoming_transitions.count(label)) {
+			return (this->m_incoming_transitions[label].find(parent) != this->m_incoming_transitions[label].end());
 		} else {
 			return false;
 		}

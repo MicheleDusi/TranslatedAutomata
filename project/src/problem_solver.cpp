@@ -12,7 +12,7 @@
 #include "automata_drawer_impl.hpp"
 #include "debug.hpp"
 
-#define DO_PRINT_AUTOMATA true
+#define DO_PRINT_AUTOMATA false
 #define DO_PRINT_RESULTS true
 
 namespace translated_automata {
@@ -53,6 +53,12 @@ namespace translated_automata {
 			Alphabet computed_alpha = problem->getDFA()->getAlphabet();
 			std::cout << problem->getTranslation()->toString(computed_alpha);
 			std::cout << "- - - - - - - - - - - - -\n";
+
+			// Stampa su file dell'automa originale
+			string filename = "original.gv";
+			drawer.asDotFile(filename);
+			string command = "dot -Tpdf \"" + filename + "\" -o original.pdf";
+			system(command.c_str());
 		}
 
 		DFA* sc_result;
@@ -100,10 +106,16 @@ namespace translated_automata {
 		if (DO_PRINT_AUTOMATA)
 		DEBUG_MARK_PHASE("Stampa della soluzione") {
 
-			// [SC] Stampa in formato testuale
-			std::cout << "SOLUZIONE di SC:\n";
-			DFADrawer sc_drawer = DFADrawer(sc_result);
-			std::cout << std::endl << sc_drawer.asString() << std::endl;
+//			// [SC] Stampa in formato testuale
+//			std::cout << "SOLUZIONE di SC:\n";
+//			DFADrawer sc_drawer = DFADrawer(sc_result);
+//			std::cout << std::endl << sc_drawer.asString() << std::endl;
+//
+//			// [SC] Stampa su file
+//			string sc_filename = "sc_solution.gv";
+//			sc_drawer.asDotFile(sc_filename);
+//			string sc_command = "dot -Tpdf \"" + sc_filename + "\" -o sc_result.pdf";
+//			system(sc_command.c_str());
 
 			// [ESC] Stampa in formato testuale
 			std::cout << "SOLUZIONE di ESC:\n";
@@ -111,10 +123,10 @@ namespace translated_automata {
 			std::cout << std::endl << esc_drawer.asString() << std::endl;
 
 			// [ESC] Stampa su file
-			string filename = "esc_solution.gv";
-			esc_drawer.asDotFile(filename);
-			string command = "dot -Tpdf \"" + filename + "\" -o esc_result.pdf";
-			system(command.c_str());
+			string esc_filename = "esc_solution.gv";
+			esc_drawer.asDotFile(esc_filename);
+			string esc_command = "dot -Tpdf \"" + esc_filename + "\" -o esc_result.pdf";
+			system(esc_command.c_str());
 
 		}
 

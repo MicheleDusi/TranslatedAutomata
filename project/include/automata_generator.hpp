@@ -33,6 +33,7 @@ namespace translated_automata {
 		string m_name_prefix;
 		double m_transition_percentage;
 		double m_final_probability;
+		double m_max_distance = 0;
 
 		unsigned int m_namesCounter = 0;
 
@@ -57,12 +58,14 @@ namespace translated_automata {
 		string getNamePrefix();
 		double getTransitionPercentage();
 		double getFinalProbability();
+		unsigned int getMaxDistance();
 
 		void setAlphabet(Alphabet alpha);
 		void setSize(unsigned long int size);
 		void setNamePrefix(string prefix);
 		void setTransitionPercentage(double percentage);
 		void setFinalProbability(double probability);
+		void setMaxDistance(unsigned int max_distance);
 
 		virtual Automaton* generateRandomAutomaton() = 0;
 

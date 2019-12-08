@@ -68,10 +68,8 @@ namespace translated_automata {
 	ProblemGenerator::ProblemGenerator() {
 		// Istanzio un nuovo gestore di randomicità
 		RandomnessManager* random = new RandomnessManager();
-
-// DEBUG
-//		random->setSeed(1575460404);
-//		random->printSeed();
+//		random->setSeed(1575818023);
+		random->printSeed();
 
 		// Impostazione dell'alfabeto comune
 		AlphabetGenerator* alphabet_generator = new AlphabetGenerator();
@@ -115,7 +113,8 @@ namespace translated_automata {
 		DEBUG_MARK_PHASE("Generazione di un problema mediante ProblemGenerator") {
 
 		DEBUG_LOG("Generazione dell'automa");
-		DFA* automaton = this->m_dfa_generator->generateRandomAutomaton();
+//		DFA* automaton = this->m_dfa_generator->generateRandomAutomaton();
+		DFA* automaton = this->m_dfa_generator->generateStratifiedAutomaton();
 
 		DEBUG_LOG("Generazione della traduzione");
 		Translation* translation = this->m_translation_generator->generateTranslation(this->m_alphabet);

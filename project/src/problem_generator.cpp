@@ -65,7 +65,7 @@ namespace translated_automata {
 	 * Si occupa di istanziare i generatori delegati.
 	 * Inoltre, imposta alcuni parametri per la randomicità del programma.
 	 */
-	ProblemGenerator::ProblemGenerator() {
+	ProblemGenerator::ProblemGenerator(unsigned int alphabet_cardinality) {
 		// Istanzio un nuovo gestore di randomicità
 		RandomnessManager* random = new RandomnessManager();
 //		random->setSeed(1575818023);
@@ -73,7 +73,7 @@ namespace translated_automata {
 
 		// Impostazione dell'alfabeto comune
 		AlphabetGenerator* alphabet_generator = new AlphabetGenerator();
-		alphabet_generator->setCardinality(4); // FIXME
+		alphabet_generator->setCardinality(alphabet_cardinality);
 		this->m_alphabet = alphabet_generator->generate();
 		delete alphabet_generator;
 

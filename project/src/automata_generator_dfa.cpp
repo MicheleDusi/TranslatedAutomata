@@ -174,6 +174,7 @@ namespace translated_automata {
 		DEBUG_ASSERT_FALSE(this->getAlphabet().size() < (strata_size + ((slightly_bigger_strata_number) ? 1 : 0)));
 		if (this->getAlphabet().size() < (strata_size + ((slightly_bigger_strata_number) ? 1 : 0))) {
 			DEBUG_LOG_ERROR("Impossibile creare un automa deterministico con un numero di nodi per strato così alto e un numero di label insufficiente");
+			std::cout << "Impossibile creare un automa deterministico con un numero di nodi per strato così alto e un numero di label insufficiente\n";
 			// Per il momento, viene generato un errore e il metodo si interrompe
 			return NULL;
 		}

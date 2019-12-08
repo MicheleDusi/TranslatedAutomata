@@ -45,7 +45,7 @@ namespace translated_automata {
 	 * - Embedded Subset Construction
 	 */
 	void ProblemSolver::solve(Problem* problem) {
-		if (DO_PRINT_AUTOMATA)
+		if (DO_PRINT_AUTOMATA) {
 		DEBUG_MARK_PHASE("Stampa del problema") {
 			std::cout << "PROBLEMA:\n";
 			DFADrawer drawer = DFADrawer(problem->getDFA());
@@ -59,7 +59,7 @@ namespace translated_automata {
 			drawer.asDotFile(filename);
 			string command = "dot -Tpdf \"" + filename + "\" -o original.pdf";
 			system(command.c_str());
-		}
+		}}
 
 		DFA* sc_result;
 		DFA* esc_result;
@@ -103,7 +103,7 @@ namespace translated_automata {
 			}
 		}
 
-		if (DO_PRINT_AUTOMATA)
+		if (DO_PRINT_AUTOMATA) {
 		DEBUG_MARK_PHASE("Stampa della soluzione") {
 
 //			// [SC] Stampa in formato testuale
@@ -127,8 +127,7 @@ namespace translated_automata {
 			esc_drawer.asDotFile(esc_filename);
 			string esc_command = "dot -Tpdf \"" + esc_filename + "\" -o esc_result.pdf";
 			system(esc_command.c_str());
-
-		}
+		}}
 
 	}
 

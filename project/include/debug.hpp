@@ -44,7 +44,7 @@ namespace translated_automata {
 	#define ID_PREFIX 					debug_var_
 
 	/** Macro per la generazione di ID unici.*/
-	#define UNIQUE_ID					CONCAT( ID_PREFIX ## __FILE__, __LINE__ )
+	#define UNIQUE_ID					CONCAT( ID_PREFIX, __LINE__ )
 
 	/** Aggiunge delle parentesi per identificare un tag nei messaggi di log */
 	#define TAG_BRACKETS( text ) 		"[" text "]"
@@ -159,11 +159,11 @@ namespace translated_automata {
 		)
 
 	#define _DEBUG_MARK_PHASE( counter_id, phase_name, ... )										\
-		int UNIQUE_ID = 0;																			\
+		int counter_id = 0;																			\
 		for ( 																						\
 				DEBUG_ENTERING_PHASE( phase_name, ##__VA_ARGS__ );									\
-				UNIQUE_ID < 1; 																		\
-				DEBUG_EXITING_PHASE( phase_name, ##__VA_ARGS__ ), UNIQUE_ID++						\
+				counter_id < 1; 																	\
+				DEBUG_EXITING_PHASE( phase_name, ##__VA_ARGS__ ), counter_id++						\
 			)
 		/* Commento:
 		 * L'idea è utilizzare il costrutto "for" per eseguire un pezzo di codice PRIMA

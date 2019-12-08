@@ -34,3 +34,7 @@
 *.app
 */bin/*
 */bin
+
+# Dot files and Graph visualizations
+*.gv
+*.pdf

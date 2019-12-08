@@ -29,12 +29,12 @@
 
 #define ALPHABET_CARDINALITY 				10
 
-#define AUTOMATON_SIZE 						20
+#define AUTOMATON_SIZE 						100
 #define AUTOMATON_FINAL_PROBABILITY 		.5
-#define AUTOMATON_TRANSITION_PERCENTAGE 	.45
-#define AUTOMATON_MAX_DISTANCE			 	5
+#define AUTOMATON_TRANSITION_PERCENTAGE 	0
+#define AUTOMATON_MAX_DISTANCE			 	20
 
-#define TRANSLATION_MIXING_FACTOR 			.357
+#define TRANSLATION_MIXING_FACTOR 			.7
 #define TRANSLATION_OFFSET 					1
 #define TRANSLATION_EPSILON_PERCENTAGE		0
 
@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
 		DEBUG_MARK_PHASE("Creazione dei generatori") {
 
 		// Creazione del problema
-		generator = new ProblemGenerator();
+		generator = new ProblemGenerator(ALPHABET_CARDINALITY);
 		generator->getDFAGenerator()->setSize(AUTOMATON_SIZE);
 		generator->getDFAGenerator()->setFinalProbability(AUTOMATON_FINAL_PROBABILITY);
 		generator->getDFAGenerator()->setTransitionPercentage(AUTOMATON_TRANSITION_PERCENTAGE);
@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
 
 		// Risoluzione del problema
 		ProblemSolver* solver = new ProblemSolver(generator);
-		solver->solveSeries(1);
+		solver->solveSeries(100);
 
 		delete generator;
 

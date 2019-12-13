@@ -1,10 +1,13 @@
 /*
- * problem_solver.cpp
+ * ProblemSolver.cpp
  *
- * Modulo che si occupa di risolvere problemi e raccoglierne le statistiche.
+ * Modulo che si occupa di risolvere problemi "ad alto livello".
+ * I problemi vengono generati tramite un ProblemGenerator, vengono
+ * risolti da i due algoritmi previsti all'interno del programma, e
+ * i risultati vengono archiviati all'interno di un ResultCollector.
  */
 
-#include "problem_solver.hpp"
+#include "ProblemSolver.hpp"
 
 #include <cstdio>
 #include <chrono>
@@ -13,6 +16,7 @@
 #include "debug.hpp"
 
 #define DO_PRINT_AUTOMATA false
+#define DO_DRAW_AUTOMATA true
 #define DO_PRINT_RESULTS true
 
 namespace translated_automata {
@@ -20,11 +24,17 @@ namespace translated_automata {
 	/**
 	 * Costruttore.
 	 */
-	ProblemSolver::ProblemSolver(ProblemGenerator* generator) {
+	ProblemSolver::ProblemSolver(ProblemGenerator* generator, ResultCollector* collector) {
 		DEBUG_ASSERT_NOT_NULL(generator);
+		DEBUG_ASSERT_NOT_NULL(collector);
+		if (generator == NULL || collector == NULL) {
+			std::cerr << "Impossibile istanziare un oggetto \"ProblemSolver\" con parametri del costruttore nulli" << std::endl;
+		}
+
 		this->generator = generator;
 		this->sc = new SubsetConstruction();
 		this->esc = new EmbeddedSubsetConstruction();
+		this->collector = new ResultCollector();
 	}
 
 	/**
@@ -45,20 +55,26 @@ namespace translated_automata {
 	 * - Embedded Subset Construction
 	 */
 	void ProblemSolver::solve(Problem* problem) {
-		if (DO_PRINT_AUTOMATA) {
-		DEBUG_MARK_PHASE("Stampa del problema") {
-			std::cout << "PROBLEMA:\n";
-			DFADrawer drawer = DFADrawer(problem->getDFA());
-			std::cout << drawer.asString();
-			Alphabet computed_alpha = problem->getDFA()->getAlphabet();
-			std::cout << problem->getTranslation()->toString(computed_alpha);
-			std::cout << "- - - - - - - - - - - - -\n";
+		if (DO_PRINT_AUTOMATA || DO_DRAW_AUTOMATA) {
+		DEBUG_MARK_PHASE("Presentazione del problema") {
 
-			// Stampa su file dell'automa originale
-			string filename = "original.gv";
-			drawer.asDotFile(filename);
-			string command = "dot -Tpdf \"" + filename + "\" -o original.pdf";
-			system(command.c_str());
+			DFADrawer drawer = DFADrawer(problem->getDFA());
+
+			if (DO_PRINT_AUTOMATA) {
+				std::cout << "PROBLEMA:\n";
+				std::cout << drawer.asString();
+				Alphabet computed_alpha = problem->getDFA()->getAlphabet();
+				std::cout << problem->getTranslation()->toString(computed_alpha);
+				std::cout << "- - - - - - - - - - - - -\n";
+			}
+
+			if (DO_DRAW_AUTOMATA) {
+				// Stampa su file dell'automa originale
+				string filename = "original.gv";
+				drawer.asDotFile(filename);
+				string command = "dot -Tpdf \"" + filename + "\" -o original.pdf";
+				system(command.c_str());
+			}
 		}}
 
 		DFA* sc_result;
@@ -103,30 +119,35 @@ namespace translated_automata {
 			}
 		}
 
-		if (DO_PRINT_AUTOMATA) {
+		if (DO_PRINT_AUTOMATA || DO_DRAW_AUTOMATA) {
 		DEBUG_MARK_PHASE("Stampa della soluzione") {
 
-//			// [SC] Stampa in formato testuale
-//			std::cout << "SOLUZIONE di SC:\n";
-//			DFADrawer sc_drawer = DFADrawer(sc_result);
-//			std::cout << std::endl << sc_drawer.asString() << std::endl;
-//
-//			// [SC] Stampa su file
-//			string sc_filename = "sc_solution.gv";
-//			sc_drawer.asDotFile(sc_filename);
-//			string sc_command = "dot -Tpdf \"" + sc_filename + "\" -o sc_result.pdf";
-//			system(sc_command.c_str());
-
-			// [ESC] Stampa in formato testuale
-			std::cout << "SOLUZIONE di ESC:\n";
+			DFADrawer sc_drawer = DFADrawer(sc_result);
 			DFADrawer esc_drawer = DFADrawer(esc_result);
-			std::cout << std::endl << esc_drawer.asString() << std::endl;
 
-			// [ESC] Stampa su file
-			string esc_filename = "esc_solution.gv";
-			esc_drawer.asDotFile(esc_filename);
-			string esc_command = "dot -Tpdf \"" + esc_filename + "\" -o esc_result.pdf";
-			system(esc_command.c_str());
+			if (DO_PRINT_AUTOMATA) {
+				// [SC] Stampa in formato testuale
+				std::cout << "SOLUZIONE di SC:\n";
+				std::cout << std::endl << sc_drawer.asString() << std::endl;
+
+				// [ESC] Stampa in formato testuale
+				std::cout << "SOLUZIONE di ESC:\n";
+				std::cout << std::endl << esc_drawer.asString() << std::endl;
+			}
+
+			if (DO_DRAW_AUTOMATA) {
+				// [SC] Stampa su file
+				string sc_filename = "sc_solution.gv";
+				sc_drawer.asDotFile(sc_filename);
+				string sc_command = "dot -Tpdf \"" + sc_filename + "\" -o sc_result.pdf";
+				system(sc_command.c_str());
+
+				// [ESC] Stampa su file
+				string esc_filename = "esc_solution.gv";
+				esc_drawer.asDotFile(esc_filename);
+				string esc_command = "dot -Tpdf \"" + esc_filename + "\" -o esc_result.pdf";
+				system(esc_command.c_str());
+			}
 		}}
 
 	}

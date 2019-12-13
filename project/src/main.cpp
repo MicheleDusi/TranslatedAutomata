@@ -17,24 +17,26 @@
 #include <iostream>
 #include <tuple>
 
+#include "../include/ProblemSolver.hpp"
 #include "alphabet_generator.hpp"
 #include "automata_generator_dfa.hpp"
 #include "automaton.hpp"
 #include "debug.hpp"
 #include "embedded_subset_construction.hpp"
 #include "problem_generator.hpp"
-#include "problem_solver.hpp"
 #include "translation.hpp"
 #include "translation_generator.hpp"
 
-#define ALPHABET_CARDINALITY 				10
+#define TESTCASES							5
 
-#define AUTOMATON_SIZE 						100
-#define AUTOMATON_FINAL_PROBABILITY 		.5
-#define AUTOMATON_TRANSITION_PERCENTAGE 	0
-#define AUTOMATON_MAX_DISTANCE			 	20
+#define ALPHABET_CARDINALITY 				5
 
-#define TRANSLATION_MIXING_FACTOR 			.7
+#define AUTOMATON_SIZE 						20
+#define AUTOMATON_FINAL_PROBABILITY 		.1
+#define AUTOMATON_TRANSITION_PERCENTAGE 	0.5
+#define AUTOMATON_MAX_DISTANCE			 	50
+
+#define TRANSLATION_MIXING_FACTOR 			0.5
 #define TRANSLATION_OFFSET 					1
 #define TRANSLATION_EPSILON_PERCENTAGE		0
 
@@ -64,7 +66,7 @@ int main(int argc, char **argv) {
 
 		// Risoluzione del problema
 		ProblemSolver* solver = new ProblemSolver(generator);
-		solver->solveSeries(100);
+		solver->solveSeries(TESTCASES);
 
 		delete generator;
 

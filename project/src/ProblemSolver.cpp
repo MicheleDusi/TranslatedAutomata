@@ -16,8 +16,8 @@
 #include "Debug.hpp"
 
 #define DO_PRINT_AUTOMATA false
-#define DO_DRAW_AUTOMATA true
-#define DO_PRINT_RESULTS true
+#define DO_DRAW_AUTOMATA false
+#define DO_PRINT_RESULTS false
 
 namespace translated_automata {
 
@@ -32,9 +32,10 @@ namespace translated_automata {
 		}
 
 		this->generator = generator;
+		this->collector = collector;
+
 		this->sc = new SubsetConstruction();
 		this->esc = new EmbeddedSubsetConstruction();
-		this->collector = new ResultCollector();
 	}
 
 	/**
@@ -55,30 +56,29 @@ namespace translated_automata {
 	 * - Embedded Subset Construction
 	 */
 	void ProblemSolver::solve(Problem* problem) {
-		if (DO_PRINT_AUTOMATA || DO_DRAW_AUTOMATA) {
-		DEBUG_MARK_PHASE("Presentazione del problema") {
+//		if (DO_PRINT_AUTOMATA || DO_DRAW_AUTOMATA) {
+//		DEBUG_MARK_PHASE("Presentazione del problema") {
+//
+//			DFADrawer drawer = DFADrawer(problem->getDFA());
+//
+//			if (DO_PRINT_AUTOMATA) {
+//				std::cout << "PROBLEMA:\n";
+//				std::cout << drawer.asString();
+//				Alphabet computed_alpha = problem->getDFA()->getAlphabet();
+//				std::cout << problem->getTranslation()->toString(computed_alpha);
+//				std::cout << "- - - - - - - - - - - - -\n";
+//			}
+//
+//			if (DO_DRAW_AUTOMATA) {
+//				// Stampa su file dell'automa originale
+//				string filename = "original.gv";
+//				drawer.asDotFile(filename);
+//				string command = "dot -Tpdf \"" + filename + "\" -o original.pdf";
+//				system(command.c_str());
+//			}
+//		}}
 
-			DFADrawer drawer = DFADrawer(problem->getDFA());
-
-			if (DO_PRINT_AUTOMATA) {
-				std::cout << "PROBLEMA:\n";
-				std::cout << drawer.asString();
-				Alphabet computed_alpha = problem->getDFA()->getAlphabet();
-				std::cout << problem->getTranslation()->toString(computed_alpha);
-				std::cout << "- - - - - - - - - - - - -\n";
-			}
-
-			if (DO_DRAW_AUTOMATA) {
-				// Stampa su file dell'automa originale
-				string filename = "original.gv";
-				drawer.asDotFile(filename);
-				string command = "dot -Tpdf \"" + filename + "\" -o original.pdf";
-				system(command.c_str());
-			}
-		}}
-
-		DFA* sc_result;
-		DFA* esc_result;
+		Result* result = new Result();
 
 		DEBUG_MARK_PHASE("Subset Construction") {
 			auto sc_start_time = chrono::high_resolution_clock::now();
@@ -86,69 +86,55 @@ namespace translated_automata {
 			// Fase di traduzione
 			NFA* nfa = problem->getTranslation()->translate(problem->getDFA());
 			// Fase di costruzione
-			sc_result = this->sc->run(nfa);
+			result->sc_solution = this->sc->run(nfa);
 
 			auto sc_end_time = chrono::high_resolution_clock::now();
 			auto sc_duration = (sc_end_time - sc_start_time);
-			auto sc_ms = std::chrono::duration_cast<std::chrono::milliseconds>(sc_duration).count();
-
-			if (DO_PRINT_RESULTS) {
-				std::cout << " SC - time = " << sc_ms << " - size = " << std::to_string(sc_result->size()) << std::endl;
-			}
+			result->sc_elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(sc_duration).count();
 		}
 
 		DEBUG_MARK_PHASE("Embedded Subset Construction") {
 			auto esc_start_time = chrono::high_resolution_clock::now();
 
-			esc_result = this->esc->run(problem->getDFA(), problem->getTranslation());
+			result->esc_solution = this->esc->run(problem->getDFA(), problem->getTranslation());
 
 			auto esc_end_time = chrono::high_resolution_clock::now();
 			auto esc_duration = (esc_end_time - esc_start_time);
-			auto esc_ms = std::chrono::duration_cast<std::chrono::milliseconds>(esc_duration).count();
-
-			if (DO_PRINT_RESULTS) {
-				std::cout << "ESC - time = " << esc_ms << " - size = " << std::to_string(esc_result->size()) << std::endl;
-			}
+			result->esc_elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(esc_duration).count();
 		}
 
-		DEBUG_MARK_PHASE("Controllo finale") {
-			if (*sc_result == *esc_result) {
-				std::cout << "\033[32mFUNZIONA!\033[0m\n\n";
-			} else {
-				std::cout << "\033[31mQualcosa ancora non funziona...\033[0m\n\n";
-			}
-		}
+		this->collector->addResult(result);
 
-		if (DO_PRINT_AUTOMATA || DO_DRAW_AUTOMATA) {
-		DEBUG_MARK_PHASE("Stampa della soluzione") {
-
-			DFADrawer sc_drawer = DFADrawer(sc_result);
-			DFADrawer esc_drawer = DFADrawer(esc_result);
-
-			if (DO_PRINT_AUTOMATA) {
-				// [SC] Stampa in formato testuale
-				std::cout << "SOLUZIONE di SC:\n";
-				std::cout << std::endl << sc_drawer.asString() << std::endl;
-
-				// [ESC] Stampa in formato testuale
-				std::cout << "SOLUZIONE di ESC:\n";
-				std::cout << std::endl << esc_drawer.asString() << std::endl;
-			}
-
-			if (DO_DRAW_AUTOMATA) {
-				// [SC] Stampa su file
-				string sc_filename = "sc_solution.gv";
-				sc_drawer.asDotFile(sc_filename);
-				string sc_command = "dot -Tpdf \"" + sc_filename + "\" -o sc_result.pdf";
-				system(sc_command.c_str());
-
-				// [ESC] Stampa su file
-				string esc_filename = "esc_solution.gv";
-				esc_drawer.asDotFile(esc_filename);
-				string esc_command = "dot -Tpdf \"" + esc_filename + "\" -o esc_result.pdf";
-				system(esc_command.c_str());
-			}
-		}}
+//		if (DO_PRINT_AUTOMATA || DO_DRAW_AUTOMATA) {
+//		DEBUG_MARK_PHASE("Stampa della soluzione") {
+//
+//			DFADrawer sc_drawer = DFADrawer(result->sc_solution);
+//			DFADrawer esc_drawer = DFADrawer(result->esc_solution);
+//
+//			if (DO_PRINT_AUTOMATA) {
+//				// [SC] Stampa in formato testuale
+//				std::cout << "SOLUZIONE di SC:\n";
+//				std::cout << std::endl << sc_drawer.asString() << std::endl;
+//
+//				// [ESC] Stampa in formato testuale
+//				std::cout << "SOLUZIONE di ESC:\n";
+//				std::cout << std::endl << esc_drawer.asString() << std::endl;
+//			}
+//
+//			if (DO_DRAW_AUTOMATA) {
+//				// [SC] Stampa su file
+//				string sc_filename = "sc_solution.gv";
+//				sc_drawer.asDotFile(sc_filename);
+//				string sc_command = "dot -Tpdf \"" + sc_filename + "\" -o sc_result.pdf";
+//				system(sc_command.c_str());
+//
+//				// [ESC] Stampa su file
+//				string esc_filename = "esc_solution.gv";
+//				esc_drawer.asDotFile(esc_filename);
+//				string esc_command = "dot -Tpdf \"" + esc_filename + "\" -o esc_result.pdf";
+//				system(esc_command.c_str());
+//			}
+//		}}
 
 	}
 

@@ -19,14 +19,14 @@
 #include "Debug.hpp"
 #include "ProblemSolver.hpp"
 
-#define TESTCASES							5
+#define TESTCASES							50
 
-#define ALPHABET_CARDINALITY 				5
+#define ALPHABET_CARDINALITY 				10
 
-#define AUTOMATON_SIZE 						20
+#define AUTOMATON_SIZE 						50
 #define AUTOMATON_FINAL_PROBABILITY 		.1
-#define AUTOMATON_TRANSITION_PERCENTAGE 	0.5
-#define AUTOMATON_MAX_DISTANCE			 	50
+#define AUTOMATON_TRANSITION_PERCENTAGE 	0.3
+#define AUTOMATON_MAX_DISTANCE			 	5
 
 #define TRANSLATION_MIXING_FACTOR 			0.5
 #define TRANSLATION_OFFSET 					1
@@ -61,7 +61,18 @@ int main(int argc, char **argv) {
 		ProblemSolver* solver = new ProblemSolver(generator, collector);
 		solver->solveSeries(TESTCASES);
 
+		// Presentazione dei risultati
+		printf("RESULTS:\n");
+		printf("Based on %u testcases.\n", collector->getTestCaseNumber());
+		printf("ESC success percentage = %f %%\n", (100 * collector->getESCSuccessPercentage()));
+		printf("SC mean time = %f ms\n", collector->getSCMeanTime());
+		printf("ESC mean time = %f ms\n", collector->getESCMeanTime());
+		printf("SC worst time = %lu ms\n", collector->getSCMaxTime());
+		printf("ESC worst time = %lu ms\n", collector->getESCMaxTime());
+
 		delete generator;
+		delete collector;
+		delete solver;
 
 		}
 

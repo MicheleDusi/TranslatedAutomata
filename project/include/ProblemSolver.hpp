@@ -20,9 +20,9 @@ namespace translated_automata {
 	class ProblemSolver {
 	private:
 		ProblemGenerator* generator;		// Generatore di problemi
+		ResultCollector* collector;			// Archivio dei risultati delle risoluzioni dei problemi
 		EmbeddedSubsetConstruction* esc; 	// Algoritmo Embedded Subset Construction
 		SubsetConstruction* sc;				// Algoritmo Subset Construction
-		ResultCollector* collector;			// Archivio dei risultati delle risoluzioni dei problemi
 
 	public:
 		ProblemSolver(ProblemGenerator* generator, ResultCollector* collector);

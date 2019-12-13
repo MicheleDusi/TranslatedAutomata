@@ -10,10 +10,10 @@
 #ifndef INCLUDE_PROBLEMSOLVER_HPP_
 #define INCLUDE_PROBLEMSOLVER_HPP_
 
-#include "embedded_subset_construction.hpp"
-#include "problem_generator.hpp"
+#include "EmbeddedSubsetConstruction.hpp"
+#include "ProblemGenerator.hpp"
 #include "ResultCollector.hpp"
-#include "subset_construction.hpp"
+#include "SubsetConstruction.hpp"
 
 namespace translated_automata {
 

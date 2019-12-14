@@ -12,7 +12,7 @@
 #define TESTCASES							5
 
 // Proprietà dell'alfabeto
-#define ALPHABET_CARDINALITY 				10
+#define ALPHABET_CARDINALITY 				20
 
 // Proprietà di un automa
 #define AUTOMATON_SIZE 						30
@@ -21,7 +21,7 @@
 #define AUTOMATON_MAX_DISTANCE			 	5
 
 // Proprietà di una traduzione
-#define TRANSLATION_MIXING_FACTOR 			0.5
+#define TRANSLATION_MIXING_FACTOR 			0.9
 #define TRANSLATION_OFFSET 					1
 #define TRANSLATION_EPSILON_PERCENTAGE		0
 

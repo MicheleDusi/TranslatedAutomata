@@ -12,6 +12,14 @@
 
 namespace translated_automata {
 
+	// Stringhe per la visualizzazione delle statistiche
+	vector<string> stat_headlines = vector<string> {
+		"SC_TIME   [ms]",
+		"ESC_TIME  [ms]",
+		"SOL_SIZE   [#]",
+		"SOL_GROWTH [%]"
+	};
+
 	/**
 	 * Costruttore.
 	 */
@@ -61,7 +69,7 @@ namespace translated_automata {
 		// Rapporto fra la dimensione dell'automa ottenuto nella soluzione e la dimensione dell'automa originale.
 		case SOL_GROWTH :
 			getter = [](Result* result) {
-				return (double) (result->sc_solution->size()) / AUTOMATON_SIZE;
+				return ((double) (result->sc_solution->size()) / AUTOMATON_SIZE) * 100;
 			};
 			break;
 
@@ -226,14 +234,16 @@ namespace translated_automata {
 			printf("Based on %u testcases with automata of size %d and alphabet of cardinality %d.\n", this->getTestCaseNumber(), AUTOMATON_SIZE, ALPHABET_CARDINALITY);
 			printf("ESC success percentage = %f %%\n", (100 * this->getSuccessPercentage()));
 			printf("________________|    MIN    |    AVG    |    MAX    |\n");
-			tuple<double, double, double> sc_time = this->getStat(SC_TIME);
-			printf(" SC TIME   (ms) | %9.4f | %9.4f | %9.4f |\n", std::get<0>(sc_time), std::get<1>(sc_time), std::get<2>(sc_time));
-			tuple<double, double, double> esc_time = this->getStat(ESC_TIME);
-			printf(" ESC TIME  (ms) | %9.4f | %9.4f | %9.4f |\n", std::get<0>(esc_time), std::get<1>(esc_time), std::get<2>(esc_time));
-			tuple<double, double, double> sol_size = this->getStat(SOL_SIZE);
-			printf(" SOL SIZE   (#) | %9.4f | %9.4f | %9.4f |\n", std::get<0>(sol_size), std::get<1>(sol_size), std::get<2>(sol_size));
-			tuple<double, double, double> sol_growth = this->getStat(SOL_GROWTH);
-			printf(" SOL GROWTH (%%) | %9.4f | %9.4f | %9.4f |\n", std::get<0>(sol_growth) * 100., std::get<1>(sol_growth) * 100., std::get<2>(sol_growth) * 100.);
+			for (int int_stat = SC_TIME; int_stat <= SOL_GROWTH; int_stat++) {
+				ResultStat stat = static_cast<ResultStat>(int_stat);
+				// TODO Ricordarsi di aggiornare l'ultimo valore, in caso di aggiunta di statistiche
+				tuple<double, double, double> stat_values = this->getStat(stat);
+				printf(" %12s | %9.4f | %9.4f | %9.4f |\n",
+						stat_headlines[stat].c_str(),
+						std::get<0>(stat_values),
+						std::get<1>(stat_values),
+						std::get<2>(stat_values));
+			}
 		}}
 	}
 

@@ -49,19 +49,8 @@ int main(int argc, char **argv) {
 		ProblemSolver* solver = new ProblemSolver(generator, collector);
 		solver->solveSeries(TESTCASES);
 
-		// Presentazione dei risultati
-		printf("RESULTS:\n");
-		printf("Based on %u testcases with automata of size %d and alphabet of cardinality %d.\n", collector->getTestCaseNumber(), AUTOMATON_SIZE, ALPHABET_CARDINALITY);
-		printf("ESC success percentage = %f %%\n", (100 * collector->getSuccessPercentage()));
-		printf("________________|    MIN    |    AVG    |    MAX    |\n");
-		tuple<double, double, double> sc_time = collector->getStat(SC_TIME);
-		printf(" SC TIME   (ms) | %9.4f | %9.4f | %9.4f |\n", std::get<0>(sc_time), std::get<1>(sc_time), std::get<2>(sc_time));
-		tuple<double, double, double> esc_time = collector->getStat(ESC_TIME);
-		printf(" ESC TIME  (ms) | %9.4f | %9.4f | %9.4f |\n", std::get<0>(esc_time), std::get<1>(esc_time), std::get<2>(esc_time));
-		tuple<double, double, double> sol_size = collector->getStat(SOL_SIZE);
-		printf(" SOL SIZE   (#) | %9.4f | %9.4f | %9.4f |\n", std::get<0>(sol_size), std::get<1>(sol_size), std::get<2>(sol_size));
-		tuple<double, double, double> sol_growth = collector->getStat(SOL_GROWTH);
-		printf(" SOL GROWTH (%%) | %9.4f | %9.4f | %9.4f |\n", std::get<0>(sol_growth) * 100., std::get<1>(sol_growth) * 100., std::get<2>(sol_growth) * 100.);
+		// Presentazione delle statistiche risultanti
+		collector->presentResults();
 
 		delete generator;
 		delete collector;

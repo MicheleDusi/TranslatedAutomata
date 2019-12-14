@@ -64,6 +64,8 @@ namespace translated_automata {
 		unsigned int getTestCaseNumber();
 		std::tuple<double, double, double> getStat(ResultStat stat);
 		double getSuccessPercentage();
+		void presentResult(Result* result);
+		void presentResults();
 
 	};
 

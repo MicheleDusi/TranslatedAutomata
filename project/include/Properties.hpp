@@ -9,7 +9,7 @@
 #define INCLUDE_PROPERTIES_HPP_
 
 // Numero di test effettuati
-#define TESTCASES							50
+#define TESTCASES							5
 
 // Proprietà dell'alfabeto
 #define ALPHABET_CARDINALITY 				10
@@ -24,5 +24,14 @@
 #define TRANSLATION_MIXING_FACTOR 			0.5
 #define TRANSLATION_OFFSET 					1
 #define TRANSLATION_EPSILON_PERCENTAGE		0
+
+// Moduli e funzionalità opzionali
+#define DO_PRINT_STATS						true
+#define DO_PRINT_ORIGINAL_AUTOMATON			false
+#define DO_DRAW_ORIGINAL_AUTOMATON			false
+#define DO_PRINT_SC_SOLUTION				false
+#define DO_DRAW_SC_SOLUTION					false
+#define DO_PRINT_ESC_SOLUTION				false
+#define DO_DRAW_ESC_SOLUTION				false
 
 #endif /* INCLUDE_PROPERTIES_HPP_ */

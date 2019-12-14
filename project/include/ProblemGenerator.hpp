@@ -53,7 +53,7 @@ namespace translated_automata {
 		TranslationGenerator* m_translation_generator;
 
 	public:
-		ProblemGenerator(unsigned int alphabet_cardinality);
+		ProblemGenerator();
 		~ProblemGenerator();
 
 		DFAGenerator* getDFAGenerator();

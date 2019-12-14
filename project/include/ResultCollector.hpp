@@ -11,7 +11,9 @@
 
 #include "ProblemGenerator.hpp"
 
+#include <functional>
 #include <list>
+#include <tuple>
 
 namespace translated_automata {
 
@@ -28,6 +30,19 @@ namespace translated_automata {
 	};
 
 	/**
+	 * Statistiche ottenibili da un (singolo!) risultato.
+	 * Queste vengono poi processate e aggregate secondo alcune operazioni
+	 * comuni come elemento minimo, media, elemento massimo, somma, ...
+	 * NOTA: Ogni statistica dovrebbe essere esprimibile come valore <double>.
+	 */
+	enum ResultStat {
+		SC_TIME,	// Tempo impiegato per l'esecuzione dell'algoritmo SC
+		ESC_TIME,	// Tempo impiegato per l'esecuzione dell'algoritmo ESC
+		SOL_SIZE,	// Dimensione della soluzione trovata dall'algoritmo
+		SOL_GROWTH	// Rapporto fra la dimensione dell'automa della soluzione e l'automa originale
+	};
+
+	/**
 	 * Classe che raccoglie i risultati e permette l'analisi
 	 * di semplici statistiche.
 	 */
@@ -35,6 +50,7 @@ namespace translated_automata {
 
 	private:
 		list<Result*> m_results;
+		std::function<double(Result*)> getStatGetter(ResultStat stat);
 
 	public:
 		ResultCollector();
@@ -46,11 +62,8 @@ namespace translated_automata {
 
 		// Statistiche
 		unsigned int getTestCaseNumber();
-		double getSCMeanTime();
-		double getESCMeanTime();
-		unsigned long int getSCMaxTime();
-		unsigned long int getESCMaxTime();
-		double getESCSuccessPercentage();
+		std::tuple<double, double, double> getStat(ResultStat stat);
+		double getSuccessPercentage();
 
 	};
 

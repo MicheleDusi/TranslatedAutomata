@@ -18,19 +18,7 @@
 #include "Automaton.hpp"
 #include "Debug.hpp"
 #include "ProblemSolver.hpp"
-
-#define TESTCASES							50
-
-#define ALPHABET_CARDINALITY 				10
-
-#define AUTOMATON_SIZE 						50
-#define AUTOMATON_FINAL_PROBABILITY 		.1
-#define AUTOMATON_TRANSITION_PERCENTAGE 	0.3
-#define AUTOMATON_MAX_DISTANCE			 	5
-
-#define TRANSLATION_MIXING_FACTOR 			0.5
-#define TRANSLATION_OFFSET 					1
-#define TRANSLATION_EPSILON_PERCENTAGE		0
+#include "Properties.hpp"
 
 using std::set;
 
@@ -44,7 +32,7 @@ int main(int argc, char **argv) {
 		DEBUG_MARK_PHASE("Creazione dei generatori") {
 
 		// Creazione del problema
-		generator = new ProblemGenerator(ALPHABET_CARDINALITY);
+		generator = new ProblemGenerator();
 		generator->getDFAGenerator()->setSize(AUTOMATON_SIZE);
 		generator->getDFAGenerator()->setFinalProbability(AUTOMATON_FINAL_PROBABILITY);
 		generator->getDFAGenerator()->setTransitionPercentage(AUTOMATON_TRANSITION_PERCENTAGE);
@@ -63,12 +51,17 @@ int main(int argc, char **argv) {
 
 		// Presentazione dei risultati
 		printf("RESULTS:\n");
-		printf("Based on %u testcases.\n", collector->getTestCaseNumber());
-		printf("ESC success percentage = %f %%\n", (100 * collector->getESCSuccessPercentage()));
-		printf("SC mean time = %f ms\n", collector->getSCMeanTime());
-		printf("ESC mean time = %f ms\n", collector->getESCMeanTime());
-		printf("SC worst time = %lu ms\n", collector->getSCMaxTime());
-		printf("ESC worst time = %lu ms\n", collector->getESCMaxTime());
+		printf("Based on %u testcases with automata of size %d and alphabet of cardinality %d.\n", collector->getTestCaseNumber(), AUTOMATON_SIZE, ALPHABET_CARDINALITY);
+		printf("ESC success percentage = %f %%\n", (100 * collector->getSuccessPercentage()));
+		printf("________________|    MIN    |    AVG    |    MAX    |\n");
+		tuple<double, double, double> sc_time = collector->getStat(SC_TIME);
+		printf(" SC TIME   (ms) | %9.4f | %9.4f | %9.4f |\n", std::get<0>(sc_time), std::get<1>(sc_time), std::get<2>(sc_time));
+		tuple<double, double, double> esc_time = collector->getStat(ESC_TIME);
+		printf(" ESC TIME  (ms) | %9.4f | %9.4f | %9.4f |\n", std::get<0>(esc_time), std::get<1>(esc_time), std::get<2>(esc_time));
+		tuple<double, double, double> sol_size = collector->getStat(SOL_SIZE);
+		printf(" SOL SIZE   (#) | %9.4f | %9.4f | %9.4f |\n", std::get<0>(sol_size), std::get<1>(sol_size), std::get<2>(sol_size));
+		tuple<double, double, double> sol_growth = collector->getStat(SOL_GROWTH);
+		printf(" SOL GROWTH (%%) | %9.4f | %9.4f | %9.4f |\n", std::get<0>(sol_growth) * 100., std::get<1>(sol_growth) * 100., std::get<2>(sol_growth) * 100.);
 
 		delete generator;
 		delete collector;

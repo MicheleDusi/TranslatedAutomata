@@ -114,8 +114,7 @@ namespace translated_automata {
 		DEBUG_MARK_PHASE("Generazione di un problema mediante ProblemGenerator") {
 
 		DEBUG_LOG("Generazione dell'automa");
-//		DFA* automaton = this->m_dfa_generator->generateRandomAutomaton();
-		DFA* automaton = this->m_dfa_generator->generateStratifiedAutomaton();
+		DFA* automaton = this->m_dfa_generator->generateAutomaton(AUTOMATON_TYPE);
 
 		DEBUG_LOG("Generazione della traduzione");
 		Translation* translation = this->m_translation_generator->generateTranslation(this->m_alphabet);

@@ -30,6 +30,23 @@ namespace translated_automata {
 	 */
 	DFAGenerator::~DFAGenerator() {}
 
+	/**
+	 * Restituisce un automa della tipologia desiderata.
+	 * In breve, questo metodo si occupa di delegare la creazione dell'automa DFA
+	 * agli altri metodi della classe, a seconda del valore del parametro richiesto.
+	 */
+	DFA* DFAGenerator::generateAutomaton(DFAType type) {
+		switch(type) {
+		case DFA_RANDOM :
+			return this->generateRandomAutomaton();
+		case DFA_STRATIFIED :
+			return this->generateStratifiedAutomaton();
+		default :
+			DEBUG_LOG_ERROR("Valore %d non riconosciuto all'interno dell'enumerazione DFAType", type);
+			return NULL;
+		}
+	}
+
 
 	DFA* DFAGenerator::generateRandomAutomaton() {
 		// Creo il DFA

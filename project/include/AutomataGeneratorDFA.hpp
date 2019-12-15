@@ -20,6 +20,11 @@
 
 namespace translated_automata {
 
+	enum DFAType {
+		DFA_RANDOM,
+		DFA_STRATIFIED
+	};
+
 	class DFAGenerator : public AutomataGenerator<DFA> {
 
 	private:
@@ -33,6 +38,7 @@ namespace translated_automata {
 		DFAGenerator(Alphabet alphabet);
 		~DFAGenerator();
 
+		DFA* generateAutomaton(DFAType type);
 		DFA* generateRandomAutomaton();
 		DFA* generateStratifiedAutomaton();
 

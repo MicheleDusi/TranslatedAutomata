@@ -15,9 +15,11 @@
 #define ALPHABET_CARDINALITY 				20
 
 // Proprietà di un automa
-#define AUTOMATON_SIZE 						30
+#define AUTOMATON_TYPE						DFA_RANDOM
+//#define AUTOMATON_TYPE						DFA_STRATIFIED
+#define AUTOMATON_SIZE 						100
 #define AUTOMATON_FINAL_PROBABILITY 		0.1
-#define AUTOMATON_TRANSITION_PERCENTAGE 	0.3
+#define AUTOMATON_TRANSITION_PERCENTAGE 	0.1
 #define AUTOMATON_MAX_DISTANCE			 	5
 
 // Proprietà di una traduzione
@@ -27,6 +29,7 @@
 
 // Moduli e funzionalità opzionali
 #define DO_PRINT_STATS						true
+#define DO_PRINT_TRANSLATION				true
 #define DO_PRINT_ORIGINAL_AUTOMATON			false
 #define DO_DRAW_ORIGINAL_AUTOMATON			false
 #define DO_PRINT_SC_SOLUTION				false

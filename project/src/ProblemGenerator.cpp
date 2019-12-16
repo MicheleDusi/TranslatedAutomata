@@ -69,7 +69,7 @@ namespace translated_automata {
 	ProblemGenerator::ProblemGenerator() {
 		// Istanzio un nuovo gestore di randomicità
 		RandomnessManager* random = new RandomnessManager();
-//		random->setSeed(1576530455);
+//		random->setSeed(1576537491);
 		random->printSeed();
 
 		// Impostazione dell'alfabeto comune

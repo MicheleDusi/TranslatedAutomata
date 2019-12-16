@@ -20,6 +20,7 @@
 #include <string>
 
 #include "Alphabet.hpp"
+//#define DEBUG_MODE
 #include "Debug.hpp"
 
 using std::list;
@@ -39,9 +40,10 @@ namespace translated_automata {
 	 * Inizializza come vuoti gli insiemi di transizioni entranti e uscenti.
 	 */
 	template <class S>
-	State<S>::State ()
-	: m_exiting_transitions(), m_incoming_transitions() {
-		DEBUG_LOG_SUCCESS( "Nuovo oggetto State creato correttamente" );
+	State<S>::State () {
+		this->m_exiting_transitions = map<string, set<S*>>();
+		this->m_incoming_transitions = map<string, set<S*>>();
+		DEBUG_LOG( "Nuovo oggetto State creato correttamente" );
 	}
 
 	/**
@@ -98,14 +100,14 @@ namespace translated_automata {
 		// Verifico se la label ha già un set associato nello stato CORRENTE.
 		// In caso il set non ci sia, viene creato
 		if (this->m_exiting_transitions.count(label) == 0) {
-			this->m_exiting_transitions[label] = std::set<S*>();
+			this->m_exiting_transitions.insert({label, set<S*>()});
 			flag_new_insertion = true;
 		}
 
 		// Verifico se la label ha già un set associato nello stato FIGLIO
 		// In caso il set non ci sia, viene creato
 		if (child->m_incoming_transitions.count(label) == 0) {
-			child->m_incoming_transitions[label] = std::set<S*>();
+			child->m_incoming_transitions.insert({label, set<S*>()});
 			flag_new_insertion = true;
 		}
 
@@ -141,17 +143,12 @@ namespace translated_automata {
 		auto iterator = this->m_exiting_transitions[label].find(child);
 
 		if (iterator != this->m_exiting_transitions[label].end()) {
+			DEBUG_ASSERT_TRUE(this->hasExitingTransition(label, child));
 			this->m_exiting_transitions[label].erase(iterator);
+			DEBUG_ASSERT_FALSE(this->hasExitingTransition(label, child));
 			child->m_incoming_transitions[label].erase(getThis());
-		}
-
-		// Se le transizioni uscenti per la label si svuotano, elimino il set vuoto di stati
-		if (m_exiting_transitions[label].empty()) {
-			m_exiting_transitions.erase(label);
-		}
-		// Se le transizioni entranti del figlio per la label si svuotano, elimino il set vuoto di stati
-		if (child->m_incoming_transitions[label].empty()) {
-			child->m_incoming_transitions.erase(label);
+		} else {
+			DEBUG_LOG_FAIL("NN TROVATO");
 		}
 	}
 
@@ -164,19 +161,24 @@ namespace translated_automata {
 	template <class S>
 	void State<S>::detachAllTransitions() {
 		// Rimuove le transizioni uscenti
-		for (auto &pair: m_exiting_transitions) {
-			string label = pair.first;
-			for (S* child : pair.second) {
-				getThis()->disconnectChild(label, child);
+		for (auto pair_it = m_exiting_transitions.begin(); pair_it != m_exiting_transitions.end(); pair_it++) {
+			string label = pair_it->first;
+			for (auto child_it = pair_it->second.begin(); child_it != pair_it->second.end(); ) {
+				getThis()->disconnectChild(label, *(child_it++));
 			}
+			DEBUG_ASSERT_TRUE(pair_it->second.empty());
 		}
 
 		// Rimuove le transizioni entranti
-		for (auto &pair: m_incoming_transitions) {
-			string label = pair.first;
-			for (S* parent: pair.second) {
-				parent->disconnectChild(label, getThis());
+		for (auto pair_it = m_incoming_transitions.begin(); pair_it != m_incoming_transitions.end(); pair_it++) {
+			string label = pair_it->first;
+			for (auto parent_iterator = pair_it->second.begin(); parent_iterator != pair_it->second.end(); ) {
+				// Controllo che non sia una transizione ad anello
+				if (*parent_iterator != this->getThis()) {
+					(*(parent_iterator++))->disconnectChild(label, getThis());
+				}
 			}
+			DEBUG_ASSERT_TRUE(pair_it->second.empty());
 		}
 	}
 
@@ -448,7 +450,8 @@ namespace translated_automata {
 	template <class S>
 	bool State<S>::hasSameTransitionsNamesOf(S* other_state) {
 		// Verifico che il numero di transizioni uscenti sia uguale
-		if (this->m_exiting_transitions.size() != other_state->m_exiting_transitions.size()) {
+		if (this->getExitingTransitionsCount() != other_state->getExitingTransitionsCount()) {
+			DEBUG_LOG("I due stati non hanno lo stesso numero di transizioni uscenti");
 			return false;
 		}
 
@@ -479,7 +482,10 @@ namespace translated_automata {
 				}
 			}
 		}
-
+		/* NOTA: In teoria, se i due automi sono stati ben formati secondo i metodi offerti dalle classi del model,
+		 * le transizioni entranti corrisponderanno sempre a quelle uscenti. Pertanto non è necessario verificare
+		 * entrambe. */
+		/*
 		// Verifico che il numero di transizioni entranti sia uguale
 		if (this->m_incoming_transitions.size() != other_state->m_incoming_transitions.size()) {
 			return false;
@@ -512,6 +518,7 @@ namespace translated_automata {
 				}
 			}
 		}
+		*/
 		return true;
 	}
 
@@ -621,8 +628,9 @@ namespace translated_automata {
 				}
 			}
 		}
-/*
-		result += "\n\t" + (std::to_string(getThis()->getIncomingTransitionsCount())) + " incoming transitions:\n";
+
+
+		result += "\t" + (std::to_string(getThis()->getIncomingTransitionsCount())) + " incoming transitions:\n";
 		if (!this->m_incoming_transitions.empty()) {
 			// Per tutte le label delle transizioni entranti
 			for (auto &pair: m_incoming_transitions) {
@@ -630,11 +638,11 @@ namespace translated_automata {
 				// Per tutti gli stati associati ad una label
 				for (S* state: pair.second) {
 					// Inserisco le informazioni riguardanti la transizione entrante
-					result += "\t\t" + state->getName() + " ━━(" + SHOW(label) + ")━━▶" + '\n';
+					result += "\t" + state->getName() + " ━━(" + SHOW(label) + ")━━▶" + '\n';
 				}
 			}
 		}
-*/
+//*/
 
 		return result;
 	};
@@ -692,7 +700,7 @@ namespace translated_automata {
 	 * Distruttore della classe StateNFA.
 	 */
 	StateNFA::~StateNFA () {
-		DEBUG_LOG( "Cancellazione dello stato \"%s\"", m_name.c_str() );
+		DEBUG_LOG( "Cancellazione dello stato NFA \"%s\"", m_name.c_str() );
 	}
 
 ///////////////////////////////////////////////////////////////////
@@ -708,7 +716,9 @@ namespace translated_automata {
 	/**
 	 * Distruttore della classe StateDFA.
 	 */
-    StateDFA::~StateDFA() {}
+    StateDFA::~StateDFA() {
+		DEBUG_LOG( "Cancellazione dello stato DFA \"%s\"", m_name.c_str() );
+    }
 
 	/**
 	 * Restituisce lo stato raggiunto da una transizione con una specifica etichetta.

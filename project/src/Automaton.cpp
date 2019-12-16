@@ -15,6 +15,7 @@
 
 #include <algorithm>
 
+//#define DEBUG_MODE
 #include "Debug.hpp"
 
 namespace translated_automata {
@@ -139,10 +140,15 @@ namespace translated_automata {
      */
     template <class State>
     bool Automaton<State>::removeState(State* s) {
-    	DEBUG_MARK_PHASE("Function \"detachAllTransitions\" sullo stato %s", s->getName().c_str())
-    	s->detachAllTransitions();
+    	DEBUG_MARK_PHASE("Function \"detachAllTransitions\" sullo stato %s", s->getName().c_str()) {
+    		s->detachAllTransitions();
+    	}
     	DEBUG_LOG("Verifica dello stato dopo la funzione \"detachAllTransitions\" e prima di essere rimosso:\n%s", s->toString().c_str());
-    	return m_states.erase(s);
+    	DEBUG_ASSERT_TRUE(this->hasState(s));
+    	m_states.erase(s);
+    	DEBUG_ASSERT_FALSE(this->hasState(s));
+    	return true;
+    	// FIXME
     }
 
     /**
@@ -376,18 +382,22 @@ namespace translated_automata {
         	// Cerco uno stato con lo stesso nome nell'altro automa
         	State* sakename_state;
         	if ((sakename_state = other.getState(state->getName())) != NULL) {
+        		DEBUG_LOG("In entrambi gli automi esiste lo stato \"%s\"", state->getName().c_str());
 
         		// Verifico che abbia le stesse transizioni a stati con lo stesso nome (!)
         		if (!state->hasSameTransitionsNamesOf(sakename_state)) {
+        			DEBUG_LOG("Tuttavia, gli stati non hanno le stesse transizioni");
         			return false;
         		}
 
         	} else {
+        		DEBUG_LOG("Nel secondo automa non è stato trovato uno stato \"%s\" contenuto invece nel primo automa", state->getName().c_str());
         		return false;
         	}
         }
 
     	}
+    	DEBUG_LOG("I due automi analizzati sono risultati essere congruenti");
         return true;
     }
 

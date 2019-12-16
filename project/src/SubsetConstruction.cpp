@@ -31,7 +31,8 @@ namespace translated_automata {
 		StateNFA* nfa_initial_state = nfa->getInitialState();
 		DEBUG_ASSERT_NOT_NULL(nfa_initial_state);
 		initial_dfa_extension.insert(nfa_initial_state);
-		ConstructedStateDFA * initial_dfa_state = new ConstructedStateDFA(initial_dfa_extension);
+		ExtensionDFA epsilon_closure = ConstructedStateDFA::computeEpsilonClosure(initial_dfa_extension);
+		ConstructedStateDFA * initial_dfa_state = new ConstructedStateDFA(epsilon_closure);
 
 		// Inserisco lo stato all'interno del DFA
         dfa->addState(initial_dfa_state);
@@ -51,6 +52,10 @@ namespace translated_automata {
 
             // Per tutte le label che marcano transizioni uscenti da questo stato
             for (string l : current_state->getLabelsExitingFromExtension()) {
+            	// Salto le epsilon-transizioni
+            	if (l == EPSILON) {
+            		continue;
+            	}
 
             	// Computo la l-closure dello stato e creo un nuovo stato DFA
             	ExtensionDFA l_closure = current_state->computeLClosureOfExtension(l);

@@ -23,7 +23,7 @@
 #include <vector>
 
 // Definizione della label espilon
-#define EPSILON "ε"
+#define EPSILON ""	// In questo modo dovrebbe figurare come prima etichetta in ordine alfabetico
 #define EPSILON_PRINT "\033[96mε\033[0m"
 #define SHOW( label ) ((label == EPSILON) ? (EPSILON_PRINT) : (label))
 

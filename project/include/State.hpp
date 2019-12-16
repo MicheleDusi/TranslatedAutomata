@@ -24,6 +24,8 @@ using std::set;
 
 #define DEFAULT_VOID_DISTANCE 1U<<30
 
+#define EMPTY_EXTENSION_NAME "∅"
+
 namespace translated_automata {
 
 	/**
@@ -164,6 +166,7 @@ namespace translated_automata {
 	public:
 		static string createNameFromExtension(const ExtensionDFA &ext);
 		static ExtensionDFA subtractExtensions(const ExtensionDFA &ext1, const ExtensionDFA &ext2);
+		static ExtensionDFA computeEpsilonClosure(const ExtensionDFA &ext);
 		static bool hasFinalStates(const ExtensionDFA &ext);
 
 		ConstructedStateDFA(ExtensionDFA &extension);

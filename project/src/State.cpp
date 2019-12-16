@@ -186,7 +186,7 @@ namespace translated_automata {
 	 * uscenti da questo nodo marcate con la label "l" passata come parametro.
 	 * In pratica, restituisce la l-closure di questo nodo.
 	 *
-	 * Nota: questo metodo verrà "wrappato" dalla classe StateNFA, poiché per un NFA
+	 * Nota: questo metodo verrà ereditato dalla classe StateNFA, poiché per un NFA
 	 * è possibile avere più figli marcati con la stessa label. Nel caso di uno stato
 	 * StateDFA, invece, sarà opportuno operare alcuni controlli per verificare che
 	 * esista un unico figlio per ciascuna label.
@@ -739,6 +739,10 @@ namespace translated_automata {
 	 * estensione.
 	 */
 	string ConstructedStateDFA::createNameFromExtension(const ExtensionDFA &ext) {
+		if (ext.empty()) {
+			return EMPTY_EXTENSION_NAME;
+		}
+
 		// Inizializzo la stringa
 		string name = "{";
 
@@ -759,11 +763,42 @@ namespace translated_automata {
 	 * Considerando le estensioni come insiemi, opera una differenza insiemistica e restituisce il risultato.
 	 */
 	ExtensionDFA ConstructedStateDFA::subtractExtensions(const ExtensionDFA &ext1, const ExtensionDFA &ext2) {
-		ExtensionDFA result;
+		ExtensionDFA result = set<StateNFA*, StateNFA::Comparator>();
 
 		for (StateNFA* s : ext1) {
 			if (ext2.count(s) == 0) {
 				result.insert(s);
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Metodo statico.
+	 * Computa la epsilon chiusura di un'estensione.
+	 */
+	ExtensionDFA ConstructedStateDFA::computeEpsilonClosure(const ExtensionDFA &ext) {
+		ExtensionDFA result = set<StateNFA*, StateNFA::Comparator>(ext);
+		list<StateNFA*> queue = list<StateNFA*>();
+		for (StateNFA* s : ext) {
+			queue.push_back(s);
+		}
+
+		while (!queue.empty()) {
+			// Estraggo lo stato da processare
+			StateNFA* current = queue.front();
+			queue.pop_front();
+			// Calcolo gli stati raggiungibili tramite epsilon transitions
+			set<StateNFA*> closure = current->getChildren(EPSILON);
+			// Per ciascuno di essi
+			for (StateNFA* epsilon_child : closure) {
+				// Aggiungo lo stato alla epsilon-chiusura dell'estensione
+				// Se NON era già contenuto
+				if (result.insert(epsilon_child).second) {
+					// Allora aggiungo lo stato anche alla coda di stati da processare
+					queue.push_back(epsilon_child);
+				}
 			}
 		}
 
@@ -847,22 +882,25 @@ namespace translated_automata {
 
 	/**
 	 * Restituisce la l-closure data la stringa etichetta:
-	 * per tutti gli stati della propria estensione, calcola la
-	 * l-closure, e dopo unisce tutti gli insiemi.
-	 *
-	 * Nota: Non è necessario estendere il tutto con epsilon transizioni,
-	 * poiché esse non vengono considerate.
+	 * per tutti gli stati della propria estensione calcola la
+	 * l-closure, poi degli stati raggiunti calcola la epsilon-chiusura
+	 * Si suppone, pertanto, che l'estensione presente nello stato sia
+	 * sempre epsilon-chiusa.
 	 */
 	ExtensionDFA ConstructedStateDFA::computeLClosureOfExtension(string label) {
-		ExtensionDFA closure;
+//		// Epsilon-chiusura della estensione corrente
+//		ExtensionDFA eps_closure = ConstructedStateDFA::computeEpsilonClosure(this->m_extension);
 
-		for (StateNFA* member : m_extension) {
+		// Computazione degli stati raggiunti tramite label L
+		ExtensionDFA l_closure;
+		for (StateNFA* member : this->m_extension) {
 			for (StateNFA* child : member->getChildren(label)) {
-				closure.insert(child);
+				l_closure.insert(child);
 			}
 		}
 
-		return closure;
+		// Epsilon chiusura degli stati raggiunti
+		return ConstructedStateDFA::computeEpsilonClosure(l_closure);
 	}
 
 	/**

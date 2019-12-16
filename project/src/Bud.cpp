@@ -9,6 +9,8 @@
  */
 
 #include "Bud.hpp"
+
+#include "Alphabet.hpp"
 #include "Debug.hpp"
 
 namespace translated_automata {
@@ -49,7 +51,7 @@ namespace translated_automata {
 	 * Restituisce una descrizione testuale del Bud.
 	 */
 	string Bud::toString() {
-		return ("(" + this->m_state->getName() + ", " + this->m_label + ")\033[33m[" + std::to_string(this->m_state->getDistance()) + "]\033[0m");
+		return ("(" + this->m_state->getName() + ", " + SHOW(this->m_label) + ")\033[33m[" + std::to_string(this->m_state->getDistance()) + "]\033[0m");
 	}
 
 	/**
@@ -129,7 +131,10 @@ namespace translated_automata {
 	 * Estrae il primo elemento della lista.
 	 */
 	Bud* BudsList::pop() {
-		return (this->m_set.extract(this->m_set.begin()).value());
+		Bud* first = *(this->m_set.begin());
+		this->m_set.erase(this->m_set.begin());
+		return first;
+//		return (this->m_set.extract(this->m_set.begin()).value()); // Vecchia implementazione, funzionante solo con C++17
 	}
 
 	/**

@@ -167,12 +167,15 @@ namespace translated_automata {
 		DEBUG_MARK_PHASE("Presentazione dell'automa DFA originale") {
 			DFADrawer drawer = DFADrawer(result->original_problem->getDFA());
 
-			if (DO_PRINT_ORIGINAL_AUTOMATON) {
-				std::cout << "PROBLEMA:\n";
-				std::cout << drawer.asString();
+			if (DO_PRINT_TRANSLATION) {
+				std::cout << "TRANSLATION:\n";
 				Alphabet computed_alpha = result->original_problem->getDFA()->getAlphabet();
 				std::cout << result->original_problem->getTranslation()->toString(computed_alpha);
-				std::cout << "- - - - - - - - - - - - -\n";
+			}
+
+			if (DO_PRINT_ORIGINAL_AUTOMATON) {
+				std::cout << "ORIGINAL DFA:\n";
+				std::cout << drawer.asString();
 			}
 
 			if (DO_DRAW_ORIGINAL_AUTOMATON) {

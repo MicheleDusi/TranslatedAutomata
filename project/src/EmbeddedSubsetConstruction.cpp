@@ -15,6 +15,7 @@
 #include <algorithm>
 
 #include "AutomataDrawer_impl.hpp"
+#define DEBUG_MODE
 #include "Debug.hpp"
 
 namespace translated_automata {
@@ -114,28 +115,69 @@ namespace translated_automata {
 				// Traduzione della label
 				string translated_label = translation->translate(pair.first);
 
-				// Per tutti gli stati figli raggiunti da transizioni marcate con la label originaria
-				for (StateDFA* child : pair.second) {
+				// Distinguo due casi, basandomi sulla label tradotta
+				if (translated_label == EPSILON) {
+					// caso EPSILON-TRANSIZIONE
 
-					// Inserisco le transizioni (tradotte) negli automi copiati
-					translated_nfa_state->connectChild(translated_label, states_map[child].first);
-					translated_dfa_state->connectChild(translated_label, states_map[child].second);
+					// Per tutti gli stati figli raggiunti da transizioni marcate con la label originaria
+					for (StateDFA* child : pair.second) {
+
+						// Inserisco la transizione tradotta nell'automa NON DETERMINISTICO N
+						translated_nfa_state->connectChild(translated_label, states_map[child].first);
+						// Inserisco la transizione tradotta (ma con label ORIGINARIA) nell'automa DETERMINISTICO D'
+						translated_dfa_state->connectChild(pair.first, states_map[child].second);
+
+						// A prescindere, inserisco un nuovo bud nella lista, che servirà per rimuovere la transizione
+						// Nota: la label NON è tradotta
+						this->addBudToList(buds_list, translated_dfa_state, pair.first);
+
+						// Se lo stato corrente è lo stato iniziale
+						if (automaton->isInitial(state)) {
+							this->addBudToList(buds_list, translated_dfa_state, EPSILON);
+						}
+						// Altrimenti, se lo stato corrente NON è lo stato iniziale, considero
+						// tutte le transizioni entranti che non sono marcate da epsilon
+						else {
+							unsigned int current_distance = state->getDistance();
+							for (auto &parent_pair : state->getIncomingTransitionsRef()) {
+								string translated_parent_label = translation->translate(parent_pair.first);
+								// Se le transizioni sono marcate da epsilon, non le considero
+								if (translated_parent_label != EPSILON) {
+
+									// Altrimenti, per ciascuno stato genitore con distanza minore o uguale
+									for (StateDFA* parent : parent_pair.second) {
+										if (parent->getDistance() <= current_distance) {
+
+											// Aggiungo il bud (stato_genitore, label)
+											this->addBudToList(buds_list, states_map[parent].second, translated_parent_label);
+										}
+									}
+								}
+							}
+						}
+					}
 
 				}
+				else {
+					// caso TRANSIZIONE NORMALE
 
-			}
+					// Per tutti gli stati figli raggiunti da transizioni marcate con la label originaria
+					for (StateDFA* child : pair.second) {
+						// Inserisco la transizione tradotta nell'automa NON DETERMINISTICO N
+						translated_nfa_state->connectChild(translated_label, states_map[child].first);
+						// Inserisco la transizione tradotta nell'automa DETERMINISTICO D'
+						translated_dfa_state->connectChild(translated_label, states_map[child].second);
+					}
 
-			// Verifica dei punti di non-determinismo
-			// Per tutte le transizioni uscenti dallo stato del DFA
-			for (auto &pair : translated_dfa_state->getExitingTransitions()) {
-
-				// Verifico se gli stati raggiunti dalle transizioni marcate con quest'etichetta
-				// sono più di uno.
-				if (pair.second.size() > 1) {
-					Bud* new_bud = new Bud(translated_dfa_state, pair.first);
-					buds_list.insert(new_bud);
-					DEBUG_LOG("Aggiungo il Bud %s", new_bud->toString().c_str());
+					// Verifico i punti di non determinismo:
+					// se gli stati raggiunti dalle transizioni marcate con quest'etichetta sono più di uno,
+					// allora aggiungo un bud alla lista.
+					auto children_with_translated_label = translated_dfa_state->getExitingTransitionsRef().at(translated_label);
+					if (children_with_translated_label.size() > 1) {
+						this->addBudToList(buds_list, translated_dfa_state, translated_label);
+					}
 				}
+
 			}
 
 		}
@@ -170,6 +212,18 @@ namespace translated_automata {
 			// Preparazione dei riferimenti allo stato e alla label
 			ConstructedStateDFA* current_dfa_state = current_bud->getState();
 			string current_label = current_bud->getLabel();
+
+			// Verifico se si tratta del bud iniziale, l'unico con la label "EPSILON"
+			// (In tal caso, non convien proseguire con il ciclo)
+			if (current_label == EPSILON && translated_dfa->isInitial(current_dfa_state)) {											/* RULE 0 */
+				DEBUG_LOG( "RULE 0" );
+				// Computazione della epsilon-chiusura
+				ExtensionDFA epsilon_closure = ConstructedStateDFA::computeEpsilonClosure(current_dfa_state->getExtension());
+				// Procedura "Extension Update" sullo stato inziale e sulla sua epsilon-chiusura
+				this->runExtensionUpdate(current_dfa_state, epsilon_closure, buds_list, translated_dfa);
+
+				continue;
+			}
 
 			// Transizioni dello stato corrente
 			map<string, set<StateDFA*>> current_exiting_transitions = current_dfa_state->getExitingTransitions();
@@ -212,8 +266,9 @@ namespace translated_automata {
 					// Per ogni transizione uscente dall'estensione, viene creato e aggiunto alla lista un nuovo Bud
 					// Nota: si sta prendendo a riferimento l'NFA associato
 					for (string label : new_state->getLabelsExitingFromExtension()) {
-						DEBUG_LOG("Aggiungo alla lista il bud (%s, %s)", new_state->getName().c_str(), label.c_str());
-						buds_list.insert(new Bud(new_state, label));
+						if (label != EPSILON) {
+							this->addBudToList(buds_list, new_state, label);
+						}
 					}
 
 				}
@@ -289,8 +344,9 @@ namespace translated_automata {
 							// Per ogni transizione uscente dall'estensione, viene creato e aggiunto alla lista un nuovo Bud
 							// Nota: si sta prendendo a riferimento l'NFA associato
 							for (string label : new_state->getLabelsExitingFromExtension()) {
-								DEBUG_LOG("Inserisco il nuovo bud (%s, %s) nella lista", new_state->getName().c_str(), label.c_str());
-								buds_list.insert(new Bud(new_state, label));
+								if (label != EPSILON) {
+									this->addBudToList(buds_list, new_state, label);
+								}
 							}
 
 						}
@@ -368,6 +424,16 @@ namespace translated_automata {
 
 			DEBUG_LOG("Arrivato al termine dell'iterazione per lo stato %s", current_dfa_state->getName().c_str() ); }
 		}
+
+		// Fase finale: eliminazione dello stato con estensione vuota
+		StateDFA* empty_state = translated_dfa->getState(EMPTY_EXTENSION_NAME);
+		if (empty_state != NULL) {
+			// Se effettivamente esiste uno stato vuoto, viene eliminato
+			translated_dfa->removeState(empty_state);
+			DEBUG_LOG("Eliminazione dello stato vuoto completata");
+			auto removed_states = translated_dfa->removeUnreachableStates();
+			DEBUG_LOG("Ho eliminato %lu stati irraggiungibili", removed_states.size());
+		}
 	}
 
 	/**
@@ -423,22 +489,30 @@ namespace translated_automata {
 	 */
 	void EmbeddedSubsetConstruction::runExtensionUpdate(ConstructedStateDFA* d_state, ExtensionDFA& new_extension, BudsList& buds, DFA* dfa) {
 		// Computazione degli stati aggiuntivi dell'update
-		ExtensionDFA difference_states = ConstructedStateDFA::subtractExtensions(new_extension, d_state->getExtension());
+		ExtensionDFA difference_states_1 = ConstructedStateDFA::subtractExtensions(new_extension, d_state->getExtension());
+		ExtensionDFA difference_states_2 = ConstructedStateDFA::subtractExtensions(d_state->getExtension(), new_extension);
 
 		int size = dfa->size();
 		DEBUG_LOG( "Dimensione attuale dell'automa: %d", size );
 
 		// Aggiornamento delle transizioni aggiuntive
 		// Per tutte le transizioni uscenti dagli stati dell'estensione che non sono contenuti già nella vecchia estensione
-		for (StateNFA* nfa_state : difference_states) {
+		// Nota: In teoria si dovrebbero unire i due insiemi, ma scorrendo su entrambi separatamente è più efficiente.
+		for (StateNFA* nfa_state : difference_states_1) {
 			for (auto &trans : nfa_state->getExitingTransitionsRef()) {
 				string label = trans.first;
-				DEBUG_LOG("Devo aggiornare la transizione su N: %s --(%s)-->", nfa_state->getName().c_str(), label.c_str());
-				bool insertion_result = buds.insert(new Bud(d_state, label));
-				if (insertion_result) {
-					DEBUG_LOG("Aggiungo il Bud (%s, %s) nella lista", d_state->getName().c_str(), label.c_str());
-				} else {
-					DEBUG_LOG("Il Bud (%s, %s) è già nella lista, quindi non viene aggiunto", d_state->getName().c_str(), label.c_str());
+				if (label != EPSILON) {
+					DEBUG_LOG("Devo aggiornare la transizione su N: %s --(%s)-->", nfa_state->getName().c_str(), label.c_str());
+					this->addBudToList(buds, d_state, label);
+				}
+			}
+		}
+		for (StateNFA* nfa_state : difference_states_2) {
+			for (auto &trans : nfa_state->getExitingTransitionsRef()) {
+				string label = trans.first;
+				if (label != EPSILON) {
+					DEBUG_LOG("Devo aggiornare la transizione su N: %s --(%s)-->", nfa_state->getName().c_str(), label.c_str());
+					this->addBudToList(buds, d_state, label);
 				}
 			}
 		}
@@ -496,11 +570,8 @@ namespace translated_automata {
 
 			// Per tutte le label salvate, se il relativo bud legato allo stato con distanza minima NON è presente, lo aggiungo
 			for (string bud_label : max_dist_buds_labels) {
-				bool insertion_result = buds.insert(new Bud(min_dist_state, bud_label));
-				if (insertion_result) {
-					DEBUG_LOG("Aggiungo il Bud (%s, %s) nella lista", d_state->getName().c_str(), bud_label.c_str());
-				} else {
-					DEBUG_LOG("Il Bud (%s, %s) è già nella lista, quindi non viene aggiunto", d_state->getName().c_str(), bud_label.c_str());
+				if (bud_label != EPSILON) {
+					this->addBudToList(buds, min_dist_state, bud_label);
 				}
 			}
 
@@ -515,6 +586,23 @@ namespace translated_automata {
 			}
 			this->runDistanceRelocation(to_be_relocated_list);
 
+		}
+	}
+
+	/**
+	 * Aggiunge un Bud alla lista, occupandosi della creazione e del fatto che possano esserci duplicati.
+	 * Eventualmente, segnala anche gli errori.
+	 */
+	void EmbeddedSubsetConstruction::addBudToList(BudsList& list, ConstructedStateDFA* bud_state, string bud_label) {
+		Bud* new_bud = new Bud(bud_state, bud_label);
+		// Provo ad inserire il bud nella lista
+		if (list.insert(new_bud)) {
+			// Caso in cui non sono presenti bud uguali
+			DEBUG_LOG("Aggiungo alla lista il Bud %s" , new_bud->toString().c_str());
+		} else {
+			// Caso in cui esistono bud duplicati
+			DEBUG_LOG("Il Bud %s è già presente nella lista, pertanto non è stato aggiunto" , new_bud->toString().c_str());
+			delete new_bud;
 		}
 	}
 

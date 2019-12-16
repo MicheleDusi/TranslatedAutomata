@@ -25,11 +25,13 @@ namespace translated_automata {
 		 */
 
 	private:
-		void runAutomatonTranslation(DFA* automaton, Translation* translation, NFA* translated_nfa, DFA* translated_dfa, BudsList& buds_list);
+		void runAutomatonTranslation(DFA* automaton, Translation* translation, NFA* translated_nfa, DFA* translated_dfa, BudsList& buds);
 		void runBudProcessing(NFA* translated_nfa, DFA* translated_dfa, BudsList& buds);
 		void runDistanceRelocation(list<pair<StateDFA*, int>> relocation_sequence);
 		void runDistanceRelocation(StateDFA* state, int new_distance);
 		void runExtensionUpdate(ConstructedStateDFA* state, ExtensionDFA& new_extension, BudsList& buds, DFA* dfa);
+
+		void addBudToList(BudsList& list, ConstructedStateDFA* bud_state, string bud_label);
 
 	public:
 		EmbeddedSubsetConstruction();

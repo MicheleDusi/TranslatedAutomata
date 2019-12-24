@@ -19,26 +19,29 @@ namespace translated_automata {
 
 	class EmbeddedSubsetConstruction {
 
-		/* TODO
-		 * Fare in modo che la classe abbia degli attributi membri, almeno
-		 * relativi al DFA e NFA "originali", in modo da non tirarseli dietro nei vari metodi.
-		 */
-
 	private:
-		void runAutomatonTranslation(DFA* automaton, Translation* translation, NFA* translated_nfa, DFA* translated_dfa, BudsList& buds);
-		void runBudProcessing(NFA* translated_nfa, DFA* translated_dfa, BudsList& buds);
+		DFA* m_original_dfa;
+		Translation* m_translation;
+
+		BudsList* m_buds;
+		NFA* m_translated_nfa;
+		DFA* m_translated_dfa;
+
 		void runDistanceRelocation(list<pair<StateDFA*, int>> relocation_sequence);
 		void runDistanceRelocation(StateDFA* state, int new_distance);
-		void runExtensionUpdate(ConstructedStateDFA* state, ExtensionDFA& new_extension, BudsList& buds, DFA* dfa);
-		void runAutomatonPruning(DFA* translated_dfa, Bud* bud, BudsList& buds);
+		void runExtensionUpdate(ConstructedStateDFA* state, ExtensionDFA& new_extension);
+		void runAutomatonPruning(Bud* bud);
 
-		void addBudToList(BudsList& list, ConstructedStateDFA* bud_state, string bud_label);
+		void addBudToList(ConstructedStateDFA* bud_state, string bud_label);
 
 	public:
 		EmbeddedSubsetConstruction();
 		virtual ~EmbeddedSubsetConstruction();
 
-		DFA* run(DFA* original_dfa, Translation* tau);
+		void loadInputs(DFA* automaton, Translation* translation);
+		void runAutomatonTranslation();
+		void runBudProcessing();
+		DFA* getResult();
 
 	};
 

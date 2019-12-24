@@ -9,7 +9,7 @@
 #define INCLUDE_PROPERTIES_HPP_
 
 // Numero di test effettuati
-#define TESTCASES							50
+#define TESTCASES							5
 
 // Proprietà dell'alfabeto
 #define ALPHABET_CARDINALITY 				15
@@ -29,6 +29,8 @@
 
 // Moduli e funzionalità opzionali
 #define DO_AUTOMATON_PRUNING				true
+#define DO_USE_REMOVING_LABEL				true
+#define DO_CHECK_DISTANCE_IN_TRANSLATION	false
 
 #define DO_PRINT_STATS						true
 #define DO_PRINT_TRANSLATION				false

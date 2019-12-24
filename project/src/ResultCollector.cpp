@@ -14,10 +14,18 @@ namespace translated_automata {
 
 	// Stringhe per la visualizzazione delle statistiche
 	vector<string> stat_headlines = vector<string> {
-		"SC_TIME   [ms]",
-		"ESC_TIME  [ms]",
-		"SOL_SIZE   [#]",
-		"SOL_GROWTH [%]"
+		"SC_TRANSL_TIME     [ms]",		// Tempo dedicato alla fase di traduzione nell'algoritmo SC
+		"ESC_TRANSL_TIME    [ms]",		// Tempo dedicato alla fase di traduzione nell'algoritmo ESC
+		"SC_CONSTR_TIME     [ms]",		// Tempo dedicato alla fase di costruzione nell'algoritmo SC (SC effettivo)
+		"ESC_CONSTR_TIME    [ms]",		// Tempo dedicato alla fase di costruzione nell'algoritmo ESC
+		"SC_TOT_TIME        [ms]",		// Tempo totale impiegato per l'esecuzione dell'algoritmo SC
+		"ESC_TOT_TIME       [ms]",		// Tempo totale impiegato per l'esecuzione dell'algoritmo ESC
+		"SC_TRANSL_PERC	    [%] ",		// Percentuale del tempo impiegata per la traduzione nell'algoritmo SC
+		"ESC_TRANSL_PERC    [%] ",		// Percentuale del tempo impiegata per la traduzione nell'algoritmo ESC
+		"SC_CONSTR_PERC	    [%] ",		// Percentuale del tempo impiegata per la costruzione nell'algoritmo SC
+		"ESC_CONSTR_PERC    [%] ",		// Percentuale del tempo impiegata per la costruzione nell'algoritmo ESC
+		"SOL_SIZE           [#] ",		// Dimensione della soluzione trovata dall'algoritmo
+		"SOL_GROWTH         [%] "		// Rapporto fra la dimensione dell'automa della soluzione e l'automa originale
 	};
 
 	/**
@@ -45,17 +53,75 @@ namespace translated_automata {
 		std::function<double(Result*)> getter;
 		switch(stat) {
 
-		// Tempo di esecuzione di SC
-		case SC_TIME :
+		// Tempo di traduzione di SC
+		case SC_TRANSL_TIME :
 			getter = [](Result* result) {
-				return (double) (result->sc_elapsed_time);
+				return (double) (result->sc_elapsed_translation_time);
 			};
 			break;
 
-		// Tempo di esecuzione di ESC
-		case ESC_TIME :
+		// Tempo di costruzione di SC
+		case SC_CONSTR_TIME :
 			getter = [](Result* result) {
-				return (double) (result->esc_elapsed_time);
+				return (double) (result->sc_elapsed_construction_time);
+			};
+			break;
+
+
+		// Tempo totale di SC
+		case SC_TOT_TIME :
+			getter = [](Result* result) {
+				return (double) (result->sc_elapsed_translation_time + result->sc_elapsed_construction_time);
+			};
+			break;
+
+		// Percentuale per la fase di traduzione di SC
+		case SC_TRANSL_PERC :
+			getter = [](Result* result) {
+				return ((double) (result->sc_elapsed_translation_time) * 100) / ((double) (result->sc_elapsed_translation_time + result->sc_elapsed_construction_time));
+			};
+			break;
+
+		// Percentuale per la fase di costruzione di SC
+		case SC_CONSTR_PERC :
+			getter = [](Result* result) {
+				return ((double) (result->sc_elapsed_construction_time) * 100) / ((double) (result->sc_elapsed_translation_time + result->sc_elapsed_construction_time));
+			};
+			break;
+
+		// Tempo di traduzione di ESC
+		case ESC_TRANSL_TIME :
+			getter = [](Result* result) {
+				return (double) (result->esc_elapsed_translation_time);
+			};
+			break;
+
+		// Tempo di costruzione di ESC
+		case ESC_CONSTR_TIME :
+			getter = [](Result* result) {
+				return (double) (result->esc_elapsed_construction_time);
+			};
+			break;
+
+
+		// Tempo totale di ESC
+		case ESC_TOT_TIME :
+			getter = [](Result* result) {
+				return (double) (result->esc_elapsed_translation_time + result->esc_elapsed_construction_time);
+			};
+			break;
+
+		// Percentuale per la fase di traduzione di ESC
+		case ESC_TRANSL_PERC :
+			getter = [](Result* result) {
+				return ((double) (result->esc_elapsed_translation_time) * 100) / ((double) (result->esc_elapsed_translation_time + result->esc_elapsed_construction_time));
+			};
+			break;
+
+		// Percentuale per la fase di costruzione di ESC
+		case ESC_CONSTR_PERC :
+			getter = [](Result* result) {
+				return ((double) (result->esc_elapsed_construction_time) * 100) / ((double) (result->esc_elapsed_translation_time + result->esc_elapsed_construction_time));
 			};
 			break;
 
@@ -241,8 +307,8 @@ namespace translated_automata {
 			printf("STATS:\n");
 			printf("Based on %u testcases with automata of size %d and alphabet of cardinality %d.\n", this->getTestCaseNumber(), AUTOMATON_SIZE, ALPHABET_CARDINALITY);
 			printf("ESC success percentage = %f %%\n", (100 * this->getSuccessPercentage()));
-			printf("________________|    MIN    |    AVG    |    MAX    |\n");
-			for (int int_stat = SC_TIME; int_stat <= SOL_GROWTH; int_stat++) {
+			printf("_________________________|    MIN    |    AVG    |    MAX    |\n");
+			for (int int_stat = SC_TRANSL_TIME; int_stat <= SOL_GROWTH; int_stat++) {
 				ResultStat stat = static_cast<ResultStat>(int_stat);
 				// TODO Ricordarsi di aggiornare l'ultimo valore, in caso di aggiunta di statistiche
 				tuple<double, double, double> stat_values = this->getStat(stat);

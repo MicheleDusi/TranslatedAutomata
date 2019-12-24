@@ -56,26 +56,42 @@ namespace translated_automata {
 		result->original_problem = problem;
 
 		DEBUG_MARK_PHASE("Subset Construction") {
-			auto sc_start_time = chrono::high_resolution_clock::now();
 
 			// Fase di traduzione
-			NFA* nfa = problem->getTranslation()->translate(problem->getDFA());
-			// Fase di costruzione
-			result->sc_solution = this->sc->run(nfa);
+			auto sc_start_translation_time = chrono::high_resolution_clock::now();
+			NFA* nfa = problem->getTranslation()->translate(problem->getDFA()); // Chiamata all'algoritmo
+			auto sc_end_translation_time = chrono::high_resolution_clock::now();
+			auto sc_translation_duration = (sc_end_translation_time - sc_start_translation_time);
+			result->sc_elapsed_translation_time = std::chrono::duration_cast<std::chrono::milliseconds>(sc_translation_duration).count();
 
-			auto sc_end_time = chrono::high_resolution_clock::now();
-			auto sc_duration = (sc_end_time - sc_start_time);
-			result->sc_elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(sc_duration).count();
+			// Fase di costruzione
+			auto sc_start_construction_time = chrono::high_resolution_clock::now();
+			result->sc_solution = this->sc->run(nfa); // Chiamata all'algoritmo
+			auto sc_end_construction_time = chrono::high_resolution_clock::now();
+			auto sc_construction_duration = (sc_end_construction_time - sc_start_construction_time);
+			result->sc_elapsed_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(sc_construction_duration).count();
+
 		}
 
 		DEBUG_MARK_PHASE("Embedded Subset Construction") {
-			auto esc_start_time = chrono::high_resolution_clock::now();
 
-			result->esc_solution = this->esc->run(problem->getDFA(), problem->getTranslation());
+			this->esc->loadInputs(problem->getDFA(), problem->getTranslation());
 
-			auto esc_end_time = chrono::high_resolution_clock::now();
-			auto esc_duration = (esc_end_time - esc_start_time);
-			result->esc_elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(esc_duration).count();
+			// Fase di traduzione
+			auto esc_start_translation_time = chrono::high_resolution_clock::now();
+			this->esc->runAutomatonTranslation(); // Chiamata all'algoritmo
+			auto esc_end_translation_time = chrono::high_resolution_clock::now();
+			auto esc_translation_duration = (esc_end_translation_time - esc_start_translation_time);
+			result->esc_elapsed_translation_time = std::chrono::duration_cast<std::chrono::milliseconds>(esc_translation_duration).count();
+
+			// Fase di costruzione
+			auto esc_start_construction_time = chrono::high_resolution_clock::now();
+			this->esc->runBudProcessing(); // Chiamata all'algoritmo
+			auto esc_end_construction_time = chrono::high_resolution_clock::now();
+			auto esc_construction_duration = (esc_end_construction_time - esc_start_construction_time);
+			result->esc_elapsed_construction_time = std::chrono::duration_cast<std::chrono::milliseconds>(esc_construction_duration).count();
+
+			result->esc_solution = this->esc->getResult();
 		}
 
 		this->collector->addResult(result);

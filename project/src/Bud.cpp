@@ -183,6 +183,19 @@ namespace translated_automata {
 		return removed_labels;
 	}
 
+	/**
+	 * Funzione che riordina gli elementi della lista di Bud.
+	 * E' opportuno chiamare raramente questa funzione, poiché il sorting non è particolarmente efficiente,
+	 * dato l'uso sottostante di un set (che dovrebbe richiedere il sorting automatico).
+	 */
+	void BudsList::sort() {
+		set<Bud*, BudComparator> new_set = set<Bud*, BudComparator>();
+		for (auto it = this->m_set.begin(); it != this->m_set.end(); it++) {
+			new_set.insert(*it);
+		}
+		this->m_set = new_set;
+	}
+
 }
 
 

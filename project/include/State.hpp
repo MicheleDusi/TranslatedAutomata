@@ -162,6 +162,7 @@ namespace translated_automata {
 
 	private:
 		ExtensionDFA m_extension;			// Stati dell'NFA corrispondente
+		bool m_mark = false;
 
 	public:
 		static string createNameFromExtension(const ExtensionDFA &ext);
@@ -172,6 +173,8 @@ namespace translated_automata {
 		ConstructedStateDFA(ExtensionDFA &extension);
 		virtual ~ConstructedStateDFA();
 
+		void setMarked(bool mark);
+		bool isMarked();
 		bool hasExtension(const ExtensionDFA &ext);
 		const ExtensionDFA& getExtension();
 		set<string>& getLabelsExitingFromExtension();

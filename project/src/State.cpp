@@ -629,7 +629,7 @@ namespace translated_automata {
 			}
 		}
 
-
+/*
 		result += "\t" + (std::to_string(getThis()->getIncomingTransitionsCount())) + " incoming transitions:\n";
 		if (!this->m_incoming_transitions.empty()) {
 			// Per tutte le label delle transizioni entranti
@@ -847,6 +847,20 @@ namespace translated_automata {
 	 */
 	ConstructedStateDFA::~ConstructedStateDFA() {
 		this->m_extension.clear();
+	}
+
+	/**
+	 * Imposta lo stato con il valore di marcatura passato come parametro.
+	 */
+	void ConstructedStateDFA::setMarked(bool mark) {
+		this->m_mark = mark;
+	}
+
+	/**
+	 * Restituisce true se lo stato è marcato.
+	 */
+	bool ConstructedStateDFA::isMarked() {
+		return this->m_mark;
 	}
 
 	/**

@@ -164,6 +164,11 @@ namespace translated_automata {
 	 * Il contenuto in output dipende dalle impostazioni del programma.
 	 */
 	void ResultCollector::presentResult(Result* result) {
+		// Se voglio visualizzare solo i casi di errore
+//		if (*(result->sc_solution) == *(result->esc_solution)) {
+//			return;
+//		}
+
 		DEBUG_MARK_PHASE("Presentazione dell'automa DFA originale") {
 			DFADrawer drawer = DFADrawer(result->original_problem->getDFA());
 

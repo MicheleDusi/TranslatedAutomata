@@ -30,6 +30,7 @@ namespace translated_automata {
 		void runDistanceRelocation(list<pair<StateDFA*, int>> relocation_sequence);
 		void runDistanceRelocation(StateDFA* state, int new_distance);
 		void runExtensionUpdate(ConstructedStateDFA* state, ExtensionDFA& new_extension, BudsList& buds, DFA* dfa);
+		void runAutomatonPruning(DFA* translated_dfa, Bud* bud, BudsList& buds);
 
 		void addBudToList(BudsList& list, ConstructedStateDFA* bud_state, string bud_label);
 

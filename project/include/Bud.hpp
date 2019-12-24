@@ -67,6 +67,7 @@ namespace translated_automata {
 		bool insert(Bud* new_bud);
 		Bud* pop();
 		set<string> removeBudsOfState(ConstructedStateDFA* state);
+		void sort();
 		void printBuds();
 
 	};

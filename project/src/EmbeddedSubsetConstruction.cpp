@@ -17,6 +17,9 @@
 #include "AutomataDrawer_impl.hpp"
 //#define DEBUG_MODE
 #include "Debug.hpp"
+#include "Properties.hpp"
+
+#define REMOVING_LABEL "~"
 
 namespace translated_automata {
 
@@ -51,6 +54,8 @@ namespace translated_automata {
 		DFADrawer* dfa_drawer = new DFADrawer(translated_dfa);
 		std::cout << "DFA appena dopo la traduzione:\n" << dfa_drawer->asString() << std::endl; )
 
+		buds_list.sort(); // FIXME Non dovrebbe servire
+
 		// Fase 2: Bud Processing
 		DEBUG_MARK_PHASE("Procedura: \"Bud Processing\"")
 		this->runBudProcessing(translated_nfa, translated_dfa, buds_list);
@@ -75,7 +80,7 @@ namespace translated_automata {
 	void EmbeddedSubsetConstruction::runAutomatonTranslation(DFA* automaton, Translation* translation, NFA* translated_nfa, DFA* translated_dfa, BudsList& buds_list) {
 
 		// Variabili locali ausiliarie
-		map<StateDFA*, pair<StateNFA*, ConstructedStateDFA*>> states_map;
+		map<StateDFA*, pair<StateNFA*, ConstructedStateDFA*>> states_map = map<StateDFA*, pair<StateNFA*, ConstructedStateDFA*>>();
 				/* Mantiene le associazioni fra gli stati tradotti:
 				 * per ciascun stato dell'automa in input, memorizzo il puntatore allo stato DFA e allo stato NFA in output */
 
@@ -122,13 +127,20 @@ namespace translated_automata {
 					// Per tutti gli stati figli raggiunti da transizioni marcate con la label originaria
 					for (StateDFA* child : pair.second) {
 
+						// Escludo il caso con epsilon-transizione ad anello
+						if (child == state) {
+							continue;
+						}
+
 						// Inserisco la transizione tradotta nell'automa NON DETERMINISTICO N
 						translated_nfa_state->connectChild(translated_label, states_map[child].first);
-						// Inserisco la transizione tradotta (ma con label ORIGINARIA) nell'automa DETERMINISTICO D'
+						// Inserisco la transizione tradotta (ma con label DA RIMOZIONE) nell'automa DETERMINISTICO D'
+//						translated_dfa_state->connectChild(REMOVING_LABEL, states_map[child].second);
 						translated_dfa_state->connectChild(pair.first, states_map[child].second);
 
 						// A prescindere, inserisco un nuovo bud nella lista, che servirà per rimuovere la transizione
 						// Nota: la label NON è tradotta
+//						this->addBudToList(buds_list, translated_dfa_state, REMOVING_LABEL);
 						this->addBudToList(buds_list, translated_dfa_state, pair.first);
 
 						// Se lo stato corrente è lo stato iniziale
@@ -146,7 +158,8 @@ namespace translated_automata {
 
 									// Altrimenti, per ciascuno stato genitore con distanza minore o uguale
 									for (StateDFA* parent : parent_pair.second) {
-										if (parent->getDistance() <= current_distance) {
+#define TRY_WITHOUT_DISTANCE true
+										if (parent->getDistance() <= current_distance || TRY_WITHOUT_DISTANCE) {
 
 											// Aggiungo il bud (stato_genitore, label)
 											this->addBudToList(buds_list, states_map[parent].second, translated_parent_label);
@@ -237,12 +250,19 @@ namespace translated_automata {
 			string l_closure_name = ConstructedStateDFA::createNameFromExtension(l_closure);
 			DEBUG_LOG("|N| = %s", l_closure_name.c_str());
 
+			// Se le impostazioni lo prevedono, verifico se l'estensione è vuota
+			if (DO_AUTOMATON_PRUNING && l_closure.empty()) {
+				DEBUG_LOG( "RULE 1" );																								/* RULE 1 */
+				DEBUG_MARK_PHASE("Automaton pruning sul bud %s", current_bud->toString().c_str()) {
+					this->runAutomatonPruning(translated_dfa, current_bud, buds_list);
+				}
+			}
 			// Se dallo stato corrente NON escono transizioni marcate dalla label corrente
-			if (current_exiting_transitions[current_label].empty()) {
+			else if (current_exiting_transitions[current_label].empty()) {
 
 				// Se esiste uno stato nel DFA con la stessa estensione
-				if (translated_dfa->hasState(l_closure_name)) { 																	/* RULE 1 */
-					DEBUG_LOG( "RULE 1" );
+				if (translated_dfa->hasState(l_closure_name)) { 																	/* RULE 2 */
+					DEBUG_LOG( "RULE 2" );
 
 					// Aggiunta della transizione dallo stato corrente a quello appena trovato
 					StateDFA* child = translated_dfa->getState(l_closure_name);
@@ -254,8 +274,8 @@ namespace translated_automata {
 
 				}
 				// Se nel DFA non c'è nessuno stato con l'estensione prevista
-				else { 																												/* RULE 2 */
-					DEBUG_LOG( "RULE 2" );
+				else { 																												/* RULE 3 */
+					DEBUG_LOG( "RULE 3" );
 
 					// Creazione di un nuovo stato StateDFA apposito e collegamento da quello corrente
 					ConstructedStateDFA* new_state = new ConstructedStateDFA(l_closure);
@@ -283,13 +303,13 @@ namespace translated_automata {
 					ConstructedStateDFA* child = (ConstructedStateDFA*) child_;
 					DEBUG_LOG("Considero la transizione:  %s --(%s)--> %s", current_dfa_state->getName().c_str(), current_label.c_str(), child->getName().c_str());
 
+					// Escludo gli stati con estensione diversa da |N|
 					if (child->getName() == l_closure_name) {
 						continue;
 					}
 
 					// Flag per la gestione delle condizioni
-					// (Effettuato mediante confronto di puntatori)
-					bool child_is_initial = (child == translated_dfa->getInitialState());
+					bool child_is_initial = (translated_dfa->isInitial(child));
 
 					// Parametri per la gestione delle condizioni
 					current_dfa_state->setDistance(front_distance + 1);
@@ -297,41 +317,43 @@ namespace translated_automata {
 					current_dfa_state->setDistance(front_distance);
 							/* Nota: l'operazione di settaggio della distanza viene fatta per escludere lo StateDFA corrente dalla lista
 							 * di genitori con la distanza minima durante il calcolo. Questo vincolo è necessario nella verifica delle
-							 * condizioni per la rule 4 (poco sotto), dove la minima distanza NON deve considerare lo stato corrente. */
+							 * condizioni per la rule 5 (poco sotto), dove la minima distanza NON deve considerare lo stato corrente. */
 
 					// Se lo stato raggiunto NON è lo stato iniziale, e contemporaneamente
 					// non esistono altre transizioni entranti diverse da quella che arriva dal nodo corrente
 					// (che sappiamo esistere per certo, per come è stato trovato lo stato child)
-					if (!child_is_initial && child->getIncomingTransitionsCount() == 1) {												/* RULE 3 */
-						DEBUG_LOG( "RULE 3" );
+					if (!child_is_initial && child->getIncomingTransitionsCount() == 1) {												/* RULE 4 */
+						DEBUG_LOG( "RULE 4" );
 
-						DEBUG_MARK_PHASE( "Extension Update" )
+						DEBUG_MARK_PHASE( "Extension Update" ) {
 						// Aggiornamento dell'estensione
 						this->runExtensionUpdate(child, l_closure, buds_list, translated_dfa);
-
+						}
 					}
 
 					// Se lo stato raggiunto (child) è lo stato iniziale, oppure se possiede una transizione entrante
 					// da uno stato con distanza inferiore o pari alla front distance, che non sia lo stato corrente
 					else if (child_is_initial || child_minimum_parents_distance <= front_distance) {
 
-						// Calcolo del nome che avrebbe uno stato con estensione pari alla l-closure
-						string l_closure_name = ConstructedStateDFA::createNameFromExtension(l_closure);
+//						// Calcolo del nome che avrebbe uno stato con estensione pari alla l-closure // CREDO SIA RIPETUTO
+//						string l_closure_name = ConstructedStateDFA::createNameFromExtension(l_closure);
 
 						// Se esiste uno stato nel DFA con la stessa estensione
-						if (translated_dfa->hasState(l_closure_name)) { 																/* RULE 4 */
-							DEBUG_LOG( "RULE 4" );
+						if (translated_dfa->hasState(l_closure_name)) { 																/* RULE 5 */
+							DEBUG_LOG( "RULE 5" );
 
 							// Ridirezione della transizione dallo stato corrente a quello appena trovato
 							StateDFA* old_child = translated_dfa->getState(l_closure_name);
 							current_dfa_state->connectChild(current_label, old_child);
 							current_dfa_state->disconnectChild(current_label, child);
-							this->runDistanceRelocation(old_child, front_distance + 1);
+							DEBUG_MARK_PHASE("Distance Relocation su %s, distanza %ul", old_child->getName().c_str(), (front_distance + 1)) {
+								this->runDistanceRelocation(old_child, front_distance + 1);
+							}
 
 						}
 						// Se nel DFA non c'è nessuno stato con l'estensione prevista
-						else { 																											/* RULE 5 */
-							DEBUG_LOG( "RULE 5" );
+						else { 																											/* RULE 6 */
+							DEBUG_LOG( "RULE 6" );
 
 							// Creazione di un nuovo stato StateDFA apposito e collegamento da quello corrente
 							ConstructedStateDFA* new_state = new ConstructedStateDFA(l_closure);
@@ -354,8 +376,8 @@ namespace translated_automata {
 					}
 
 					// Altrimenti, se non si verificano le condizioni precedenti
-					else {																												/* RULE 6 */
-						DEBUG_LOG( "RULE 6" );
+					else {																												/* RULE 7 */
+						DEBUG_LOG( "RULE 7" );
 
 						set<std::pair<ConstructedStateDFA*, string>> transitions_to_remove = set<std::pair<ConstructedStateDFA*, string>>();
 
@@ -502,7 +524,7 @@ namespace translated_automata {
 			for (auto &trans : nfa_state->getExitingTransitionsRef()) {
 				string label = trans.first;
 				if (label != EPSILON) {
-					DEBUG_LOG("Devo aggiornare la transizione su N: %s --(%s)-->", nfa_state->getName().c_str(), label.c_str());
+					DEBUG_LOG("Data sull'automa N la transizione: %s --(%s)-->", nfa_state->getName().c_str(), label.c_str());
 					this->addBudToList(buds, d_state, label);
 				}
 			}
@@ -511,7 +533,7 @@ namespace translated_automata {
 			for (auto &trans : nfa_state->getExitingTransitionsRef()) {
 				string label = trans.first;
 				if (label != EPSILON) {
-					DEBUG_LOG("Devo aggiornare la transizione su N: %s --(%s)-->", nfa_state->getName().c_str(), label.c_str());
+					DEBUG_LOG("Data sull'automa N la transizione: %s --(%s)-->", nfa_state->getName().c_str(), label.c_str());
 					this->addBudToList(buds, d_state, label);
 				}
 			}
@@ -585,6 +607,7 @@ namespace translated_automata {
 				}
 			}
 			this->runDistanceRelocation(to_be_relocated_list);
+			buds.sort();
 
 		}
 	}
@@ -604,6 +627,251 @@ namespace translated_automata {
 			DEBUG_LOG("Il Bud %s è già presente nella lista, pertanto non è stato aggiunto" , new_bud->toString().c_str());
 			delete new_bud;
 		}
+	}
+
+	/**
+	 * Metodo che si occupa della gestione del caso "estensione vuota" durante la procedura "Bud Processing".
+	 * In pratica, rimuove tutti e soli gli stati non più raggiungibili, poiché connessi solamente tramite lo stato
+	 * e la transizione marcate con una label specifica.
+	 *
+	 * translated_dfa = l'automa deterministico tradotto su cui la procedura agisce.
+	 * bud = il bud corrente che ha generato un'estensione |N| vuota; contiene lo stato da cui partire e la label interessata,
+	 * buds = la lista dei bud attuale; dovendo rimuovere stati dall'automa, è importante assicurarsi che vengano rimossi anche i relativi bud.
+	 */
+	void EmbeddedSubsetConstruction::runAutomatonPruning(DFA* translated_dfa, Bud* bud, BudsList& buds) {
+		// Lista di (potenziali) candidati, ossia coloro che verranno eliminati
+		list<ConstructedStateDFA*> candidates = list<ConstructedStateDFA*>();
+
+		// Lista di (potenziali) Entry Points, ossia stati raggiunti dall'esterno
+		list<ConstructedStateDFA*> entry_points = list<ConstructedStateDFA*>();
+
+		// Lista degli stati effettivamente raggiunti dall'esterno
+		list<ConstructedStateDFA*> reached_states = list<ConstructedStateDFA*>();
+
+		ConstructedStateDFA* starting_state = bud->getState();
+		string starting_label = bud->getLabel();
+		auto starting_state_exiting_transitions = starting_state->getExitingTransitionsRef();
+
+		DEBUG_MARK_PHASE("Ciclo (1) - Primi figli dell'estensione vuota") {
+		// Per tutte le transizioni uscenti dallo stato iniziale che generano l'estensione vuota
+		for (StateDFA* _empty_child : starting_state_exiting_transitions[starting_label]) {
+			ConstructedStateDFA* empty_child = (ConstructedStateDFA*) _empty_child;
+			DEBUG_LOG("Aggiungo alla lista dei candidati lo stato %s", empty_child->getName().c_str());
+			candidates.push_back(empty_child);
+			// La marcatura indica che lo stato fa parte dei candidati
+			// In questo modo è possibile sapere subito se uno stato è nella lista, senza doverlo cercare.
+			empty_child->setMarked(true);
+			// Infine, viene rimossa la transizione che genera l'estensione vuota
+			DEBUG_LOG("Viene rimossa la transizione %s --(%s)--> %s", starting_state->getName().c_str(), starting_label.c_str(), empty_child->getName().c_str());
+			starting_state->disconnectChild(starting_label, empty_child);
+		}
+		}
+
+		DEBUG_MARK_PHASE("Ciclo (2) - Lista dei candidati") {
+		// Scorro sulla lista di candidati
+		// Si noti che questo ciclo provoca l'aggiunta di stati (sempre in coda) alla lista su cui si itera
+		for (auto it = candidates.begin(); it != candidates.end(); /* L'aggiornamento dell'iteratore è effettuato in coda */) {
+			// Dereferenzio l'iteratore
+			ConstructedStateDFA* current = *it;
+			DEBUG_LOG("\tConsidero il possibile candidato all'eliminazione %s", current->getName().c_str());
+			current->setMarked(true);
+
+			/* Verifico se esista almeno una transizione che:
+			 * 1) Sia entrante nello stato corrente
+			 * 2) Provenga da uno stato NON candidato
+			 * 3) Provenga da uno stato con distanza strettamente minore della distanza dello stato corrente OPPURE sia lo stato iniziale.
+			 *
+			 * Se si verificano tutte queste tre condizioni, lo stato corrente è raggiunto "dall'esterno".
+			 * Pertanto NON è un candidato, e può essere rimosso dalla lista
+			 *
+			 * Altrimenti, lo stato è effettivamente un candidato; tutti i suoi figli NON candidati vengono
+			 * aggiunti alla lista dei candidati.
+			 */
+			bool is_reachable = false;
+			bool is_possible_entry_point = false;
+			// Verifico se è lo stato iniziale
+			if (translated_dfa->isInitial(current)) {
+				is_reachable = true;
+			}
+			else {
+				// Scorro su tutte le transizioni entranti nello stato corrente [condizione 1]
+				for (auto &pair : current->getIncomingTransitionsRef()) {
+					for (StateDFA* _parent : pair.second) {
+						ConstructedStateDFA* parent = (ConstructedStateDFA*) _parent;
+						DEBUG_LOG("\t\tConsidero la transizione %s --(%s)--> %s", parent->getName().c_str(), pair.first.c_str(), current->getName().c_str());
+
+						// Considero solo le transizioni da stati NON candidati [condizione 2]
+						if (!parent->isMarked()) {
+							DEBUG_LOG("\t\t\tIl nodo genitore %s non è marcato", parent->getName().c_str());
+							// Se la transizione arriva da uno stato con distanza minore [condizione 3]
+							if (parent->getDistance() < current->getDistance()) {
+								is_reachable = true;
+								break;
+							}
+							else {
+								is_possible_entry_point = true;
+							}
+						}
+					}
+					// Se è raggiunto, è inutile continuare ad iterare
+					if (is_reachable) {
+						break;
+					}
+				}
+			}
+
+			// Se lo stato corrente è raggiungibile, non è candidato per l'eliminazione
+			if (is_reachable) {
+				DEBUG_LOG("Lo stato %s è risultato raggiungibile dall'esterno dell'insieme dei candidati, pertanto non è più marcato", current->getName().c_str());
+				current->setMarked(false);
+				candidates.erase(it++);
+			}
+			else {
+				// Se è risultato un possibile entry point, viene aggiunto alla lista
+				if (is_possible_entry_point) {
+					DEBUG_LOG("Lo stato %s è risultato un possibile entry point", current->getName().c_str());
+					entry_points.push_back(current);
+				}
+
+				DEBUG_LOG("Tutti i figli di %s non marcati sono possibili candidati:", current->getName().c_str());
+				// Tutti i figli vengono aggiunti come possibili candidati
+				for (auto &pair : current->getExitingTransitionsRef()) {
+					for (StateDFA* _child : pair.second) {
+						ConstructedStateDFA* child = (ConstructedStateDFA*) _child;
+						if (!child->isMarked()) {
+							DEBUG_LOG("Aggiungo alla lista dei candidati lo stato %s", child->getName().c_str());
+							candidates.push_back(child);
+						}
+						/* Piccola nota: in questo punto della procedura, ogni figlio dello stato corrente che non è marcato
+						 * ha sicuramente una distanza maggiore del padre; infatti, se avesse una distanza inferiore, per come
+						 * vengono inseriti (e processati) gli stati potenziali candidati, esso sarebbe già marcato.
+						 * Per questo motivo non è necessario inserire un controllo.
+						 */
+					}
+				}
+
+				++it;
+			}
+
+			// Termine dell'iterazione sullo stato corrente
+		}
+		}
+
+		DEBUG_MARK_PHASE("Ciclo (3) - Controllo degli entry points") {
+		// Controllo dei possibili entry points
+		/* Iterando sulla lista dei potenziali entry points, viene verificato per ciascuno di essi
+		 * che esista almeno una transizione entrante che proviene da uno stato NON candidato.
+		 * Poiché gli stati candidati sono stati identificati completamente (e sono marcati), questa condizione
+		 * dovrebbe essere sufficiente a decretare se uno stato è raggiungibile dall'esterno dell'insieme dei candidati.
+		 */
+		for (auto it = entry_points.begin(); it != entry_points.end(); ) {
+			ConstructedStateDFA* entry_pt = *it;
+
+			bool is_entry_point = false;
+			for (auto &pair : entry_pt->getIncomingTransitionsRef()) {
+				for (StateDFA* _parent : pair.second) {
+					ConstructedStateDFA* parent = (ConstructedStateDFA*) _parent;
+					if (!parent->isMarked()) {
+						// E' davvero un entry point!
+						DEBUG_LOG("Lo stato %s è davvero un entry point!", entry_pt->getName().c_str());
+						is_entry_point = true;
+						break;
+					}
+				}
+				if (is_entry_point) {
+					break;
+				}
+			}
+
+			// Al termine dell'analisi delle transizioni entranti, posso decretare se lo stato è davvero raggiunto da stati esterni all'insieme di candidati
+			if (!is_entry_point) {
+				// Se NON è un'entry point, lo rimuovo dalla lista.
+				// Questo significa che è effettivamente uno stato candidato
+				entry_points.erase(it++);
+				DEBUG_ASSERT_TRUE(entry_pt->isMarked());
+			}
+			else {
+				// Altrimenti, se E' un entry point, lo rimuovo dalla lista dei candidati
+//				candidates.remove(entry_pt);
+					/*
+					 * Nota: la precedente operazione potrebbe risultare lunga, pertanto si potrebbe decidere
+					 * di spostare il "carico" di ricordarsi quali stati sono da eliminare sulla marcatura.
+					 * Al termine, si scorre sui candidati e si verifica quali sono marcati e quali no, per stabilire
+					 * quali eliminare.
+					 */
+				entry_pt->setMarked(false);
+				DEBUG_ASSERT_FALSE(entry_pt->isMarked());//
+				// Inoltre, lo aggiungo alla lista degli stati effettivamente raggiunti
+				reached_states.push_back(entry_pt);
+				++it;
+			}
+		}
+		}
+
+		DEBUG_MARK_PHASE("Ciclo (4) - Chiusura degli stati raggiungibili") {
+		/* A questo punto, ho in "reached_states" solo stati che vengono raggiunti dall'esterno dell'insieme dei candidati
+		 * (gli entry points, appunto).
+		 * Pertanto si cerca di computarne la chiusura, ossia tutti gli stati raggiungibili dagli entry points ma che stiano
+		 * anche nell'insieme dei candidati (i.e. che abbiano la marcatura attiva).
+		 */
+		for (auto it = reached_states.begin(); it != reached_states.end(); it++) {
+			ConstructedStateDFA* reached_state = *it;
+
+			// In teoria, ogni stato in questa lista non dovrebbe più essere marcato
+			DEBUG_ASSERT_FALSE(reached_state->isMarked());
+
+			// Per tutti i figli MARCATI
+			for (auto &pair : reached_state->getExitingTransitionsRef()) {
+				for (StateDFA* _child : pair.second) {
+					ConstructedStateDFA* child = (ConstructedStateDFA*) _child;
+
+					// Se fa ancora parte dei candidati
+					if (child->isMarked()) {
+						// Rimuovo la marcatura
+						child->setMarked(false);
+						// Lo aggiungo alla lista degli stati raggiunti
+						reached_states.push_back(child);
+					}
+				}
+			}
+
+			/* Infine, per ciascun entry point "annullo" la distanza, in modo tale che possa essere computata
+			 * successivamente in maniera comoda e corretta, senza basarsi su informazioni pregresse che (con
+			 * l'eliminazione degli stati) risultano errate.
+			 */
+			reached_state->setDistance(DEFAULT_VOID_DISTANCE);
+		}
+		}
+
+		DEBUG_MARK_PHASE("Ciclo (5) - Rimozioni dei candidati da eliminare") {
+		/* A questo punto in "candidates" sono presenti tutti i candidati per l'eliminazione, ma solo quelli
+		 * marcati risultano effettivamente da rimuovere.
+		 */
+		for (ConstructedStateDFA* candidate : candidates) {
+			if (candidate->isMarked()) {
+				DEBUG_LOG("Rimuovo lo stato %s", candidate->getName().c_str());
+				// Rimuovo lo stato dall'automa (rimuovendo anche le sue transizioni
+				translated_dfa->removeState(candidate);
+				// Rimuovo lo stato dalla lista dei bud
+				buds.removeBudsOfState(candidate);
+			}
+		}
+		}
+
+		DEBUG_MARK_PHASE("Ciclo (6) - Ricostruzione delle distanze") {
+		/* Per ciascuno degli stati rimasti, computo la distanza.
+		 * Nota: l'ordine degli stati (che viene mantenuto in tutta la procedura) si basa sulla distanza; pertanto
+		 * dovrebbe essere sufficiente per effettuare il calcolo correttamente.
+		 */
+		for (ConstructedStateDFA* entry_pt : entry_points) {
+			unsigned int new_distance = entry_pt->getMinimumParentsDistance();
+			DEBUG_ASSERT_FALSE(new_distance == DEFAULT_VOID_DISTANCE);
+			entry_pt->initDistancesRecursively(new_distance + 1);
+		}
+		// Ri-ordino la lista di bud
+		buds.sort();
+		}
+
 	}
 
 } /* namespace translated_automata */

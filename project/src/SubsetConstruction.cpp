@@ -37,7 +37,7 @@ namespace translated_automata {
 		// Inserisco lo stato all'interno del DFA
         dfa->addState(initial_dfa_state);
 
-        // Stack per i BUD
+        // Stack per gli stati ancora da processare (bud)
         std::queue<ConstructedStateDFA*> buds_stack;
 
         // Inserisco come bud di partenza il nodo iniziale

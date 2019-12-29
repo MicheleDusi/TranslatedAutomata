@@ -5,7 +5,7 @@
  *
  * Header contenente la definizione e le firme dei metodi della classe
  * concreta "DFAGenerator", figlia della classe "AutomataGenerator".
- * Questa classe ha la responsabilità di creare un automa a stati finiti Deterministico (!)
+ * Questa classe ha la responsabilità di creare un automa a stati finiti deterministico (!)
  * secondo i parametri pre-impostati.
  * La generazione sfrutta funzioni che generano valori casuali; pertanto, ogni chiamata
  * restituisce un automa differente.
@@ -20,25 +20,18 @@
 
 namespace translated_automata {
 
-	enum DFAType {
-		DFA_RANDOM,
-		DFA_STRATIFIED
-	};
-
 	class DFAGenerator : public AutomataGenerator<DFA> {
 
 	private:
-		void generateStates(DFA& nfa);
-		StateDFA* getRandomState(DFA& nfa);
+		void generateStates(DFA& dfa);
+		StateDFA* getRandomState(DFA& dfa);
 		StateDFA* getRandomStateWithUnusedLabels(vector<StateDFA*>& states, map<StateDFA*, Alphabet>& unused_labels);
 		string extractRandomUnusedLabel(map<StateDFA*, Alphabet>& unused_labels, StateDFA* state);
-		unsigned long int computeTransitionsNumber();
 
 	public:
 		DFAGenerator(Alphabet alphabet);
 		~DFAGenerator();
 
-		DFA* generateAutomaton(DFAType type);
 		DFA* generateRandomAutomaton();
 		DFA* generateStratifiedAutomaton();
 

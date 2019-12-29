@@ -1,5 +1,5 @@
 /*
- * AutomataGenerator.hpp
+ * AutomataGenerator.cpp
  *
  * Project: TranslatedAutomata
  *
@@ -101,6 +101,31 @@ namespace translated_automata {
 	}
 
 	/**
+	 * Metodo protetto.
+	 * Calcola il numero di transizioni *deterministiche* da creare all'interno dell'automa; si parla di transizioni deterministiche
+	 * poiché si esclude la possibilità che uno stato abbia più di una transizione uscente con la stessa label. Per questo motivo, il
+	 * numero massimo di transizioni deterministiche (su cui poi è calcolata la percentuale prevista) è dato dal numero di stati per il
+	 * numero di possibili label previste dall'alfabeto.
+	 *
+	 * Più nello specifico, il calcolo è effettuato secondo il seguente algoritmo:
+	 * - Viene calcolato il numero massimo possibile di transizioni. Tale numero corrisponde al numero massimo di transizioni
+	 * 	 per ogni stato moltiplicate per il numero N degli stati. Il numero massimo di transizioni di un singolo stato è dato
+	 * 	 dal numero L di label disponibili (ricordiamo che trattiamo solo le transizioni deterministiche).
+	 * - Viene calcolata la percentuale richiesta su tale numero, arrotondata per difetto.
+	 * - Se il numero risultante è inferiore al numero necessario per connettere tutti gli stati, viene alzato
+	 *   fino al numero di stati - 1.
+	 *
+	 * Nota: nel caso di automi NON determinstici (NFA) è possibile inserire una percentuale superiore ad 1 per generare
+	 * più di una transizione con la stessa label (si veda la documentazione della classe NFAGenerator).
+	 */
+	template <class Automaton>
+	unsigned long int AutomataGenerator<Automaton>::computeDeterministicTransitionsNumber() {
+		unsigned long int max_n_trans = (this->getSize()) * (this->getAlphabet().size());
+		unsigned long int n = (unsigned long int) (max_n_trans * this->getTransitionPercentage());
+		return (n < this->getSize() - 1) ? (this->getSize() - 1) : (n);
+	}
+
+	/**
 	 * Getter per l'alfabeto dell'automa da generare.
 	 */
 	template <class Automaton>
@@ -151,6 +176,15 @@ namespace translated_automata {
 	}
 
 	/**
+	 * Restituisce la distanza entro cui non sono sicuramente presenti punti di non
+	 * determinismo, nel caso di automi NFA a strati che prevedano tale possibilità.
+	 */
+	template <class Automaton>
+	unsigned int AutomataGenerator<Automaton>::getSafeZoneDistance() {
+		return this->m_safe_zone_distance;
+	}
+
+	/**
 	 * Setter per l'alfabeto dell'automa da generare.
 	 * Si richiede che l'alfabeto contenga almeno un simbolo.
 	 */
@@ -186,12 +220,12 @@ namespace translated_automata {
 
 	/**
 	 * Setter per la probabilità di avere una transizione tra due stati nell'automa da generare.
-	 * Questo metodo funziona solamente se la percentuale è effettivamente compresa nell'intervallo
-	 * chiuso [0,1], altrimenti la sua esecuzione non ha alcun effetto.
+	 * Precondizione: la probabilità deve essere superiore a 0.
+	 * Può essere superiore ad 1 se siamo nel caso NFA.
 	 */
 	template <class Automaton>
 	void AutomataGenerator<Automaton>::setTransitionPercentage(double percentage) {
-		if (percentage >= 0 && percentage <= 1) {
+		if (percentage >= 0) {
 			this->m_transition_percentage = percentage;
 		}
 	}
@@ -216,6 +250,65 @@ namespace translated_automata {
 	template <class Automaton>
 	void AutomataGenerator<Automaton>::setMaxDistance(unsigned int max_distance) {
 		this->m_max_distance = max_distance;
+	}
+
+	/**
+	 * Imposta la distanza entro la quale viene garantito il determinismo dell'automa.
+	 * Questo parametro è utilizzato solamente negli automi stratificati con SafeZone,
+	 * che per natura sono NON deterministici (fuori dalla SZ).
+	 */
+	template <class Automaton>
+	void AutomataGenerator<Automaton>::setSafeZoneDistance(unsigned int safe_zone_distance) {
+		this->m_safe_zone_distance = safe_zone_distance;
+	}
+
+	/**
+	 * Restituisce un automa della tipologia desiderata.
+	 * In breve, questo metodo si occupa di delegare la creazione dell'automa
+	 * agli altri metodi della classe, a seconda del valore del parametro richiesto.
+	 * Gli altri metodi, poi, verranno implementati effettivamente nelle classi figlie.
+	 *
+	 * AutomatonGenerator fornisce un'implementazione di base dei metodi per la costruzione
+	 * di automi di vario tipo, ma sono implementazioni fittizie che generano un'eccezione.
+	 * Questo permette di capire immediatamente se una certa struttura di automa è disponibile
+	 * per gli automi DFA o per gli automi NFA.
+	 */
+	template <class Automaton>
+	Automaton* AutomataGenerator<Automaton>::generateAutomaton(AutomatonType type) {
+		switch(type) {
+
+		case AUTOMATON_RANDOM :
+			return this->generateRandomAutomaton();
+
+		case AUTOMATON_STRATIFIED :
+			return this->generateStratifiedAutomaton();
+
+		case AUTOMATON_STRATIFIED_WITH_SAFE_ZONE :
+			return this->generateStratifiedWithSafeZoneAutomaton();
+
+		default :
+			DEBUG_LOG_ERROR("Valore %d non riconosciuto all'interno dell'enumerazione AutomatonType", type);
+			return NULL;
+		}
+	}
+
+
+	template <class Automaton>
+	Automaton* AutomataGenerator<Automaton>::generateRandomAutomaton() {
+		DEBUG_LOG_ERROR("Impossibile generare un automa di tipo \"Random\" per l'attuale tipologia di problema");
+		throw "Impossibile generare un automa di tipo \"Random\" per l'attuale tipologia di problema";
+	}
+
+	template <class Automaton>
+	Automaton* AutomataGenerator<Automaton>::generateStratifiedAutomaton() {
+		DEBUG_LOG_ERROR("Impossibile generare un automa di tipo \"Stratified\" per l'attuale tipologia di problema");
+		throw "Impossibile generare un automa di tipo \"Stratified\" per l'attuale tipologia di problema";
+	}
+
+	template <class Automaton>
+	Automaton* AutomataGenerator<Automaton>::generateStratifiedWithSafeZoneAutomaton() {
+		DEBUG_LOG_ERROR("Impossibile generare un automa di tipo \"StratifiedWithSafeZone\" per l'attuale tipologia di problema");
+		throw "Impossibile generare un automa di tipo \"StratifiedWithSafeZone\" per l'attuale tipologia di problema";
 	}
 
     /*************

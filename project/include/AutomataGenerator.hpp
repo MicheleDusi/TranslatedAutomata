@@ -6,11 +6,9 @@
  * File header della classe AutomataGenerator, avente la responsabilità
  * di generare automi di differenti tipologie e caratteristiche, a seconda dei
  * parametri richiesti nella chiamata dei metodi.
- * La classe AutomataGenerator è parametrizzata sul tipo "State"; il suo metodo
- * "generateRandomAutomaton" restituisce un automa parametrizzato sullo stesso tipo.
- * Il metodo, così come il costruttore, sono virtuali; questo fa della classe una
- * classe astratta che necessita di un'implementazione concreta per essere usata.
- *
+ * La classe AutomataGenerator è parametrizzata sul tipo "Automaton"; il suo metodo
+ * "generateRandomAutomaton" restituisce un automa generico, che deve essere specificato
+ * nelle implementazioni concrete della classe.
  */
 
 #ifndef INCLUDE_AUTOMATAGENERATOR_HPP_
@@ -22,7 +20,15 @@
 #include "Alphabet.hpp"
 #include "Automaton.hpp"
 
+#define UNDEFINED_VALUE -1
+
 namespace translated_automata {
+
+	enum AutomatonType {
+		AUTOMATON_RANDOM,
+		AUTOMATON_STRATIFIED,
+		AUTOMATON_STRATIFIED_WITH_SAFE_ZONE
+	};
 
 	template <class Automaton>
 	class AutomataGenerator {
@@ -33,7 +39,8 @@ namespace translated_automata {
 		string m_name_prefix;
 		double m_transition_percentage;
 		double m_final_probability;
-		double m_max_distance = 0;
+		double m_max_distance = UNDEFINED_VALUE;
+		double m_safe_zone_distance = UNDEFINED_VALUE;
 
 		unsigned int m_namesCounter = 0;
 
@@ -47,9 +54,9 @@ namespace translated_automata {
 		string generateUniqueName();
 		double generateNormalizedDouble();
 		string getRandomLabelFromAlphabet();
+		unsigned long int computeDeterministicTransitionsNumber();
 
 	public:
-
 		AutomataGenerator(Alphabet alphabet);
 		virtual ~AutomataGenerator();
 
@@ -59,6 +66,7 @@ namespace translated_automata {
 		double getTransitionPercentage();
 		double getFinalProbability();
 		unsigned int getMaxDistance();
+		unsigned int getSafeZoneDistance();
 
 		void setAlphabet(Alphabet alpha);
 		void setSize(unsigned long int size);
@@ -66,8 +74,12 @@ namespace translated_automata {
 		void setTransitionPercentage(double percentage);
 		void setFinalProbability(double probability);
 		void setMaxDistance(unsigned int max_distance);
+		void setSafeZoneDistance(unsigned int safe_zone_distance);
 
-		virtual Automaton* generateRandomAutomaton() = 0;
+		Automaton* generateAutomaton(AutomatonType type);
+		virtual Automaton* generateRandomAutomaton();
+		virtual Automaton* generateStratifiedAutomaton();
+		virtual Automaton* generateStratifiedWithSafeZoneAutomaton();
 
 	};
 

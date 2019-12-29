@@ -15,9 +15,9 @@
 #include <iostream>
 #include <tuple>
 
+#include "../include/ProblemSolver.hpp"
 #include "Automaton.hpp"
 #include "Debug.hpp"
-#include "ProblemSolver.hpp"
 #include "Properties.hpp"
 
 using std::set;
@@ -31,17 +31,11 @@ int main(int argc, char **argv) {
 
 		DEBUG_MARK_PHASE("Creazione dei generatori") {
 
-		// Creazione del problema
+		// Creazione del generatore di problemi
 		generator = new ProblemGenerator();
-		generator->getDFAGenerator()->setSize(AUTOMATON_SIZE);
-		generator->getDFAGenerator()->setFinalProbability(AUTOMATON_FINAL_PROBABILITY);
-		generator->getDFAGenerator()->setTransitionPercentage(AUTOMATON_TRANSITION_PERCENTAGE);
-		generator->getDFAGenerator()->setMaxDistance(AUTOMATON_MAX_DISTANCE);
-		generator->getTranslationGenerator()->setMixingFactor(TRANSLATION_MIXING_FACTOR);
-		generator->getTranslationGenerator()->setOffset(TRANSLATION_OFFSET);
-		generator->getTranslationGenerator()->setEpsilonPercentage(TRANSLATION_EPSILON_PERCENTAGE);
 
 		}
+
 		DEBUG_MARK_PHASE("Risoluzione dei problemi") {
 
 		// Risoluzione del problema

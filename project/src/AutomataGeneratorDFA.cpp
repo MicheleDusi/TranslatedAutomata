@@ -3,7 +3,7 @@
  *
  * Project: TranslatedAutomata
  *
- * File sorgente contenente la classe concreta "DFAGenerator", figlia della classe "AutomataGenerator<DFA>".
+ * File sorgente contenente la classe concreta "AutomataGeneratorDFA", figlia della classe "AutomataGenerator<DFA>".
  * Permette la generazione di un automa a stati finiti deterministico, secondo i parametri previsti dalla classe
  * padre "AutomataGenerator".
  *
@@ -29,23 +29,6 @@ namespace translated_automata {
 	 * Distruttore
 	 */
 	DFAGenerator::~DFAGenerator() {}
-
-	/**
-	 * Restituisce un automa della tipologia desiderata.
-	 * In breve, questo metodo si occupa di delegare la creazione dell'automa DFA
-	 * agli altri metodi della classe, a seconda del valore del parametro richiesto.
-	 */
-	DFA* DFAGenerator::generateAutomaton(DFAType type) {
-		switch(type) {
-		case DFA_RANDOM :
-			return this->generateRandomAutomaton();
-		case DFA_STRATIFIED :
-			return this->generateStratifiedAutomaton();
-		default :
-			DEBUG_LOG_ERROR("Valore %d non riconosciuto all'interno dell'enumerazione DFAType", type);
-			return NULL;
-		}
-	}
 
 
 	DFA* DFAGenerator::generateRandomAutomaton() {
@@ -74,7 +57,7 @@ namespace translated_automata {
 		 * 0.2) Se tale numero non è sufficiente per coprire tutti gli stati, il numero viene portato a N-1
 		 * (dove N è il numero di stati dell'automa). Questo numero, per come è stato costruito l'algoritmo,
 		 * garantisce la connessione. */
-		unsigned long int transitions_number = this->computeTransitionsNumber();
+		unsigned long int transitions_number = this->computeDeterministicTransitionsNumber();
 		DEBUG_ASSERT_TRUE( transitions_number >= dfa->size() - 1 );
 
 		/* FASE (1) : Creazione di un albero di copertura
@@ -166,7 +149,7 @@ namespace translated_automata {
 		dfa->setInitialState(initial_state);
 
 		// Verifico se la massima distanza è stata impostata
-		if (this->getMaxDistance() == 0 || this->getMaxDistance() >= this->getSize()) {
+		if (this->getMaxDistance() == UNDEFINED_VALUE || this->getMaxDistance() >= this->getSize()) {
 			// In caso il valore non sia corretto, la imposto al valore massimo.
 			// L'automa che se ne otterrà sarà una lunga catena di stati.
 			this->setMaxDistance(this->getSize() - 1);
@@ -262,7 +245,7 @@ namespace translated_automata {
 		 * (ossia il numero di transizioni di un grafo completo, per ciascuna possibile etichetta) e
 		 * la percentuale di transizioni desiderata.
 		 */
-		unsigned long int transitions_number = this->computeTransitionsNumber();
+		unsigned long int transitions_number = this->computeDeterministicTransitionsNumber();
 		DEBUG_ASSERT_TRUE( transitions_number >= dfa->size() - 1 );
 
 		for (	unsigned long int transitions_created = this->getSize() - 1;
@@ -375,22 +358,6 @@ namespace translated_automata {
 		// Cancellazione della label utilizzata
 		unused_labels[state].erase(unused_labels[state].begin() + label_random_index);
 		return extracted_label;
-	}
-
-	/**
-	 * Calcola il numero di transizioni da creare all'interno dell'automa.
-	 * Il calcolo è effettuato secondo il seguente algoritmo:
-	 * - Viene calcolato il numero massimo possibile di transizioni. Tale numero corrisponde al numero massimo di transizioni
-	 * 	 per ogni stato moltiplicate per il numero N degli stati. Il numero massimo di transizioni di un singolo stato è dato
-	 * 	 dal numero L di label disponibili (uno stato DFA non può presentare due transizioni uscenti con la medesima label).
-	 * - Viene calcolata la percentuale richiesta su tale numero, arrotondata per difetto.
-	 * - Se il numero risultante è inferiore al numero necessario per connettere tutti gli stati, viene alzato
-	 *   fino al numero di stati - 1.
-	 */
-	unsigned long int DFAGenerator::computeTransitionsNumber() {
-		unsigned long int max_n_trans = (this->getSize()) * (this->getAlphabet().size());
-		unsigned long int n = (unsigned long int) (max_n_trans * this->getTransitionPercentage());
-		return (n < this->getSize() - 1) ? (this->getSize() - 1) : (n);
 	}
 
 } /* namespace translated_automata */

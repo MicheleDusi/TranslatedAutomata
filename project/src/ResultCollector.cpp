@@ -14,18 +14,10 @@ namespace translated_automata {
 
 	// Stringhe per la visualizzazione delle statistiche
 	vector<string> stat_headlines = vector<string> {
-		"SC_TRANSL_TIME     [ms]",		// Tempo dedicato alla fase di traduzione nell'algoritmo SC
-		"ESC_TRANSL_TIME    [ms]",		// Tempo dedicato alla fase di traduzione nell'algoritmo ESC
-		"SC_CONSTR_TIME     [ms]",		// Tempo dedicato alla fase di costruzione nell'algoritmo SC (SC effettivo)
-		"ESC_CONSTR_TIME    [ms]",		// Tempo dedicato alla fase di costruzione nell'algoritmo ESC
-		"SC_TOT_TIME        [ms]",		// Tempo totale impiegato per l'esecuzione dell'algoritmo SC
-		"ESC_TOT_TIME       [ms]",		// Tempo totale impiegato per l'esecuzione dell'algoritmo ESC
-		"SC_TRANSL_PERC	    [%] ",		// Percentuale del tempo impiegata per la traduzione nell'algoritmo SC
-		"ESC_TRANSL_PERC    [%] ",		// Percentuale del tempo impiegata per la traduzione nell'algoritmo ESC
-		"SC_CONSTR_PERC	    [%] ",		// Percentuale del tempo impiegata per la costruzione nell'algoritmo SC
-		"ESC_CONSTR_PERC    [%] ",		// Percentuale del tempo impiegata per la costruzione nell'algoritmo ESC
-		"SOL_SIZE           [#] ",		// Dimensione della soluzione trovata dall'algoritmo
-		"SOL_GROWTH         [%] "		// Rapporto fra la dimensione dell'automa della soluzione e l'automa originale
+		"SC_TIME     [ms]",		// Tempo dedicato alla fase di costruzione nell'algoritmo SC (SC effettivo)
+		"ESC_TIME    [ms]",		// Tempo dedicato alla fase di costruzione nell'algoritmo ESC
+		"SOL_SIZE    [#] ",		// Dimensione della soluzione trovata dall'algoritmo
+		"SOL_GROWTH  [%] "		// Rapporto fra la dimensione dell'automa della soluzione e l'automa originale
 	};
 
 	/**
@@ -53,75 +45,17 @@ namespace translated_automata {
 		std::function<double(Result*)> getter;
 		switch(stat) {
 
-		// Tempo di traduzione di SC
-		case SC_TRANSL_TIME :
-			getter = [](Result* result) {
-				return (double) (result->sc_elapsed_translation_time);
-			};
-			break;
-
 		// Tempo di costruzione di SC
-		case SC_CONSTR_TIME :
+		case SC_TIME :
 			getter = [](Result* result) {
-				return (double) (result->sc_elapsed_construction_time);
-			};
-			break;
-
-
-		// Tempo totale di SC
-		case SC_TOT_TIME :
-			getter = [](Result* result) {
-				return (double) (result->sc_elapsed_translation_time + result->sc_elapsed_construction_time);
-			};
-			break;
-
-		// Percentuale per la fase di traduzione di SC
-		case SC_TRANSL_PERC :
-			getter = [](Result* result) {
-				return ((double) (result->sc_elapsed_translation_time) * 100) / ((double) (result->sc_elapsed_translation_time + result->sc_elapsed_construction_time));
-			};
-			break;
-
-		// Percentuale per la fase di costruzione di SC
-		case SC_CONSTR_PERC :
-			getter = [](Result* result) {
-				return ((double) (result->sc_elapsed_construction_time) * 100) / ((double) (result->sc_elapsed_translation_time + result->sc_elapsed_construction_time));
-			};
-			break;
-
-		// Tempo di traduzione di ESC
-		case ESC_TRANSL_TIME :
-			getter = [](Result* result) {
-				return (double) (result->esc_elapsed_translation_time);
+				return (double) (result->sc_elapsed_time);
 			};
 			break;
 
 		// Tempo di costruzione di ESC
-		case ESC_CONSTR_TIME :
+		case ESC_TIME :
 			getter = [](Result* result) {
-				return (double) (result->esc_elapsed_construction_time);
-			};
-			break;
-
-
-		// Tempo totale di ESC
-		case ESC_TOT_TIME :
-			getter = [](Result* result) {
-				return (double) (result->esc_elapsed_translation_time + result->esc_elapsed_construction_time);
-			};
-			break;
-
-		// Percentuale per la fase di traduzione di ESC
-		case ESC_TRANSL_PERC :
-			getter = [](Result* result) {
-				return ((double) (result->esc_elapsed_translation_time) * 100) / ((double) (result->esc_elapsed_translation_time + result->esc_elapsed_construction_time));
-			};
-			break;
-
-		// Percentuale per la fase di costruzione di ESC
-		case ESC_CONSTR_PERC :
-			getter = [](Result* result) {
-				return ((double) (result->esc_elapsed_construction_time) * 100) / ((double) (result->esc_elapsed_translation_time + result->esc_elapsed_construction_time));
+				return (double) (result->esc_elapsed_time);
 			};
 			break;
 
@@ -235,26 +169,57 @@ namespace translated_automata {
 //			return;
 //		}
 
-		DEBUG_MARK_PHASE("Presentazione dell'automa DFA originale") {
-			DFADrawer drawer = DFADrawer(result->original_problem->getDFA());
+		DEBUG_MARK_PHASE("Presentazione del problema di partenza") {
 
-			if (DO_PRINT_TRANSLATION) {
-				std::cout << "TRANSLATION:\n";
-				Alphabet computed_alpha = result->original_problem->getDFA()->getAlphabet();
-				std::cout << result->original_problem->getTranslation()->toString(computed_alpha);
+			switch (result->original_problem->getType()) {
+
+			case TRANSLATION_PROBLEM : {
+				TranslationProblem* translation_problem = (TranslationProblem*) result->original_problem;
+				DFADrawer dfa_drawer = DFADrawer(translation_problem->getDFA());
+
+				if (DO_PRINT_TRANSLATION) {
+					std::cout << "TRANSLATION:\n";
+					Alphabet computed_alpha = translation_problem->getDFA()->getAlphabet();
+					std::cout << translation_problem->getTranslation()->toString(computed_alpha);
+				}
+
+				if (DO_PRINT_ORIGINAL_AUTOMATON) {
+					std::cout << "ORIGINAL DFA:\n";
+					std::cout << dfa_drawer.asString();
+				}
+
+				if (DO_DRAW_ORIGINAL_AUTOMATON) {
+					// Stampa su file dell'automa originale
+					string filename = std::string(DIR_RESULTS) + FILE_NAME_ORIGINAL_AUTOMATON + FILE_EXTENSION_GRAPHVIZ;
+					dfa_drawer.asDotFile(filename);
+					string command = "dot -Tpdf \"" + filename + "\" -o " + DIR_RESULTS + FILE_NAME_ORIGINAL_AUTOMATON + FILE_EXTENSION_PDF;
+					system(command.c_str());
+				}
 			}
+				break;
 
-			if (DO_PRINT_ORIGINAL_AUTOMATON) {
-				std::cout << "ORIGINAL DFA:\n";
-				std::cout << drawer.asString();
+			case DETERMINIZATION_PROBLEM : {
+				DeterminizationProblem* determinization_problem = (DeterminizationProblem*) result->original_problem;
+				NFADrawer nfa_drawer = NFADrawer(determinization_problem->getNFA());
+
+				if (DO_PRINT_ORIGINAL_AUTOMATON) {
+					std::cout << "ORIGINAL NFA:\n";
+					std::cout << nfa_drawer.asString();
+				}
+
+				if (DO_DRAW_ORIGINAL_AUTOMATON) {
+					// Stampa su file dell'automa originale
+					string filename = std::string(DIR_RESULTS) + FILE_NAME_ORIGINAL_AUTOMATON + FILE_EXTENSION_GRAPHVIZ;
+					nfa_drawer.asDotFile(filename);
+					string command = "dot -Tpdf \"" + filename + "\" -o " + DIR_RESULTS + FILE_NAME_ORIGINAL_AUTOMATON + FILE_EXTENSION_PDF;
+					system(command.c_str());
+				}
 			}
+				break;
 
-			if (DO_DRAW_ORIGINAL_AUTOMATON) {
-				// Stampa su file dell'automa originale
-				string filename = "original.gv";
-				drawer.asDotFile(filename);
-				string command = "dot -Tpdf \"" + filename + "\" -o original.pdf";
-				system(command.c_str());
+			default :
+				DEBUG_LOG_ERROR("Impossibile interpretare il valore %d come appartenente all'enum ProblemType", result->original_problem->getType());
+				break;
 			}
 		}
 
@@ -269,9 +234,9 @@ namespace translated_automata {
 
 			if (DO_DRAW_SC_SOLUTION) {
 				// [SC] Stampa su file
-				string sc_filename = "sc_solution.gv";
+				string sc_filename = std::string(DIR_RESULTS) + FILE_NAME_SC_SOLUTION + FILE_EXTENSION_GRAPHVIZ;
 				sc_drawer.asDotFile(sc_filename);
-				string sc_command = "dot -Tpdf \"" + sc_filename + "\" -o sc_result.pdf";
+				string sc_command = "dot -Tpdf \"" + sc_filename + "\" -o " + DIR_RESULTS + FILE_NAME_SC_SOLUTION + FILE_EXTENSION_PDF;
 				system(sc_command.c_str());
 			}
 		}
@@ -287,9 +252,9 @@ namespace translated_automata {
 
 			if (DO_DRAW_ESC_SOLUTION) {
 				// [ESC] Stampa su file
-				string esc_filename = "esc_solution.gv";
+				string esc_filename = std::string(DIR_RESULTS) + FILE_NAME_ESC_SOLUTION + FILE_EXTENSION_GRAPHVIZ;
 				esc_drawer.asDotFile(esc_filename);
-				string esc_command = "dot -Tpdf \"" + esc_filename + "\" -o esc_result.pdf";
+				string esc_command = "dot -Tpdf \"" + esc_filename + "\" -o " + DIR_RESULTS + FILE_NAME_ESC_SOLUTION + FILE_EXTENSION_PDF;
 				system(esc_command.c_str());
 			}
 		}
@@ -307,8 +272,8 @@ namespace translated_automata {
 			printf("STATS:\n");
 			printf("Based on %u testcases with automata of size %d and alphabet of cardinality %d.\n", this->getTestCaseNumber(), AUTOMATON_SIZE, ALPHABET_CARDINALITY);
 			printf("ESC success percentage = %f %%\n", (100 * this->getSuccessPercentage()));
-			printf("_________________________|    MIN    |    AVG    |    MAX    |\n");
-			for (int int_stat = SC_TRANSL_TIME; int_stat <= SOL_GROWTH; int_stat++) {
+			printf("__________________|    MIN    |    AVG    |    MAX    |\n");
+			for (int int_stat = SC_TIME; int_stat <= SOL_GROWTH; int_stat++) {
 				ResultStat stat = static_cast<ResultStat>(int_stat);
 				// TODO Ricordarsi di aggiornare l'ultimo valore, in caso di aggiunta di statistiche
 				tuple<double, double, double> stat_values = this->getStat(stat);

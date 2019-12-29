@@ -24,8 +24,10 @@ namespace translated_automata {
 		Translation* m_translation;
 
 		BudsList* m_buds;
-		NFA* m_translated_nfa;
+		NFA* m_reference_nfa;
 		DFA* m_translated_dfa;
+
+		void cleanInternalStatus();
 
 		void runDistanceRelocation(list<pair<StateDFA*, int>> relocation_sequence);
 		void runDistanceRelocation(StateDFA* state, int new_distance);
@@ -36,10 +38,10 @@ namespace translated_automata {
 
 	public:
 		EmbeddedSubsetConstruction();
-		virtual ~EmbeddedSubsetConstruction();
+		~EmbeddedSubsetConstruction();
 
-		void loadInputs(DFA* automaton, Translation* translation);
-		void runAutomatonTranslation();
+		void runAutomatonTranslation(DFA* automaton, Translation* translation);
+		void runAutomatonCheckup(NFA* automaton);
 		void runBudProcessing();
 		DFA* getResult();
 

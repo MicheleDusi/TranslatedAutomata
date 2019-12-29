@@ -2,9 +2,7 @@
  * ProblemSolver.hpp
  *
  * Modulo che si occupa della risoluzione automatica di problemi.
- * Un problema è definito nel file "problem_generator.hpp" come:
- *  - Traduzione di un alfabeto.
- *  - Automa DFA da tradurre.
+ * I problemi possono essere somministrati dall'esterno o generati internamente.
  */
 
 #ifndef INCLUDE_PROBLEMSOLVER_HPP_
@@ -29,6 +27,8 @@ namespace translated_automata {
 		~ProblemSolver();
 
 		void solve(Problem* problem);
+		void solve(TranslationProblem* problem);
+		void solve(DeterminizationProblem* problem);
 		void solve();
 		void solveSeries(unsigned int number);
 	};

@@ -9,11 +9,11 @@
 #ifndef INCLUDE_RESULTCOLLECTOR_HPP_
 #define INCLUDE_RESULTCOLLECTOR_HPP_
 
-#include "ProblemGenerator.hpp"
-
 #include <functional>
 #include <list>
 #include <tuple>
+
+#include "ProblemGenerator.hpp"
 
 namespace translated_automata {
 
@@ -25,10 +25,8 @@ namespace translated_automata {
 		Problem* original_problem;
 		DFA* sc_solution;
 		DFA* esc_solution;
-		unsigned long int sc_elapsed_translation_time;
-		unsigned long int esc_elapsed_translation_time;
-		unsigned long int sc_elapsed_construction_time;
-		unsigned long int esc_elapsed_construction_time;
+		unsigned long int sc_elapsed_time;
+		unsigned long int esc_elapsed_time;
 	};
 
 	/**
@@ -38,18 +36,10 @@ namespace translated_automata {
 	 * NOTA: Ogni statistica dovrebbe essere esprimibile come valore <double>.
 	 */
 	enum ResultStat {
-		SC_TRANSL_TIME,		// Tempo dedicato alla fase di traduzione nell'algoritmo SC
-		ESC_TRANSL_TIME,	// Tempo dedicato alla fase di traduzione nell'algoritmo ESC
-		SC_CONSTR_TIME,		// Tempo dedicato alla fase di costruzione nell'algoritmo SC (SC effettivo)
-		ESC_CONSTR_TIME,	// Tempo dedicato alla fase di costruzione nell'algoritmo ESC
-		SC_TOT_TIME,		// Tempo totale impiegato per l'esecuzione dell'algoritmo SC
-		ESC_TOT_TIME,		// Tempo totale impiegato per l'esecuzione dell'algoritmo ESC
-		SC_TRANSL_PERC,		// Percentuale del tempo impiegata per la traduzione nell'algoritmo SC
-		ESC_TRANSL_PERC,	// Percentuale del tempo impiegata per la traduzione nell'algoritmo ESC
-		SC_CONSTR_PERC,		// Percentuale del tempo impiegata per la costruzione nell'algoritmo SC
-		ESC_CONSTR_PERC,	// Percentuale del tempo impiegata per la costruzione nell'algoritmo ESC
-		SOL_SIZE,			// Dimensione della soluzione trovata dall'algoritmo
-		SOL_GROWTH			// Rapporto fra la dimensione dell'automa della soluzione e l'automa originale
+		SC_TIME,		// Tempo dedicato alla fase di costruzione nell'algoritmo SC (SC effettivo)
+		ESC_TIME,		// Tempo dedicato alla fase di costruzione nell'algoritmo ESC (Esclusa la traduzione)
+		SOL_SIZE,		// Dimensione della soluzione trovata dall'algoritmo
+		SOL_GROWTH		// Rapporto fra la dimensione dell'automa della soluzione e l'automa originale
 	};
 
 	/**

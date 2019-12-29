@@ -32,7 +32,7 @@ namespace translated_automata {
 		this->m_original_dfa = NULL;
 		this->m_translation = NULL;
 		this->m_buds = NULL;
-		this->m_translated_nfa = NULL;
+		this->m_reference_nfa = NULL;
 		this->m_translated_dfa = NULL;
 	}
 
@@ -46,46 +46,55 @@ namespace translated_automata {
 		if (this->m_buds != NULL) {
 			delete this->m_buds;
 		}
-		if (this->m_translated_nfa) {
-			delete this->m_translated_nfa;
+		if (this->m_reference_nfa) {
+			delete this->m_reference_nfa;
 		}
 	}
 
 	/**
-	 * Metodo che prepara la classe per l'esecuzione dell'algoritmo.
-	 * Permette l'introduzione dei parametri in ingresso e l'istanziazione degli
-	 * oggetti che verranno interessati durante il processo.
-	 *
-	 * INPUT:
-	 * @param automaton L'automa da tradurre.
-	 * @param translation La traduzione da applicare all'automa.
+	 * Metodo che pulisce tutte le variabili interne, usate da precedenti esecuzioni dell'algoritmo.
+	 * Viene richiamato all'inizio di runAutomatonTranslation (che inizia la risoluzione di un
+	 * problema di traduzione) e di runAutomatonCheckup (che inizia la risoluzione di un problema
+	 * di determinizzazione).
 	 */
-	void EmbeddedSubsetConstruction::loadInputs(DFA* automaton, Translation* translation) {
-		// Acquisizione degli input
-		DEBUG_ASSERT_NOT_NULL(automaton);
-		DEBUG_ASSERT_NOT_NULL(translation);
-		this->m_original_dfa = automaton;
-		this->m_translation = translation;
-
-		// Istanziazione degli oggetti (e rimozione degli eventuali oggetti dell'esecuzione precedente)
+	void EmbeddedSubsetConstruction::cleanInternalStatus() {
+		// Rimozione degli eventuali oggetti dell'esecuzione precedente
 		if (this->m_buds != NULL) {
 			delete this->m_buds;
 		}
-		this->m_buds = new BudsList();
-		if (this->m_translated_nfa) {
-			delete this->m_translated_nfa;
+		if (this->m_reference_nfa) {
+			delete this->m_reference_nfa;
 		}
-		this->m_translated_nfa = new NFA();
-		// Nota: non rimuovo il risultato poiché potrebbe essere ancora utilizzato da metodi esterni
-		this->m_translated_dfa = new DFA();
+		// Nota: non cancello il risultato DFA poiché potrebbe essere ancora utilizzato da metodi esterni
+
+		this->m_original_dfa = NULL;
+		this->m_translation = NULL;
+		this->m_buds = NULL;
+		this->m_reference_nfa = NULL;
+		this->m_translated_dfa = NULL;
 	}
 
 	/**
 	 * Metodo che implementa l'algoritmo "Automaton Translation".
 	 * Applica la traduzione sull'automa originale, e inoltre genera due automi isomorfi (un NFA e un DFA) che
 	 * verranno utilizzati durante la fase di determinizzazione (Bud Processing).
+	 *
+	 * INPUT:
+	 * @param automaton L'automa da tradurre.
+	 * @param translation La traduzione da applicare all'automa.
 	 */
-	void EmbeddedSubsetConstruction::runAutomatonTranslation() {
+	void EmbeddedSubsetConstruction::runAutomatonTranslation(DFA* automaton, Translation* translation) {
+		this->cleanInternalStatus();
+		// Acquisizione degli input
+		DEBUG_ASSERT_NOT_NULL(automaton);
+		DEBUG_ASSERT_NOT_NULL(translation);
+		this->m_original_dfa = automaton;
+		this->m_translation = translation;
+
+		// Istanziazione degli oggetti ausiliari
+		this->m_buds = new BudsList();
+		this->m_reference_nfa = new NFA();
+		this->m_translated_dfa = new DFA();
 
 		// Variabili locali ausiliarie
 		map<StateDFA*, pair<StateNFA*, ConstructedStateDFA*>> states_map = map<StateDFA*, pair<StateNFA*, ConstructedStateDFA*>>();
@@ -98,7 +107,7 @@ namespace translated_automata {
 			// Creo uno stato copia nell'NFA
 			StateNFA* translated_nfa_state = new StateNFA(state->getName(), state->isFinal());
 			// Lo aggiungo all'NFA
-			this->m_translated_nfa->addState(translated_nfa_state);
+			this->m_reference_nfa->addState(translated_nfa_state);
 
 			// Creo uno stato copia nel DFA
 			ExtensionDFA extension;
@@ -211,8 +220,134 @@ namespace translated_automata {
 		}
 
 		// Marco gli stati iniziali
-		this->m_translated_nfa->setInitialState(states_map[this->m_original_dfa->getInitialState()].first);
+		this->m_reference_nfa->setInitialState(states_map[this->m_original_dfa->getInitialState()].first);
 		this->m_translated_dfa->setInitialState(states_map[this->m_original_dfa->getInitialState()].second);
+	}
+
+	/**
+	 * Metodo che implementa la fase iniziale dell'algoritmo di costruzione.
+	 * Esamina l'automa NON deterministico ed identifica i punti di non determinismo.
+	 * Genera un automa isomorfo DFA che verrà utilizzato durante la fase di determinizzazione (Bud Processing).
+	 *
+	 * INPUT:
+	 * @param automaton L'automa da determinizzare.
+	 */
+	void EmbeddedSubsetConstruction::runAutomatonCheckup(NFA* automaton) {
+		this->cleanInternalStatus();
+		// Acquisizione degli input
+		DEBUG_ASSERT_NOT_NULL(automaton);
+		this->m_reference_nfa = automaton;
+
+		// Istanziazione degli oggetti ausiliari
+		this->m_buds = new BudsList();
+		this->m_translated_dfa = new DFA();
+		// NOTA: "original_dfa" e "translation" non vengono utilizzati per i problemi di determinizzazione.
+
+		// Variabili locali ausiliarie
+		map<StateNFA*, ConstructedStateDFA*> states_map = map<StateNFA*, ConstructedStateDFA*>();
+			/* Poiché è necessario generare un automa isomorfo a quello originale, questa mappa
+			 * mantiene la corrispondenza fra gli stati dell'NFA con quelli del DFA.
+			 */
+
+		// Iterazione su tutti gli stati dell'automa in input per creare gli stati corrispondenti
+		for (StateNFA* state : this->m_reference_nfa->getStatesVector()) {
+
+			// Creo uno stato copia nel DFA
+			ExtensionDFA extension;
+			extension.insert(state);
+			ConstructedStateDFA* translated_dfa_state = new ConstructedStateDFA(extension);
+			// Lo aggiungo al DFA
+			this->m_translated_dfa->addState(translated_dfa_state);
+
+			// Associo allo stato originale il nuovo stato del DFA, in modo da poterlo ritrovare facilmente
+			states_map[state] = translated_dfa_state;
+
+		}
+
+		// ^ ^ ^
+		// Termino il primo ciclo su tutti gli stati dell'automa, in modo da procedere
+		// solamente quando le associazioni fra gli stati sono complete
+
+		// Iterazione su tutti gli stati dell'automa in input per copiare le transizioni
+		for (StateNFA* state : this->m_reference_nfa->getStatesVector()) {
+
+			// Viene recuperato lo stato creato in precedenza, associato allo stato dell'automa originale
+			ConstructedStateDFA* translated_dfa_state = states_map[state];
+
+			// Iterazione su tutte le transizioni uscenti dallo stato dell'automa
+			for (auto &pair : state->getExitingTransitions()) {
+
+				// Label corrente
+				string current_label = pair.first;
+
+				// Distinguo due casi, basandomi sulla label dell'automa NFA di riferimento
+				if (current_label == EPSILON) {
+					// caso EPSILON-TRANSIZIONE
+
+					// Per tutti gli stati figli raggiunti da transizioni marcate con la label originaria
+					for (StateNFA* child : pair.second) {
+
+						// Escludo il caso con epsilon-transizione ad anello
+						if (child == state) {
+							continue;
+						}
+
+						// Inserisco la transizione con label che segnala la RIMOZIONE nell'automa DETERMINISTICO D'
+						translated_dfa_state->connectChild(REMOVING_LABEL, states_map[child]);
+						// Inserisco il nuovo bud nella lista, che servirà per rimuovere la transizione.
+						this->addBudToList(translated_dfa_state, REMOVING_LABEL);
+
+						// Se lo stato corrente è lo stato iniziale
+						if (this->m_reference_nfa->isInitial(state)) {
+							// Aggiungo il BUD con epsilon transizione, che sarà il primo ad essere processato
+							this->addBudToList(translated_dfa_state, EPSILON);
+						}
+						// Altrimenti, se lo stato corrente NON è lo stato iniziale, considero
+						// tutte le transizioni entranti che non sono marcate da epsilon
+						else {
+							unsigned int current_distance = state->getDistance();
+							for (auto &parent_pair : state->getIncomingTransitionsRef()) {
+								string parent_label = parent_pair.first;
+								// Se le transizioni sono marcate da epsilon, non le considero
+								if (parent_label != EPSILON) {
+
+									// Altrimenti, per ciascuno stato genitore con distanza minore o uguale
+									// (ma solo se le impostazioni prevedono l'uso del controllo sulla distanza)
+									for (StateNFA* parent : parent_pair.second) {
+										if (!(DO_CHECK_DISTANCE_IN_TRANSLATION) || parent->getDistance() <= current_distance) {
+
+											// Aggiungo il bud (stato_genitore, label)
+											this->addBudToList(states_map[parent], parent_label);
+										}
+									}
+								}
+							}
+						}
+					}
+
+				}
+				else {
+					// caso TRANSIZIONE NORMALE
+
+					// Per tutti gli stati figli raggiunti da transizioni marcate con la label originaria
+					for (StateNFA* child : pair.second) {
+						// Inserisco la transizione tradotta nell'automa DETERMINISTICO D'
+						translated_dfa_state->connectChild(current_label, states_map[child]);
+					}
+
+					// Verifico i punti di non determinismo: se gli stati raggiunti dalle transizioni marcate
+					// con quest'etichetta sono più di uno, allora aggiungo un bud alla lista.
+					if (pair.second.size() > 1) {
+						this->addBudToList(translated_dfa_state, current_label);
+					}
+				}
+
+			}
+
+		}
+
+		// Marco gli stati iniziali
+		this->m_translated_dfa->setInitialState(states_map[this->m_reference_nfa->getInitialState()]);
 	}
 
 	/**
@@ -230,7 +365,7 @@ namespace translated_automata {
 //			IF_DEBUG_ACTIVE( std::cout << drawer.asString() << std::endl );
 
 			DEBUG_LOG( "Lista dei Bud attuale:");
-			IF_DEBUG_ACTIVE( buds_list.printBuds() );
+			IF_DEBUG_ACTIVE( this->m_buds->printBuds() );
 
 			// Estrazione del primo elemento della coda
 			Bud* current_bud = this->m_buds->pop();

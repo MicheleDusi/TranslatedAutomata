@@ -14,29 +14,74 @@
 #define INCLUDE_PROBLEMGENERATOR_HPP_
 
 #include "AutomataGeneratorDFA.hpp"
-#include "Automaton.hpp"
-#include "Translation.hpp"
+#include "AutomataGeneratorNFA.hpp"
 #include "TranslationGenerator.hpp"
 
 namespace translated_automata {
 
+	enum ProblemType {
+		TRANSLATION_PROBLEM,
+		DETERMINIZATION_PROBLEM
+	};
+
 	/**
-	 * Struttura che definisce un problema per questo programma.
-	 * Un problema prevede inizialmente un automa e una traduzione sull'alfabeto
-	 * di tale automa.
+	 * Struttura generica che definisce un problema all'interno del programma.
+	 * Un problema può essere di due tipi, ciascuno rappresentato da una sottoclasse:
+	 * - Un problema di determinizzazione.
+	 * - Un problema di traduzione (che racchiude anche un aspetto di determinizzazione).
 	 */
 	class Problem {
+
+	private:
+		const ProblemType m_type;
+
+	public:
+		Problem(ProblemType type) : m_type(type) {};
+		~Problem() {};
+
+		ProblemType getType() { return this->m_type; };
+
+	};
+
+	/**
+	 * Struttura che definisce un problema di traduzione per questo programma.
+	 * Un problema di traduzione prevede in input:
+	 * - un automa deterministico.
+	 * - una traduzione sull'alfabeto di tale automa.
+	 * La soluzione di un problema di traduzione che ci si aspetta di ottenere in ouput comprende:
+	 * - un automa deterministico.
+	 */
+	class TranslationProblem : public Problem {
 
 	private:
 		DFA* m_dfa;
 		Translation* m_translation;
 
 	public:
-		Problem(DFA* dfa, Translation* translation);
-		~Problem();
+		TranslationProblem(DFA* dfa, Translation* translation);
+		~TranslationProblem();
 
 		DFA* getDFA();
 		Translation* getTranslation();
+	};
+
+	/**
+	 * Struttura che definisce un problema di determinizzazione per questo programma.
+	 * Un problema di traduzione prevede in input:
+	 * - un automa non deterministico.
+	 * La soluzione di un problema di traduzione che ci si aspetta di ottenere in ouput comprende:
+	 * - un automa deterministico.
+	 */
+	class DeterminizationProblem : public Problem {
+
+	private:
+		NFA* m_nfa;
+
+	public:
+		DeterminizationProblem(NFA* nfa);
+		~DeterminizationProblem();
+
+		NFA* getNFA();
 	};
 
 	/**
@@ -50,16 +95,16 @@ namespace translated_automata {
 	private:
 		Alphabet m_alphabet;
 		DFAGenerator* m_dfa_generator;
+		NFAGenerator* m_nfa_generator;
 		TranslationGenerator* m_translation_generator;
 
 	public:
 		ProblemGenerator();
 		~ProblemGenerator();
 
-		DFAGenerator* getDFAGenerator();
-		TranslationGenerator* getTranslationGenerator();
-
-		Problem* generate();
+		Problem* generate(ProblemType type);
+		TranslationProblem* generateTranslationProblem();
+		DeterminizationProblem* generateDeterminizationProblem();
 
 	};
 

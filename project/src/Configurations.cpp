@@ -16,11 +16,30 @@ namespace translated_automata {
 // CLASSE "SettingValue"
 
 	/**
-	 * Costruttore.
+	 * Costruttore con valore intero.
 	 */
-	SettingValue::SettingValue(SettingType type) {
-		DEBUG_LOG("Costruzione di un oggetto SettingValue con type %d", type);
-		this->m_type = type;
+	SettingValue::SettingValue(int value) {
+		DEBUG_LOG("Costruzione di un oggetto SettingValue con valore INT = %d", value);
+		this->m_type = INT;
+		this->m_value.integer = value;
+	}
+
+	/**
+	 * Costruttore con valore reale.
+	 */
+	SettingValue::SettingValue(double value) {
+		DEBUG_LOG("Costruzione di un oggetto SettingValue con valore DOUBLE = %f", value);
+		this->m_type = DOUBLE;
+		this->m_value.real = value;
+	}
+
+	/**
+	 * Costruttore con valore booleano.
+	 */
+	SettingValue::SettingValue(bool value) {
+		DEBUG_LOG("Costruzione di un oggetto SettingValue con valore BOOL = %d", value);
+		this->m_type = BOOL;
+		this->m_value.flag = value;
 	}
 
 	/**
@@ -30,58 +49,22 @@ namespace translated_automata {
 		return m_type;
 	}
 
-// CLASSE "IntegerSettingValue"
-
-	/**
-	 * Costruttore.
-	 */
-	IntSettingValue::IntSettingValue(int value)
-	: SettingValue(INT) {
-		this->m_value = value;
+	Value SettingValue::getValue() {
+		return m_value;
 	}
 
-	/**
-	 * Metodo overridden.
-	 * Restituisce il valore contenuto all'interno, castato con il tipo previsto.
-	 */
-	int IntSettingValue::getIntValue() {
-		return this->m_value;
-	}
-
-// CLASSE "DoubleSettingValue"
-
-	/**
-	 * Costruttore.
-	 */
-	DoubleSettingValue::DoubleSettingValue(double value)
-	: SettingValue(DOUBLE) {
-		this->m_value = value;
-	}
-
-	/**
-	 * Metodo overridden.
-	 * Restituisce il valore contenuto all'interno, castato con il tipo previsto.
-	 */
-	double DoubleSettingValue::getDoubleValue() {
-		return this->m_value;
-	}
-
-// CLASSE "BoolSettingValue"
-
-	/**
-	 * Costruttore.
-	 */
-	BoolSettingValue::BoolSettingValue(bool value)
-	: SettingValue(BOOLEAN) {
-		this->m_value = value;
-	}
-
-	/**
-	 * Metodo overridden.
-	 * Restituisce il valore contenuto all'interno, castato con il tipo previsto.
-	 */
-	bool BoolSettingValue::getBoolValue() {
-		return this->m_value;
+	string SettingValue::getValueString() {
+		switch (this->m_type) {
+		case INT :
+			return std::to_string(this->m_value.integer);
+		case DOUBLE :
+			return std::to_string(this->m_value.real);
+		case BOOL :
+			return std::to_string(this->m_value.flag);
+		default :
+			DEBUG_LOG_ERROR("Impossibile interpretare il valore %b", this->m_value.integer);
+			return "null";
+		}
 	}
 
 // CLASSE "Configurations"
@@ -110,40 +93,40 @@ namespace translated_automata {
 	 */
 	void Configurations::load() {
 		// Numero di Testcase
-		load(Testcases, new IntSettingValue(							10));
+		load(Testcases, new SettingValue(							10));
 
 		// Proprietà del problema
-//		load(ProblemType, new IntSettingValue(TRANSLATION_PROBLEM));
-		load(ProblemType, new IntSettingValue(Problem::DETERMINIZATION_PROBLEM));
+//		load(ProblemType, new SettingValue(TRANSLATION_PROBLEM));
+		load(ProblemType, new SettingValue(Problem::DETERMINIZATION_PROBLEM));
 
-		load(AlphabetCardinality, new IntSettingValue(					5));
-		load(TranslationMixingFactor, new DoubleSettingValue(			0.9));
-		load(TranslationOffset, new DoubleSettingValue(					1));
-		load(EpsilonPercentage, new DoubleSettingValue(					0.05));
+		load(AlphabetCardinality, new SettingValue(					5));
+		load(TranslationMixingFactor, new SettingValue(				0.9));
+		load(TranslationOffset, new SettingValue(					1));
+		load(EpsilonPercentage, new SettingValue(					0.05));
 
-//		load(AutomatonType, new IntSettingValue(AUTOMATON_RANDOM));
-//		load(AutomatonType, new IntSettingValue(AUTOMATON_STRATIFIED));
-		load(AutomatonStructure, new IntSettingValue(AUTOMATON_STRATIFIED_WITH_SAFE_ZONE));
-		load(AutomatonSize, new IntSettingValue(						100));
-		load(AutomatonFinalProbability, new DoubleSettingValue(			0.1));
-		load(AutomatonTransitionsPercentage, new DoubleSettingValue(	0.5));
-		load(AutomatonMaxDistance, new IntSettingValue(					90));
-		load(AutomatonSafeZoneDistance, new IntSettingValue(			80));
+//		load(AutomatonType, new SettingValue(AUTOMATON_RANDOM));
+//		load(AutomatonType, new SettingValue(AUTOMATON_STRATIFIED));
+		load(AutomatonStructure, new SettingValue(AUTOMATON_STRATIFIED_WITH_SAFE_ZONE));
+		load(AutomatonSize, new SettingValue(						100));
+		load(AutomatonFinalProbability, new SettingValue(			0.1));
+		load(AutomatonTransitionsPercentage, new SettingValue(		0.5));
+		load(AutomatonMaxDistance, new SettingValue(				90));
+		load(AutomatonSafeZoneDistance, new SettingValue(			80));
 
 		// Moduli e funzionalità opzionali
-		load(ActiveAutomatonPruning, new BoolSettingValue(				true));		// In caso sia attivato, evita la formazione e la gestione dello stato con estensione vuota, tramite procedura Automaton Pruning
-		load(ActiveRemovingLabel, new BoolSettingValue(					true));		// In caso sia attivato, utilizza una label apposita per segnalare le epsilon-transizione, che deve essere rimossa durante la determinizzazione
-		load(ActiveDistanceCheckInTranslation, new BoolSettingValue(	false));	// In caso sia attivato, durante la traduzione genera dei Bud solamente se gli stati soddisfano una particolare condizione sulla distanza [FIXME è una condizione che genera bug]
+		load(ActiveAutomatonPruning, new SettingValue(				true));		// In caso sia attivato, evita la formazione e la gestione dello stato con estensione vuota, tramite procedura Automaton Pruning
+		load(ActiveRemovingLabel, new SettingValue(					true));		// In caso sia attivato, utilizza una label apposita per segnalare le epsilon-transizione, che deve essere rimossa durante la determinizzazione
+		load(ActiveDistanceCheckInTranslation, new SettingValue(	false));	// In caso sia attivato, durante la traduzione genera dei Bud solamente se gli stati soddisfano una particolare condizione sulla distanza [FIXME è una condizione che genera bug]
 
-		load(PrintStatistics, new BoolSettingValue(						true));
-		load(PrintTranslation, new BoolSettingValue(					false));
-		load(PrintOriginalAutomaton, new BoolSettingValue(				false));
-		load(PrintSCSolution, new BoolSettingValue(						false));
-		load(PrintESCSOlution, new BoolSettingValue(					false));
+		load(PrintStatistics, new SettingValue(						true));
+		load(PrintTranslation, new SettingValue(					false));
+		load(PrintOriginalAutomaton, new SettingValue(				false));
+		load(PrintSCSolution, new SettingValue(						false));
+		load(PrintESCSOlution, new SettingValue(					false));
 
-		load(DrawOriginalAutomaton, new BoolSettingValue(				false));
-		load(DrawSCSolution, new BoolSettingValue(						false));
-		load(DrawESCSOlution, new BoolSettingValue(						false));
+		load(DrawOriginalAutomaton, new SettingValue(				false));
+		load(DrawSCSolution, new SettingValue(						false));
+		load(DrawESCSOlution, new SettingValue(						false));
 	}
 
 	string names[] = {
@@ -166,7 +149,7 @@ namespace translated_automata {
 			"Print translation:                        ",
 			"Print original automaton:                 ",
 			"Print SC solution:                        ",
-			"Print ESC sOlution:                       ",
+			"Print ESC solution:                       ",
 			"Draw original automaton:                  ",
 			"Draw SC solution:                         ",
 			"Draw ESC solution:                        ",
@@ -186,59 +169,7 @@ namespace translated_automata {
 	 * passato in ingresso.
 	 */
 	string Configurations::toString(const SettingID& name) {
-		string str = nameOf(name);
-		switch (name) {
-
-		case Testcases :
-			return str + std::to_string(this->valueOf<int>(name));
-		case ProblemType :
-			return str + std::to_string(this->valueOf<int>(name));
-		case AlphabetCardinality :
-			return str + std::to_string(this->valueOf<int>(name));
-		case TranslationMixingFactor :
-			return str + std::to_string(this->valueOf<double>(name));
-		case TranslationOffset :
-			return str + std::to_string(this->valueOf<double>(name));
-		case EpsilonPercentage :
-			return str + std::to_string(this->valueOf<double>(name));
-		case AutomatonStructure :
-			return str + std::to_string(this->valueOf<int>(name));
-		case AutomatonSize :
-			return str + std::to_string(this->valueOf<int>(name));
-		case AutomatonFinalProbability :
-			return str + std::to_string(this->valueOf<double>(name));
-		case AutomatonTransitionsPercentage :
-			return str + std::to_string(this->valueOf<double>(name));
-		case AutomatonMaxDistance :
-			return str + std::to_string(this->valueOf<int>(name));
-		case AutomatonSafeZoneDistance :
-			return str + std::to_string(this->valueOf<int>(name));
-		case ActiveAutomatonPruning :
-			return str + std::to_string(this->valueOf<bool>(name));
-		case ActiveRemovingLabel :
-			return str + std::to_string(this->valueOf<bool>(name));
-		case ActiveDistanceCheckInTranslation :
-			return str + std::to_string(this->valueOf<bool>(name));
-		case PrintStatistics :
-			return str + std::to_string(this->valueOf<bool>(name));
-		case PrintTranslation :
-			return str + std::to_string(this->valueOf<bool>(name));
-		case PrintOriginalAutomaton :
-			return str + std::to_string(this->valueOf<bool>(name));
-		case PrintSCSolution :
-			return str + std::to_string(this->valueOf<bool>(name));
-		case PrintESCSOlution :
-			return str + std::to_string(this->valueOf<bool>(name));
-		case DrawOriginalAutomaton :
-			return str + std::to_string(this->valueOf<bool>(name));
-		case DrawSCSolution :
-			return str + std::to_string(this->valueOf<bool>(name));
-		case DrawESCSOlution :
-			return str + std::to_string(this->valueOf<bool>(name));
-		default :
-			DEBUG_LOG_ERROR("Impossibile identificare il nome passato come parametro");
-			return "ERROR : INVALID NAME";
-		}
+		return (nameOf(name) + this->m_settings.at(name)->getValueString());
 	}
 
 

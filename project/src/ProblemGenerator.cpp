@@ -109,7 +109,7 @@ namespace translated_automata {
 		this->m_alphabet = alphabet_generator->generate();
 		delete alphabet_generator;
 
-		this->m_problem_type = configurations->valueOf<Problem::ProblemType>(ProblemType);
+		this->m_problem_type = (Problem::ProblemType) configurations->valueOf<int>(ProblemType);
 
 		// Istanzio i generatori delegati
 		switch (this->m_problem_type) {

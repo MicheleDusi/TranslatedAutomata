@@ -41,7 +41,7 @@ namespace translated_automata {
 	template <class Automaton>
 	AutomataGenerator<Automaton>::AutomataGenerator(Alphabet alphabet, Configurations* configurations) {
 		this->m_alphabet = alphabet;
-		this->m_automaton_structure = configurations->valueOf<AutomatonType>(AutomatonStructure);
+		this->m_automaton_structure = (AutomatonType) configurations->valueOf<int>(AutomatonStructure);
 		this->m_size = configurations->valueOf<int>(AutomatonSize);
 		this->m_name_prefix	= default_name_prefix;
 		this->m_transition_percentage = configurations->valueOf<double>(AutomatonTransitionsPercentage);

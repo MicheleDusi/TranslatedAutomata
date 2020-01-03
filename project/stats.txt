@@ -21,3 +21,72 @@ ESC_TIME    [ms] | MIN = 0.000000 | AVG = 3.100000 | MAX = 17.000000 |
 SOL_SIZE    [#]  | MIN = 100.000000 | AVG = 111.900000 | MAX = 162.000000 |
 SOL_GROWTH  [%]  | MIN = 100.000000 | AVG = 111.900000 | MAX = 162.000000 |
 ---
+
+--- PARAMETERS ---
+Number of testcases:                      10
+Problem type:                             1
+Alphabet cardinality:                     5
+Translation mixing factor:                0.900000
+Translation offset:                       1.000000
+Epsilong percentage:                      0.050000
+Automaton's structure type:               2
+Automaton's size (#states):               100
+Automaton's final states probability:     0.100000
+Automaton's transitions percentage:       0.500000
+Automaton's max distance:                 90
+Automaton's safe-zone distance:           80
+Active "automaton pruning"                1
+Active "removing label":                  1
+Active "distance check in translation":   0
+--- STATISTICS ---
+SC_TIME     [ms] | MIN = 5.000000 | AVG = 6.600000 | MAX = 9.000000 |
+ESC_TIME    [ms] | MIN = 0.000000 | AVG = 1.300000 | MAX = 5.000000 |
+SOL_SIZE    [#]  | MIN = 100.000000 | AVG = 105.000000 | MAX = 118.000000 |
+SOL_GROWTH  [%]  | MIN = 100.000000 | AVG = 105.000000 | MAX = 118.000000 |
+---
+
+--- PARAMETERS ---
+Number of testcases:                      10
+Problem type:                             1
+Alphabet cardinality:                     5
+Translation mixing factor:                0.900000
+Translation offset:                       1
+Epsilong percentage:                      0.050000
+Automaton's structure type:               2
+Automaton's size (#states):               100
+Automaton's final states probability:     0.100000
+Automaton's transitions percentage:       0.500000
+Automaton's max distance:                 90
+Automaton's safe-zone distance:           80
+Active "automaton pruning"                1
+Active "removing label":                  1
+Active "distance check in translation":   0
+--- STATISTICS ---
+SC_TIME     [ms] | MIN = 6.000000 | AVG = 7.000000 | MAX = 8.000000 |
+ESC_TIME    [ms] | MIN = 0.000000 | AVG = 1.700000 | MAX = 4.000000 |
+SOL_SIZE    [#]  | MIN = 101.000000 | AVG = 107.900000 | MAX = 115.000000 |
+SOL_GROWTH  [%]  | MIN = 101.000000 | AVG = 107.900000 | MAX = 115.000000 |
+---
+
+--- PARAMETERS ---
+Number of testcases:                      10
+Problem type:                             1
+Alphabet cardinality:                     5
+Translation mixing factor:                0.900000
+Translation offset:                       1
+Epsilong percentage:                      0.050000
+Automaton's structure type:               2
+Automaton's size (#states):               100
+Automaton's final states probability:     0.100000
+Automaton's transitions percentage:       0.500000
+Automaton's max distance:                 90
+Automaton's safe-zone distance:           80
+Active "automaton pruning"                1
+Active "removing label":                  1
+Active "distance check in translation":   0
+--- STATISTICS ---
+SC_TIME     [ms] | MIN = 5.000000 | AVG = 6.700000 | MAX = 9.000000 |
+ESC_TIME    [ms] | MIN = 0.000000 | AVG = 1.700000 | MAX = 4.000000 |
+SOL_SIZE    [#]  | MIN = 100.000000 | AVG = 106.800000 | MAX = 118.000000 |
+SOL_GROWTH  [%]  | MIN = 100.000000 | AVG = 106.800000 | MAX = 118.000000 |
+---

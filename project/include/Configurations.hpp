@@ -54,8 +54,14 @@ namespace translated_automata {
 	typedef enum {
 		INT,
 		DOUBLE,
-		BOOLEAN,
+		BOOL,
 	} SettingType;
+
+	typedef union {
+		int integer;
+		double real;
+		bool flag;
+	} Value;
 
 	/**
 	 * Rappresenta un valore di tipo generico associato ad una specifica configurazione.
@@ -64,46 +70,32 @@ namespace translated_automata {
 
 	private:
 		SettingType m_type;
+		Value m_value;
 
 	public:
-		SettingValue(SettingType type);
+		SettingValue(int value);
+		SettingValue(double value);
+		SettingValue(bool value);
 		virtual ~SettingValue() {};
 
 		SettingType getType();
+		Value getValue();
+		string getValueString();
 
-	};
+		template <typename T> T getTemplateValue() {
+			switch (this->m_type) {
+			case INT :
+				return static_cast<int>(this->m_value.integer);
+			case DOUBLE :
+				return static_cast<double>(this->m_value.real);
+			case BOOL :
+				return static_cast<bool>(this->m_value.flag);
+			default :
+				DEBUG_LOG_ERROR("Impossibile interpretare il valore %b", this->m_value.integer);
+				return static_cast<int>(this->m_value.integer);
+			}
+		};
 
-	class IntSettingValue : public SettingValue {
-
-	private:
-		int m_value;
-
-	public:
-		IntSettingValue(int value);
-		~IntSettingValue() {};
-		int getIntValue();
-	};
-
-	class DoubleSettingValue : public SettingValue {
-
-	private:
-		double m_value;
-
-	public:
-		DoubleSettingValue(double value);
-		~DoubleSettingValue() {};
-		double getDoubleValue();
-	};
-
-	class BoolSettingValue : public SettingValue {
-
-	private:
-		bool m_value;
-
-	public:
-		BoolSettingValue(bool value);
-		~BoolSettingValue() {};
-		bool getBoolValue();
 	};
 
 	/**
@@ -126,29 +118,8 @@ namespace translated_automata {
 
 		template <class T> T valueOf(const SettingID& name) {
 			DEBUG_ASSERT_TRUE(this->m_settings.count(name));
-			SettingValue* setting_value = this->m_settings.at(name);
-
-			switch (setting_value->getType()) {
-
-			case INT : {
-				IntSettingValue* sv = (IntSettingValue*)(setting_value);
-				return (T) (sv->getIntValue());
-			}
-			case DOUBLE : {
-				DoubleSettingValue* sv = (DoubleSettingValue*)(setting_value);
-				return (T) (sv->getDoubleValue());
-			}
-			case BOOLEAN : {
-				BoolSettingValue* sv = (BoolSettingValue*)(setting_value);
-				return (T) (sv->getBoolValue());
-			}
-			default :
-				DEBUG_LOG_ERROR("Impossibile interpretare %d come valore dell'enum SettingType", setting_value->getType());
-				throw "Impossibile interpretare il valore";
-			}
+			return this->m_settings.at(name)->getTemplateValue<T>();
 		}
-
-//		template <> int valueOf(const SettingName& name);
 
 	};
 

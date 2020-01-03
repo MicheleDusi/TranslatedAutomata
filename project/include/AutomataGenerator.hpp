@@ -1,5 +1,5 @@
 /*
- * AutomataGenerator.cpp
+ * AutomataGenerator.hpp
  *
  * Project: TranslatedAutomata
  *
@@ -19,25 +19,28 @@
 
 #include "Alphabet.hpp"
 #include "Automaton.hpp"
+#include "Configurations.hpp"
 
 #define UNDEFINED_VALUE -1
 
 namespace translated_automata {
 
-	enum AutomatonType {
+	typedef enum {
 		AUTOMATON_RANDOM,
 		AUTOMATON_STRATIFIED,
 		AUTOMATON_STRATIFIED_WITH_SAFE_ZONE
-	};
+	} AutomatonType;
 
 	template <class Automaton>
 	class AutomataGenerator {
 
 	private:
 		Alphabet m_alphabet;
+		AutomatonType m_automaton_structure;
 		unsigned long int m_size;
 		string m_name_prefix;
 		double m_transition_percentage;
+		double m_epsilon_probability = 0;
 		double m_final_probability;
 		double m_max_distance = UNDEFINED_VALUE;
 		double m_safe_zone_distance = UNDEFINED_VALUE;
@@ -46,7 +49,7 @@ namespace translated_automata {
 
 	protected:
 		static const unsigned long int default_size;
-		static const char *default_name_prefix;
+		static const char* default_name_prefix;
 		static const double default_transition_percentage;
 		static const double default_final_probability;
 
@@ -57,26 +60,21 @@ namespace translated_automata {
 		unsigned long int computeDeterministicTransitionsNumber();
 
 	public:
-		AutomataGenerator(Alphabet alphabet);
+		AutomataGenerator(Alphabet alphabet, Configurations* configurations);
 		virtual ~AutomataGenerator();
 
 		Alphabet getAlphabet();
+		AutomatonType getAutomatonStructure();
 		unsigned long int getSize();
 		string getNamePrefix();
 		double getTransitionPercentage();
+		double getEpsilonProbability();
 		double getFinalProbability();
 		unsigned int getMaxDistance();
+		void setMaxDistance(unsigned int max_distance);
 		unsigned int getSafeZoneDistance();
 
-		void setAlphabet(Alphabet alpha);
-		void setSize(unsigned long int size);
-		void setNamePrefix(string prefix);
-		void setTransitionPercentage(double percentage);
-		void setFinalProbability(double probability);
-		void setMaxDistance(unsigned int max_distance);
-		void setSafeZoneDistance(unsigned int safe_zone_distance);
-
-		Automaton* generateAutomaton(AutomatonType type);
+		Automaton* generateAutomaton();
 		virtual Automaton* generateRandomAutomaton();
 		virtual Automaton* generateStratifiedAutomaton();
 		virtual Automaton* generateStratifiedWithSafeZoneAutomaton();

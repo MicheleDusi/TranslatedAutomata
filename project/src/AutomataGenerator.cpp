@@ -39,12 +39,16 @@ namespace translated_automata {
 	 * Questo può tuttavia cambiare con i metodi setter.
 	 */
 	template <class Automaton>
-	AutomataGenerator<Automaton>::AutomataGenerator(Alphabet alphabet) {
+	AutomataGenerator<Automaton>::AutomataGenerator(Alphabet alphabet, Configurations* configurations) {
 		this->m_alphabet = alphabet;
-		this->m_size = default_size;
+		this->m_automaton_structure = configurations->valueOf<AutomatonType>(AutomatonStructure);
+		this->m_size = configurations->valueOf<int>(AutomatonSize);
 		this->m_name_prefix	= default_name_prefix;
-		this->m_transition_percentage = default_transition_percentage;
-		this->m_final_probability = default_final_probability;
+		this->m_transition_percentage = configurations->valueOf<double>(AutomatonTransitionsPercentage);
+		this->m_epsilon_probability = configurations->valueOf<double>(EpsilonPercentage);
+		this->m_final_probability = configurations->valueOf<double>(AutomatonFinalProbability);
+		this->m_max_distance = configurations->valueOf<int>(AutomatonMaxDistance);
+		this->m_safe_zone_distance = configurations->valueOf<int>(AutomatonSafeZoneDistance);
 	}
 
 	/**
@@ -131,7 +135,15 @@ namespace translated_automata {
 	template <class Automaton>
 	Alphabet AutomataGenerator<Automaton>::getAlphabet() {
 		return this->m_alphabet;
-	}
+	};
+
+	/**
+	 * Getter per la struttura dell'automa da costruire.
+	 */
+	template <class Automaton>
+	AutomatonType AutomataGenerator<Automaton>::getAutomatonStructure() {
+		return this->m_automaton_structure;
+	};
 
 	/**
 	 * Getter per la dimensione dell'automa da generare.
@@ -159,6 +171,14 @@ namespace translated_automata {
 	}
 
 	/**
+	 * Getter per la probabilità di inserire una transizione con label epsilon.
+	 */
+	template <class Automaton>
+	double AutomataGenerator<Automaton>::getEpsilonProbability() {
+		return this->m_epsilon_probability;
+	}
+
+	/**
 	 * Getter per la probabilità per uno stato di essere stato finale nell'automa da generare.
 	 */
 	template <class Automaton>
@@ -176,73 +196,6 @@ namespace translated_automata {
 	}
 
 	/**
-	 * Restituisce la distanza entro cui non sono sicuramente presenti punti di non
-	 * determinismo, nel caso di automi NFA a strati che prevedano tale possibilità.
-	 */
-	template <class Automaton>
-	unsigned int AutomataGenerator<Automaton>::getSafeZoneDistance() {
-		return this->m_safe_zone_distance;
-	}
-
-	/**
-	 * Setter per l'alfabeto dell'automa da generare.
-	 * Si richiede che l'alfabeto contenga almeno un simbolo.
-	 */
-	template <class Automaton>
-	void AutomataGenerator<Automaton>::setAlphabet(Alphabet alpha) {
-		if (alpha.empty()) {
-			DEBUG_LOG_ERROR("Impossibile impostare un alfabeto vuoto per un automa");
-			return;
-		}
-		this->m_alphabet = alpha;
-	}
-
-	/**
-	 * Setter per la dimensione dell'automa da generare.
-	 */
-	template <class Automaton>
-	void AutomataGenerator<Automaton>::setSize(unsigned long int size) {
-		this->m_size = size;
-	}
-
-	/**
-	 * Getter per la stringa utilizzata come prefisso per i nomi
-	 * degli stati dell'automa da generare.
-	 */
-	template <class Automaton>
-	void AutomataGenerator<Automaton>::setNamePrefix(string prefix) {
-		if (prefix.empty()) {
-			DEBUG_LOG_ERROR("Impossibile impostare una stringa vuota o nulla per i nomi degli stati di un automa");
-			return;
-		}
-		this->m_name_prefix = prefix;
-	}
-
-	/**
-	 * Setter per la probabilità di avere una transizione tra due stati nell'automa da generare.
-	 * Precondizione: la probabilità deve essere superiore a 0.
-	 * Può essere superiore ad 1 se siamo nel caso NFA.
-	 */
-	template <class Automaton>
-	void AutomataGenerator<Automaton>::setTransitionPercentage(double percentage) {
-		if (percentage >= 0) {
-			this->m_transition_percentage = percentage;
-		}
-	}
-
-	/**
-	 * Setter per la probabilità di uno stato di essere stato finale nell'automa da generare.
-	 * Questo metodo funziona solamente se la probabilità è effettivamente compresa nell'intervallo
-	 * chiuso [0,1], altrimenti la sua esecuzione non ha alcun effetto.
-	 */
-	template <class Automaton>
-	void AutomataGenerator<Automaton>::setFinalProbability(double probability) {
-		if (probability >= 0 && probability <= 1) {
-			this->m_final_probability = probability;
-		}
-	}
-
-	/**
 	 * Imposta la massima distanza di uno stato all'interno dell'automa da costruire.
 	 * Questo parametro è utilizzato solamente nella generazione di automi stratificati,
 	 * non di automi generici.
@@ -253,13 +206,12 @@ namespace translated_automata {
 	}
 
 	/**
-	 * Imposta la distanza entro la quale viene garantito il determinismo dell'automa.
-	 * Questo parametro è utilizzato solamente negli automi stratificati con SafeZone,
-	 * che per natura sono NON deterministici (fuori dalla SZ).
+	 * Restituisce la distanza entro cui non sono sicuramente presenti punti di non
+	 * determinismo, nel caso di automi NFA a strati che prevedano tale possibilità.
 	 */
 	template <class Automaton>
-	void AutomataGenerator<Automaton>::setSafeZoneDistance(unsigned int safe_zone_distance) {
-		this->m_safe_zone_distance = safe_zone_distance;
+	unsigned int AutomataGenerator<Automaton>::getSafeZoneDistance() {
+		return this->m_safe_zone_distance;
 	}
 
 	/**
@@ -274,8 +226,8 @@ namespace translated_automata {
 	 * per gli automi DFA o per gli automi NFA.
 	 */
 	template <class Automaton>
-	Automaton* AutomataGenerator<Automaton>::generateAutomaton(AutomatonType type) {
-		switch(type) {
+	Automaton* AutomataGenerator<Automaton>::generateAutomaton() {
+		switch(this->getAutomatonStructure()) {
 
 		case AUTOMATON_RANDOM :
 			return this->generateRandomAutomaton();
@@ -287,7 +239,7 @@ namespace translated_automata {
 			return this->generateStratifiedWithSafeZoneAutomaton();
 
 		default :
-			DEBUG_LOG_ERROR("Valore %d non riconosciuto all'interno dell'enumerazione AutomatonType", type);
+			DEBUG_LOG_ERROR("Valore %d non riconosciuto all'interno dell'enumerazione AutomatonType", this->getAutomatonStructure());
 			return NULL;
 		}
 	}

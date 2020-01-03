@@ -19,11 +19,6 @@
 
 namespace translated_automata {
 
-	enum ProblemType {
-		TRANSLATION_PROBLEM,
-		DETERMINIZATION_PROBLEM
-	};
-
 	/**
 	 * Struttura generica che definisce un problema all'interno del programma.
 	 * Un problema può essere di due tipi, ciascuno rappresentato da una sottoclasse:
@@ -31,6 +26,12 @@ namespace translated_automata {
 	 * - Un problema di traduzione (che racchiude anche un aspetto di determinizzazione).
 	 */
 	class Problem {
+
+	public:
+		typedef enum {
+			TRANSLATION_PROBLEM,
+			DETERMINIZATION_PROBLEM
+		} ProblemType;
 
 	private:
 		const ProblemType m_type;
@@ -93,16 +94,17 @@ namespace translated_automata {
 	class ProblemGenerator {
 
 	private:
+		Problem::ProblemType m_problem_type;
 		Alphabet m_alphabet;
 		DFAGenerator* m_dfa_generator;
 		NFAGenerator* m_nfa_generator;
 		TranslationGenerator* m_translation_generator;
 
 	public:
-		ProblemGenerator();
+		ProblemGenerator(Configurations* configurations);
 		~ProblemGenerator();
 
-		Problem* generate(ProblemType type);
+		Problem* generate();
 		TranslationProblem* generateTranslationProblem();
 		DeterminizationProblem* generateDeterminizationProblem();
 

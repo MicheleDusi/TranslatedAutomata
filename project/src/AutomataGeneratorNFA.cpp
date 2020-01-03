@@ -19,7 +19,7 @@
 
 //#define DEBUG_MODE
 #include "Debug.hpp"
-#include "Properties.hpp"
+#include "Configurations.hpp"
 
 #define RANDOM_PERCENTAGE ((double) rand() / (RAND_MAX))
 #define INTRA_STRATUM_TRANSITIONS_PERCENTAGE 0.5
@@ -29,7 +29,7 @@ namespace translated_automata {
 	/**
 	 * Costruttore.
 	 */
-	NFAGenerator::NFAGenerator(Alphabet alphabet) : AutomataGenerator(alphabet) {}
+	NFAGenerator::NFAGenerator(Alphabet alphabet, Configurations* configurations) : AutomataGenerator(alphabet, configurations) {}
 
 	/**
 	 * Distruttore.
@@ -162,7 +162,7 @@ namespace translated_automata {
 					StateNFA* parent = this->getRandomState(strata[stratum_index - 1]);
 
 					string random_label;
-					if (RANDOM_PERCENTAGE <= TRANSLATION_EPSILON_PERCENTAGE) {
+					if (RANDOM_PERCENTAGE <= this->getEpsilonProbability()) {
 						random_label = EPSILON;
 					} else {
 						random_label = this->getAlphabet()[rand() % this->getAlphabet().size()];
@@ -220,7 +220,7 @@ namespace translated_automata {
 				// In tal caso, estraggo uno stato genitore casuale
 				from = this->getRandomState(strata[stratum_index]);
 				// Estraggo una label casuale, che puà anche essere EPSILON
-				if (RANDOM_PERCENTAGE <= TRANSLATION_EPSILON_PERCENTAGE) {
+				if (RANDOM_PERCENTAGE <= this->getEpsilonProbability()) {
 					label = EPSILON;
 				} else {
 					label = this->getAlphabet()[rand() % this->getAlphabet().size()];

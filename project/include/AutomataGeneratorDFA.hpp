@@ -29,7 +29,7 @@ namespace translated_automata {
 		string extractRandomUnusedLabel(map<StateDFA*, Alphabet>& unused_labels, StateDFA* state);
 
 	public:
-		DFAGenerator(Alphabet alphabet);
+		DFAGenerator(Alphabet alphabet, Configurations* configurations);
 		~DFAGenerator();
 
 		DFA* generateRandomAutomaton();

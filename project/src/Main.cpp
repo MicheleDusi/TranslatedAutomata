@@ -27,30 +27,21 @@ using namespace translated_automata;
 int main(int argc, char **argv) {
 
 	DEBUG_MARK_PHASE( "Translated Automaton - Main" ) {
-		ProblemGenerator* generator;
 
-		DEBUG_MARK_PHASE("Creazione dei generatori") {
+	// Creazione delle configurazioni
+	Configurations* config = new Configurations();
+	config->load();
 
-		// Creazione del generatore di problemi
-		generator = new ProblemGenerator();
+	// Creazione del sistema di risoluzione
+	ProblemSolver* solver = new ProblemSolver(config);
 
-		}
+	// Risoluzione effettiva
+	solver->solveSeries(config->valueOf<int>(Testcases));
 
-		DEBUG_MARK_PHASE("Risoluzione dei problemi") {
+	// Presentazione delle statistiche risultanti
+	solver->getResultCollector()->presentResults();
 
-		// Risoluzione del problema
-		ResultCollector* collector = new ResultCollector();
-		ProblemSolver* solver = new ProblemSolver(generator, collector);
-		solver->solveSeries(TESTCASES);
-
-		// Presentazione delle statistiche risultanti
-		collector->presentResults();
-
-		delete generator;
-		delete collector;
-		delete solver;
-
-		}
+	delete solver;
 
 	}
 

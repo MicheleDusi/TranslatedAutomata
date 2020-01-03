@@ -23,8 +23,10 @@ namespace translated_automata {
 		SubsetConstruction* sc;				// Algoritmo Subset Construction
 
 	public:
-		ProblemSolver(ProblemGenerator* generator, ResultCollector* collector);
+		ProblemSolver(Configurations* configurations);
 		~ProblemSolver();
+
+		ResultCollector* getResultCollector();
 
 		void solve(Problem* problem);
 		void solve(TranslationProblem* problem);

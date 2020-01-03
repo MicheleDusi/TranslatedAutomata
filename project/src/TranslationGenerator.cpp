@@ -22,10 +22,10 @@ namespace translated_automata {
 	const double TranslationGenerator::default_epsilon_percentage = 0.;
 
 	/** Costruttore */
-	TranslationGenerator::TranslationGenerator() {
-		this->m_mixing_factor = default_mixing_factor;
-		this->m_offset = default_offset;
-		this->m_epsilon_percentage = default_epsilon_percentage;
+	TranslationGenerator::TranslationGenerator(Configurations* configurations) {
+		this->m_mixing_factor = configurations->valueOf<double>(TranslationMixingFactor);
+		this->m_offset = configurations->valueOf<double>(TranslationOffset);
+		this->m_epsilon_percentage = configurations->valueOf<double>(EpsilonPercentage);
 	}
 
 	/** Distruttore */
@@ -70,13 +70,13 @@ namespace translated_automata {
 	 * 	· mf = N , con N > 1 intero --> In generale, l'alfabeto subirà un rimescolamento. Più nello specifico, la traduzione
 	 * 				corrisponderà ad una permutazione per valori di N coprimi con la cardinalità dell'alfabeto.
 	 */
-	void TranslationGenerator::setMixingFactor(double mixing_factor) {
-		if (mixing_factor < 0) {
-			this->m_mixing_factor = TranslationGenerator::default_mixing_factor;
-		} else {
-			this->m_mixing_factor = mixing_factor;
-		}
-	}
+//	void TranslationGenerator::setMixingFactor(double mixing_factor) {
+//		if (mixing_factor < 0) {
+//			this->m_mixing_factor = TranslationGenerator::default_mixing_factor;
+//		} else {
+//			this->m_mixing_factor = mixing_factor;
+//		}
+//	}
 
 	/**
 	 * Setter per l'offset della traduzione.
@@ -89,9 +89,9 @@ namespace translated_automata {
 	 * Nota: in caso di valori di offset superiori alla cardinalità dell'alfabeto, verrà considerata la classe di resto
 	 * in modulo (cardinalità dell'alfabeto).
 	 */
-	void TranslationGenerator::setOffset(double offset) {
-		this->m_offset = offset;
-	}
+//	void TranslationGenerator::setOffset(double offset) {
+//		this->m_offset = offset;
+//	}
 
 	/**
 	 * Setter per la percentuale di label mappate su epsilon.
@@ -104,13 +104,13 @@ namespace translated_automata {
 	 *
 	 * Nota: il valore inserito verrà forzato all'intervallo [0;1].
 	 */
-	void TranslationGenerator::setEpsilonPercentage(double epsilon_percentage) {
-		this->m_epsilon_percentage = (epsilon_percentage < 0) ?
-				(0) :
-				((epsilon_percentage > 1) ?
-						(1) :
-						(epsilon_percentage));
-	}
+//	void TranslationGenerator::setEpsilonPercentage(double epsilon_percentage) {
+//		this->m_epsilon_percentage = (epsilon_percentage < 0) ?
+//				(0) :
+//				((epsilon_percentage > 1) ?
+//						(1) :
+//						(epsilon_percentage));
+//	}
 
 	/**
 	 * Genera casualmente e restituisce una traduzione sull'alfabeto passato come parametro.

@@ -39,18 +39,13 @@ namespace translated_automata {
 	/**
 	 * Costruttore.
 	 */
-	ProblemSolver::ProblemSolver(ProblemGenerator* generator, ResultCollector* collector) {
-		DEBUG_ASSERT_NOT_NULL(generator);
-		DEBUG_ASSERT_NOT_NULL(collector);
-		if (generator == NULL || collector == NULL) {
-			std::cerr << "Impossibile istanziare un oggetto \"ProblemSolver\" con parametri del costruttore nulli" << std::endl;
-		}
-
-		this->generator = generator;
-		this->collector = collector;
+	ProblemSolver::ProblemSolver(Configurations* configurations) {
+		// Creazione del generatore e dell'analizzatore di risultati
+		this->generator = new ProblemGenerator(configurations);
+		this->collector = new ResultCollector(configurations);
 
 		this->sc = new SubsetConstruction();
-		this->esc = new EmbeddedSubsetConstruction();
+		this->esc = new EmbeddedSubsetConstruction(configurations);
 	}
 
 	/**
@@ -59,9 +54,18 @@ namespace translated_automata {
 	 */
 	ProblemSolver::~ProblemSolver() {
 		DEBUG_MARK_PHASE("Eliminazione del risolutore") {
+			delete this->generator;
+			delete this->collector;
 			delete this->sc;
 			delete this->esc;
 		}
+	}
+
+	/**
+	 * Restituisce il collettore di risultati.
+	 */
+	ResultCollector* ProblemSolver::getResultCollector() {
+		return this->collector;
 	}
 
 	/**
@@ -147,9 +151,9 @@ namespace translated_automata {
 	void ProblemSolver::solve(Problem* problem) {
 		DEBUG_ASSERT_NOT_NULL(problem);
 		switch (problem->getType()) {
-		case TRANSLATION_PROBLEM :
+		case Problem::TRANSLATION_PROBLEM :
 			return this->solve((TranslationProblem*) problem);
-		case DETERMINIZATION_PROBLEM :
+		case Problem::DETERMINIZATION_PROBLEM :
 			return this->solve((DeterminizationProblem*) problem);
 		default :
 			DEBUG_LOG_ERROR("Impossibile identificare il valore %d come istanza dell'enum ProblemType", problem->getType());
@@ -162,7 +166,7 @@ namespace translated_automata {
 	 * il generatore passato come argomento al costruttore.
 	 */
 	void ProblemSolver::solve() {
-		Problem* problem = this->generator->generate(PROBLEM_TYPE);
+		Problem* problem = this->generator->generate();
 		DEBUG_ASSERT_NOT_NULL(problem);
 		this->solve(problem);
 	}

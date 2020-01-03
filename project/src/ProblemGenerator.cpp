@@ -19,8 +19,8 @@
 #include <ctime>
 
 #include "AlphabetGenerator.hpp"
+#include "Configurations.hpp"
 #include "Debug.hpp"
-#include "Properties.hpp"
 
 namespace translated_automata {
 
@@ -94,7 +94,7 @@ namespace translated_automata {
 	 * Si occupa di istanziare i generatori delegati.
 	 * Inoltre, imposta alcuni parametri per la randomicità del programma.
 	 */
-	ProblemGenerator::ProblemGenerator() {
+	ProblemGenerator::ProblemGenerator(Configurations* configurations) {
 		// Istanzio un nuovo gestore di randomicità
 		RandomnessManager* random = new RandomnessManager();
 //		random->setSeed(1576624929); // NOT SOLVED (alphacard 5, size 6, trans 0.3, mix 0.9, epsilon 0.5)
@@ -104,29 +104,31 @@ namespace translated_automata {
 
 		// Impostazione dell'alfabeto comune
 		AlphabetGenerator* alphabet_generator = new AlphabetGenerator();
-		alphabet_generator->setCardinality(ALPHABET_CARDINALITY);
+		alphabet_generator->setCardinality((configurations->valueOf<unsigned int>(AlphabetCardinality)));
+		DEBUG_LOG("Cardinalità dell'alfabeto impostata a: %u", alphabet_generator->getCardinality());
 		this->m_alphabet = alphabet_generator->generate();
 		delete alphabet_generator;
 
+		this->m_problem_type = configurations->valueOf<Problem::ProblemType>(ProblemType);
+
 		// Istanzio i generatori delegati
-		this->m_nfa_generator = new NFAGenerator(this->m_alphabet);
-		this->m_nfa_generator->setSize(AUTOMATON_SIZE);
-		this->m_nfa_generator->setFinalProbability(AUTOMATON_FINAL_PROBABILITY);
-		this->m_nfa_generator->setTransitionPercentage(AUTOMATON_TRANSITION_PERCENTAGE);
-		this->m_nfa_generator->setMaxDistance(AUTOMATON_MAX_DISTANCE);
-		this->m_nfa_generator->setSafeZoneDistance(AUTOMATON_SAFE_ZONE_DISTANCE);
+		switch (this->m_problem_type) {
 
-		this->m_dfa_generator = new DFAGenerator(this->m_alphabet);
-		this->m_dfa_generator->setSize(AUTOMATON_SIZE);
-		this->m_dfa_generator->setFinalProbability(AUTOMATON_FINAL_PROBABILITY);
-		this->m_dfa_generator->setTransitionPercentage(AUTOMATON_TRANSITION_PERCENTAGE);
-		this->m_dfa_generator->setMaxDistance(AUTOMATON_MAX_DISTANCE);
-		this->m_dfa_generator->setSafeZoneDistance(AUTOMATON_SAFE_ZONE_DISTANCE);
+		case Problem::TRANSLATION_PROBLEM :
+			this->m_dfa_generator = new DFAGenerator(this->m_alphabet, configurations);
+			this->m_translation_generator = new TranslationGenerator(configurations);
+			break;
 
-		this->m_translation_generator = new TranslationGenerator();
-		this->m_translation_generator->setMixingFactor(TRANSLATION_MIXING_FACTOR);
-		this->m_translation_generator->setOffset(TRANSLATION_OFFSET);
-		this->m_translation_generator->setEpsilonPercentage(TRANSLATION_EPSILON_PERCENTAGE);
+		case Problem::DETERMINIZATION_PROBLEM :
+			this->m_nfa_generator = new NFAGenerator(this->m_alphabet, configurations);
+			break;
+
+		default :
+			DEBUG_LOG_ERROR("Impossibile interpretare il valore %d come istanza dell'enum ProblemType", this->m_problem_type);
+			break;
+
+		}
+
 	}
 
 	/**
@@ -142,14 +144,17 @@ namespace translated_automata {
 	/**
 	 * Genera un nuovo problema del tipo specifico richiesto, richiamando il metodo apposito.
 	 */
-	Problem* ProblemGenerator::generate(ProblemType type) {
-		switch (type) {
-		case TRANSLATION_PROBLEM :
+	Problem* ProblemGenerator::generate() {
+		switch (this->m_problem_type) {
+
+		case Problem::TRANSLATION_PROBLEM :
 			return this->generateTranslationProblem();
-		case DETERMINIZATION_PROBLEM :
+
+		case Problem::DETERMINIZATION_PROBLEM :
 			return this->generateDeterminizationProblem();
+
 		default :
-			DEBUG_LOG_ERROR("Valore %d non riconosciuto all'interno dell'enumerazione ProblemType", type);
+			DEBUG_LOG_ERROR("Valore %d non riconosciuto all'interno dell'enumerazione ProblemType", this->m_problem_type);
 			return NULL;
 		}
 	}
@@ -159,7 +164,7 @@ namespace translated_automata {
 	 */
 	TranslationProblem* ProblemGenerator::generateTranslationProblem() {
 		DEBUG_LOG("Generazione dell'automa DFA");
-		DFA* automaton = this->m_dfa_generator->generateAutomaton(AUTOMATON_TYPE);
+		DFA* automaton = this->m_dfa_generator->generateAutomaton();
 
 		DEBUG_LOG("Generazione della traduzione");
 		Translation* translation = this->m_translation_generator->generateTranslation(this->m_alphabet);
@@ -172,7 +177,7 @@ namespace translated_automata {
 	 */
 	DeterminizationProblem* ProblemGenerator::generateDeterminizationProblem() {
 		DEBUG_LOG("Generazione dell'automa NFA");
-		NFA* automaton = this->m_nfa_generator->generateAutomaton(AUTOMATON_TYPE);
+		NFA* automaton = this->m_nfa_generator->generateAutomaton();
 
 		return new DeterminizationProblem(automaton);
 	}

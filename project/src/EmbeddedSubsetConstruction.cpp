@@ -28,7 +28,12 @@ namespace translated_automata {
 	 * Imposta ogni campo ad un valore nullo. Per eseguire l'algoritmo
 	 * è infatti necessario chiamare il metodo "loadInputs".
 	 */
-	EmbeddedSubsetConstruction::EmbeddedSubsetConstruction() {
+	EmbeddedSubsetConstruction::EmbeddedSubsetConstruction(Configurations* configurations) {
+		// Memorizzazione delle configurationi desiderate
+		this->m_active_automaton_pruning = configurations->valueOf<bool>(ActiveAutomatonPruning);
+		this->m_active_distance_check_in_translation = configurations->valueOf<bool>(ActiveDistanceCheckInTranslation);
+		this->m_active_removing_label = configurations->valueOf<bool>(ActiveRemovingLabel);
+
 		this->m_original_dfa = NULL;
 		this->m_translation = NULL;
 		this->m_buds = NULL;
@@ -154,7 +159,7 @@ namespace translated_automata {
 
 						// Prima di inserire la transizione anche nell'automa DFA tradotto, verifico se le impostazioni
 						// richiedono l'uso della "label da rimozione"
-						if (DO_USE_REMOVING_LABEL) {
+						if (this->m_active_removing_label) {
 							// Inserisco la transizione tradotta (ma con label DA RIMOZIONE) nell'automa DETERMINISTICO D'
 							translated_dfa_state->connectChild(REMOVING_LABEL, states_map[child].second);
 							// Inserisco il nuovo bud nella lista, che servirà per rimuovere la transizione.
@@ -183,7 +188,8 @@ namespace translated_automata {
 									// Altrimenti, per ciascuno stato genitore con distanza minore o uguale
 									// (ma solo se le impostazioni prevedono l'uso del controllo sulla distanza)
 									for (StateDFA* parent : parent_pair.second) {
-										if (!(DO_CHECK_DISTANCE_IN_TRANSLATION) || parent->getDistance() <= current_distance) {
+										if (!(this->m_active_distance_check_in_translation)
+												|| parent->getDistance() <= current_distance) {
 
 											// Aggiungo il bud (stato_genitore, label)
 											this->addBudToList(states_map[parent].second, translated_parent_label);
@@ -314,7 +320,8 @@ namespace translated_automata {
 									// Altrimenti, per ciascuno stato genitore con distanza minore o uguale
 									// (ma solo se le impostazioni prevedono l'uso del controllo sulla distanza)
 									for (StateNFA* parent : parent_pair.second) {
-										if (!(DO_CHECK_DISTANCE_IN_TRANSLATION) || parent->getDistance() <= current_distance) {
+										if (!(this->m_active_distance_check_in_translation)
+												|| parent->getDistance() <= current_distance) {
 
 											// Aggiungo il bud (stato_genitore, label)
 											this->addBudToList(states_map[parent], parent_label);
@@ -400,7 +407,7 @@ namespace translated_automata {
 			DEBUG_LOG("|N| = %s", l_closure_name.c_str());
 
 			// Se le impostazioni lo prevedono, verifico se l'estensione è vuota
-			if (DO_AUTOMATON_PRUNING && l_closure.empty()) {
+			if (this->m_active_automaton_pruning && l_closure.empty()) {
 				DEBUG_LOG( "RULE 1" );																								/* RULE 1 */
 				DEBUG_MARK_PHASE("Automaton pruning sul bud %s", current_bud->toString().c_str()) {
 					this->runAutomatonPruning(current_bud);
@@ -600,7 +607,7 @@ namespace translated_automata {
 
 		// Verifico se è disattivata l'opzione di Automaton Pruning (che evita la creazione di stati vuoti)
 		// e contemporaneamente verifico che siano presenti epsilon-transizioni
-		if (!(DO_AUTOMATON_PRUNING) && (TRANSLATION_EPSILON_PERCENTAGE > 0)) {
+		if (!(this->m_active_automaton_pruning)) {
 			StateDFA* empty_state = this->m_translated_dfa->getState(EMPTY_EXTENSION_NAME);
 			if (empty_state != NULL) {
 				// Se effettivamente esiste uno stato vuoto, viene eliminato

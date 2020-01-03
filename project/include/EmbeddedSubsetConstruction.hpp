@@ -13,6 +13,7 @@
 
 #include "Automaton.hpp"
 #include "Bud.hpp"
+#include "Configurations.hpp"
 #include "Translation.hpp"
 
 namespace translated_automata {
@@ -27,6 +28,10 @@ namespace translated_automata {
 		NFA* m_reference_nfa;
 		DFA* m_translated_dfa;
 
+		bool m_active_removing_label;
+		bool m_active_automaton_pruning;
+		bool m_active_distance_check_in_translation;
+
 		void cleanInternalStatus();
 
 		void runDistanceRelocation(list<pair<StateDFA*, int>> relocation_sequence);
@@ -37,7 +42,7 @@ namespace translated_automata {
 		void addBudToList(ConstructedStateDFA* bud_state, string bud_label);
 
 	public:
-		EmbeddedSubsetConstruction();
+		EmbeddedSubsetConstruction(Configurations* configurations);
 		~EmbeddedSubsetConstruction();
 
 		void runAutomatonTranslation(DFA* automaton, Translation* translation);

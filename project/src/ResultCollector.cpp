@@ -6,6 +6,8 @@
 
 #include "ResultCollector.hpp"
 
+#include <fstream>
+
 #include "AutomataDrawer_impl.hpp"
 #include "Debug.hpp"
 #include "Properties.hpp"
@@ -23,8 +25,9 @@ namespace translated_automata {
 	/**
 	 * Costruttore.
 	 */
-	ResultCollector::ResultCollector() {
+	ResultCollector::ResultCollector(Configurations* configurations) {
 		this->m_results = list<Result*>();
+		this->m_config_reference = configurations;
 	}
 
 	/**
@@ -42,6 +45,7 @@ namespace translated_automata {
 	 * per eseguire SC ed ottenere quel risultato.
 	 */
 	std::function<double(Result*)> ResultCollector::getStatGetter(ResultStat stat) {
+		int aux_size = 0;
 		std::function<double(Result*)> getter;
 		switch(stat) {
 
@@ -68,8 +72,9 @@ namespace translated_automata {
 
 		// Rapporto fra la dimensione dell'automa ottenuto nella soluzione e la dimensione dell'automa originale.
 		case SOL_GROWTH :
-			getter = [](Result* result) {
-				return ((double) (result->sc_solution->size()) / AUTOMATON_SIZE) * 100;
+			aux_size = this->m_config_reference->valueOf<unsigned int>(AutomatonSize);
+			getter = [aux_size](Result* result) {
+				return ((double) (result->sc_solution->size()) / aux_size) * 100;
 			};
 			break;
 
@@ -173,22 +178,22 @@ namespace translated_automata {
 
 			switch (result->original_problem->getType()) {
 
-			case TRANSLATION_PROBLEM : {
+			case Problem::TRANSLATION_PROBLEM : {
 				TranslationProblem* translation_problem = (TranslationProblem*) result->original_problem;
 				DFADrawer dfa_drawer = DFADrawer(translation_problem->getDFA());
 
-				if (DO_PRINT_TRANSLATION) {
+				if (this->m_config_reference->valueOf<bool>(PrintTranslation)) {
 					std::cout << "TRANSLATION:\n";
 					Alphabet computed_alpha = translation_problem->getDFA()->getAlphabet();
 					std::cout << translation_problem->getTranslation()->toString(computed_alpha);
 				}
 
-				if (DO_PRINT_ORIGINAL_AUTOMATON) {
+				if (this->m_config_reference->valueOf<bool>(PrintOriginalAutomaton)) {
 					std::cout << "ORIGINAL DFA:\n";
 					std::cout << dfa_drawer.asString();
 				}
 
-				if (DO_DRAW_ORIGINAL_AUTOMATON) {
+				if (this->m_config_reference->valueOf<bool>(DrawOriginalAutomaton)) {
 					// Stampa su file dell'automa originale
 					string filename = std::string(DIR_RESULTS) + FILE_NAME_ORIGINAL_AUTOMATON + FILE_EXTENSION_GRAPHVIZ;
 					dfa_drawer.asDotFile(filename);
@@ -198,16 +203,16 @@ namespace translated_automata {
 			}
 				break;
 
-			case DETERMINIZATION_PROBLEM : {
+			case Problem::DETERMINIZATION_PROBLEM : {
 				DeterminizationProblem* determinization_problem = (DeterminizationProblem*) result->original_problem;
 				NFADrawer nfa_drawer = NFADrawer(determinization_problem->getNFA());
 
-				if (DO_PRINT_ORIGINAL_AUTOMATON) {
+				if (this->m_config_reference->valueOf<bool>(PrintOriginalAutomaton)) {
 					std::cout << "ORIGINAL NFA:\n";
 					std::cout << nfa_drawer.asString();
 				}
 
-				if (DO_DRAW_ORIGINAL_AUTOMATON) {
+				if (this->m_config_reference->valueOf<bool>(DrawOriginalAutomaton)) {
 					// Stampa su file dell'automa originale
 					string filename = std::string(DIR_RESULTS) + FILE_NAME_ORIGINAL_AUTOMATON + FILE_EXTENSION_GRAPHVIZ;
 					nfa_drawer.asDotFile(filename);
@@ -226,13 +231,13 @@ namespace translated_automata {
 		DEBUG_MARK_PHASE("Presentazione della soluzione ottenuta con SC") {
 			DFADrawer sc_drawer = DFADrawer(result->sc_solution);
 
-			if (DO_PRINT_SC_SOLUTION) {
+			if (this->m_config_reference->valueOf<bool>(PrintSCSolution)) {
 				// [SC] Stampa in formato testuale
 				std::cout << "SOLUZIONE di SC:\n";
 				std::cout << std::endl << sc_drawer.asString() << std::endl;
 			}
 
-			if (DO_DRAW_SC_SOLUTION) {
+			if (this->m_config_reference->valueOf<bool>(DrawSCSolution)) {
 				// [SC] Stampa su file
 				string sc_filename = std::string(DIR_RESULTS) + FILE_NAME_SC_SOLUTION + FILE_EXTENSION_GRAPHVIZ;
 				sc_drawer.asDotFile(sc_filename);
@@ -244,13 +249,13 @@ namespace translated_automata {
 		DEBUG_MARK_PHASE("Presentazione della soluzione ottenuta con ESC") {
 			DFADrawer esc_drawer = DFADrawer(result->esc_solution);
 
-			if (DO_PRINT_ESC_SOLUTION) {
+			if (this->m_config_reference->valueOf<bool>(PrintESCSOlution)) {
 				// [ESC] Stampa in formato testuale
 				std::cout << "SOLUZIONE di ESC:\n";
 				std::cout << std::endl << esc_drawer.asString() << std::endl;
 			}
 
-			if (DO_DRAW_ESC_SOLUTION) {
+			if (this->m_config_reference->valueOf<bool>(DrawESCSOlution)) {
 				// [ESC] Stampa su file
 				string esc_filename = std::string(DIR_RESULTS) + FILE_NAME_ESC_SOLUTION + FILE_EXTENSION_GRAPHVIZ;
 				esc_drawer.asDotFile(esc_filename);
@@ -268,9 +273,12 @@ namespace translated_automata {
 			this->presentResult(result);
 		}
 		DEBUG_MARK_PHASE("Presentazione delle statistiche") {
-		if (DO_PRINT_STATS) {
+		if (this->m_config_reference->valueOf<bool>(PrintStatistics)) {
 			printf("STATS:\n");
-			printf("Based on %u testcases with automata of size %d and alphabet of cardinality %d.\n", this->getTestCaseNumber(), AUTOMATON_SIZE, ALPHABET_CARDINALITY);
+			printf("Based on %u testcases with automata of size %d and alphabet of cardinality %d.\n",
+					this->getTestCaseNumber(),
+					this->m_config_reference->valueOf<int>(AutomatonSize),
+					this->m_config_reference->valueOf<int>(AlphabetCardinality));
 			printf("ESC success percentage = %f %%\n", (100 * this->getSuccessPercentage()));
 			printf("__________________|    MIN    |    AVG    |    MAX    |\n");
 			for (int int_stat = SC_TIME; int_stat <= SOL_GROWTH; int_stat++) {
@@ -284,6 +292,35 @@ namespace translated_automata {
 						std::get<2>(stat_values));
 			}
 		}}
+		DEBUG_MARK_PHASE("Logging dei risultati aggregati") {
+		// Scrittura su file dei risultati del blocco di testcase
+		ofstream file_out("stats.txt", ios::app);
+		file_out << std::endl;
+
+		file_out << "--- PARAMETERS ---" << std::endl;
+
+		// Stampo tutti i valori interessanti per i testcase, in coda al file
+		for (int param_enum = Testcases; param_enum <= ActiveDistanceCheckInTranslation; ++param_enum) {
+			file_out << this->m_config_reference->toString((SettingID) param_enum) << std::endl;
+		}
+
+		file_out << "--- STATISTICS ---" << std::endl;
+
+		for (int int_stat = SC_TIME; int_stat <= SOL_GROWTH; int_stat++) {
+			ResultStat stat = static_cast<ResultStat>(int_stat);
+			// TODO Ricordarsi di aggiornare l'ultimo valore, in caso di aggiunta di statistiche
+			tuple<double, double, double> stat_values = this->getStat(stat);
+			file_out << stat_headlines[stat] << " | " <<
+					"MIN = " << std::to_string(std::get<0>(stat_values)) << " | " <<
+					"AVG = " << std::to_string(std::get<1>(stat_values)) << " | " <<
+					"MAX = " <<	std::to_string(std::get<2>(stat_values)) << " |\n";
+		}
+
+		file_out << "---" << std::endl;
+
+		// Chiudo il file
+		file_out.close();
+		}
 	}
 
 } /* namespace translated_automata */

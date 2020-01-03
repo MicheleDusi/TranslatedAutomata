@@ -26,7 +26,7 @@ namespace translated_automata {
 		string extractRandomUnusedLabel(map<StateNFA*, Alphabet>& unused_labels, StateNFA* state);
 
 	public:
-		NFAGenerator(Alphabet alphabet);
+		NFAGenerator(Alphabet alphabet, Configurations* configurations);
 		~NFAGenerator();
 
 		NFA* generateStratifiedWithSafeZoneAutomaton();

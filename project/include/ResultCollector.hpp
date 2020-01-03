@@ -51,9 +51,10 @@ namespace translated_automata {
 	private:
 		list<Result*> m_results;
 		std::function<double(Result*)> getStatGetter(ResultStat stat);
+		Configurations* m_config_reference;
 
 	public:
-		ResultCollector();
+		ResultCollector(Configurations* configurations);
 		virtual ~ResultCollector();
 
 		// Gestione della lista di risultati

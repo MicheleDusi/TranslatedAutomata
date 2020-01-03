@@ -130,10 +130,9 @@ namespace translated_automata {
 
 		DEBUG_MARK_PHASE("Embedded Subset Construction") {
 
-			this->esc->runAutomatonCheckup(problem->getNFA());
-
-			// Fase di costruzione
+			// Fase di checkup + costruzione
 			MEASURE_MILLISECONDS( esc_time ) {
+				this->esc->runAutomatonCheckup(problem->getNFA());
 				this->esc->runBudProcessing(); // Chiamata all'algoritmo per la fase di costruzione
 			}
 			result->esc_elapsed_time = esc_time;

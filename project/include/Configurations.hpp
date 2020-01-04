@@ -110,7 +110,8 @@ namespace translated_automata {
 		 */
 		struct Setting {
 			SettingID m_id;		// L'identificatore (enum) che rappresenta
-			string m_name;		// Il nome che ne spiega brevemente lo scopo
+			string m_name;		// Il nome completo che ne spiega brevemente lo scopo
+			string m_abbr;		// Il nome abbreviato o la sigla che lo identifica
 			bool m_test_param;	// Indica se il setting è utilizzato per il testing, e quindi deve essere stampato nei risultati
 		};
 
@@ -132,6 +133,7 @@ namespace translated_automata {
 
 		void load();
 		static string nameOf(const SettingID& id);
+		static string abbreviationOf(const SettingID& id);
 		static bool isTestParam(const SettingID& id);
 		string toString(const SettingID& id);
 

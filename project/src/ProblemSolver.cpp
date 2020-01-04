@@ -170,14 +170,38 @@ namespace translated_automata {
 		this->solve(problem);
 	}
 
+	#define BARWIDTH 70
+	void printProgressBar(float progress) {
+		std::cout << "[";
+		int pos = BARWIDTH * progress;
+		for (int i = 0; i < BARWIDTH; ++i) {
+			if (i < pos) {
+				std::cout << "=";
+			}
+			else if (i == pos) {
+				std::cout << ">";
+			}
+			else {
+				std::cout << " ";
+			}
+		}
+		std::cout << "] " << int(progress * 100.0) << " %\r";
+		std::cout.flush();
+	}
+
 	/**
 	 * Risolve una sequenza di problemi generati casualmente.
 	 */
 	void ProblemSolver::solveSeries(unsigned int number) {
-		DEBUG_MARK_PHASE("Generazione di una serie di problemi")
+		DEBUG_MARK_PHASE("Risoluzione di una serie di problemi") {
+		std::cout << "Solving " << std::to_string(number) << " problems...\n";
+		printProgressBar(0);
 		for (int i = 0; i < number; i++) {
 			this->solve();
+			printProgressBar(float(i+1) / number);
 			DEBUG_LOG_SUCCESS("Risolto il problema (%d)!", (i+1));
+		}
+		std::cout << std::endl;
 		}
 	}
 

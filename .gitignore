@@ -38,3 +38,6 @@
 # Dot files and Graph visualizations
 *.gv
 *.pdf
+
+# Statistics
+stats.txt

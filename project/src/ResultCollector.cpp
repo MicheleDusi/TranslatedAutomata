@@ -297,34 +297,28 @@ namespace translated_automata {
 
 		// Scrittura su file dei risultati del blocco di testcase
 		ofstream file_out("stats.txt", ios::app);
-		file_out << std::endl;
 
-		// Stampo tutti i valori interessanti per i testcase, in coda al file
+
+		file_out << this->m_config_reference->toString(Testcases) << " { ";
+		// Stampo tutti i valori rilevanti per il blocco di test, in coda al file
 		for (int param_enum = Testcases; param_enum <= ActiveDistanceCheckInTranslation; ++param_enum) {
 			SettingID param_id = static_cast<SettingID>(param_enum);
 			// XXX Ricordarsi di aggiornare l'ultimo valore, in caso di aggiunta di parametri
 			if (this->m_config_reference->isTestParam(param_id)) {
-				file_out << this->m_config_reference->toString(param_id) << std::endl;
+				file_out << this->m_config_reference->toString(param_id) << " ";
 			}
 		}
+		file_out << "} ";
 
-//		for (int int_stat = SC_TIME; int_stat <= SOL_GROWTH; int_stat++) {
-//			ResultStat stat = static_cast<ResultStat>(int_stat);
-//			// XXX Ricordarsi di aggiornare l'ultimo valore, in caso di aggiunta di statistiche
-//			tuple<double, double, double> stat_values = this->getStat(stat);
-//			file_out << stat_headlines[stat] << " | " <<
-//					"MIN = " << std::to_string(std::get<0>(stat_values)) << " | " <<
-//					"AVG = " << std::to_string(std::get<1>(stat_values)) << " | " <<
-//					"MAX = " <<	std::to_string(std::get<2>(stat_values)) << " |\n";
-//		}
+		// Stampo i risultati
 		tuple<double, double, double> sc_stat_values = this->getStat(SC_TIME);
-			file_out << "SC( " 	<< std::to_string(std::get<0>(sc_stat_values)) << " , "
-								<< std::to_string(std::get<1>(sc_stat_values)) << " , "
+			file_out << "SC( " 	<< std::to_string(std::get<0>(sc_stat_values)) << ", "
+								<< std::to_string(std::get<1>(sc_stat_values)) << ", "
 								<< std::to_string(std::get<2>(sc_stat_values)) << " ) ";
 
 		tuple<double, double, double> esc_stat_values = this->getStat(ESC_TIME);
-			file_out << "ESC( " << std::to_string(std::get<0>(esc_stat_values)) << " , "
-								<< std::to_string(std::get<1>(esc_stat_values)) << " , "
+			file_out << "ESC( " << std::to_string(std::get<0>(esc_stat_values)) << ", "
+								<< std::to_string(std::get<1>(esc_stat_values)) << ", "
 								<< std::to_string(std::get<2>(esc_stat_values)) << " )";
 
 

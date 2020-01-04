@@ -105,7 +105,7 @@ namespace translated_automata {
 	 */
 	void Configurations::load() {
 		// Numero di Testcase
-		load(Testcases, 							10);
+		load(Testcases, 							100);
 
 		// Proprietà del problema
 //		load(ProblemType, TRANSLATION_PROBLEM);
@@ -119,15 +119,15 @@ namespace translated_automata {
 //		load(AutomatonType, AUTOMATON_RANDOM);
 //		load(AutomatonType, AUTOMATON_STRATIFIED);
 		load(AutomatonStructure, AUTOMATON_STRATIFIED_WITH_SAFE_ZONE);
-		load(AutomatonSize, 						500);
+		load(AutomatonSize, 						100);
 		load(AutomatonFinalProbability, 			0.1);
 		load(AutomatonTransitionsPercentage, 		0.5);
-		load(AutomatonMaxDistance, 					90);
-		load(AutomatonSafeZoneDistance, 			80);
+		load(AutomatonMaxDistance, 					9);
+		load(AutomatonSafeZoneDistance, 			7);
 
 		// Moduli e funzionalità opzionali
-		load(ActiveAutomatonPruning, 				true);		// In caso sia attivato, evita la formazione e la gestione dello stato con estensione vuota, tramite procedura Automaton Pruning
-		load(ActiveRemovingLabel, 					true);		// In caso sia attivato, utilizza una label apposita per segnalare le epsilon-transizione, che deve essere rimossa durante la determinizzazione
+		load(ActiveAutomatonPruning, 				true); // In caso sia attivato, evita la formazione e la gestione dello stato con estensione vuota, tramite procedura Automaton Pruning
+		load(ActiveRemovingLabel, 					true); // In caso sia attivato, utilizza una label apposita per segnalare le epsilon-transizione, che deve essere rimossa durante la determinizzazione
 		load(ActiveDistanceCheckInTranslation,	 	false);	// In caso sia attivato, durante la traduzione genera dei Bud solamente se gli stati soddisfano una particolare condizione sulla distanza [FIXME è una condizione che genera bug]
 
 		load(PrintStatistics, 						true);
@@ -145,29 +145,29 @@ namespace translated_automata {
 
 	/** Inizializzazione della lista di configurazioni */
 	const Configurations::Setting Configurations::settings_list[] = {
-			{ Testcases,					"Testcases:                                ", true },
-			{ ProblemType,					"Problem type:                             ", false	},
-			{ AlphabetCardinality,			"Alphabet cardinality:                     ", true },
-			{ TranslationMixingFactor , 	"Translation mixing factor:                ", false },
-			{ TranslationOffset , 			"Translation offset:                       ", false },
-			{ EpsilonPercentage , 			"Epsilong percentage:                      ", true },
-			{ AutomatonStructure , 			"Automaton's structure type:               ", false },
-			{ AutomatonSize , 				"Automaton's size (#states):               ", true },
-			{ AutomatonFinalProbability , 	"Automaton's final states probability:     ", false },
-			{ AutomatonTransitionsPercentage , "Automaton's transitions percentage:       ",         true },
-			{ AutomatonMaxDistance , 		"Automaton's max distance:                 ", true },
-			{ AutomatonSafeZoneDistance , 	"Automaton's safe-zone distance:           ", true },
-			{ ActiveAutomatonPruning , 		"Active \"automaton pruning\"                ", false },
-			{ ActiveRemovingLabel , 		"Active \"removing label\":                  ", false },
-			{ ActiveDistanceCheckInTranslation , "Active \"distance check in translation\":   ",       false },
-			{ PrintStatistics , 			"Print statistics:                         ", false },
-			{ PrintTranslation , 			"Print translation:                        ", false },
-			{ PrintOriginalAutomaton , 		"Print original automaton:                 ", false },
-			{ PrintSCSolution , 			"Print SC solution:                        ", false },
-			{ PrintESCSOlution , 			"Print ESC solution:                       ", false },
-			{ DrawOriginalAutomaton , 		"Draw original automaton:                  ", false },
-			{ DrawSCSolution , 				"Draw SC solution:                         ", false },
-			{ DrawESCSOlution , 			"Draw ESC solution:                        ", false }
+			{ Testcases,					"Testcases", 								"#test", false },
+			{ ProblemType,					"Problem type", 							"problem", false },
+			{ AlphabetCardinality,			"Alphabet cardinality", 					"#alpha", true },
+			{ TranslationMixingFactor , 	"Translation mixing factor", 				"mixing", false },
+			{ TranslationOffset , 			"Translation offset", 						"offset", false },
+			{ EpsilonPercentage , 			"Epsilong percentage", 						"%epsilon", true },
+			{ AutomatonStructure , 			"Automaton's structure type", 				"structure", false },
+			{ AutomatonSize , 				"Automaton's size (#states)",	 			"#size", true },
+			{ AutomatonFinalProbability , 	"Automaton's final states probability", 	"%finals", false },
+			{ AutomatonTransitionsPercentage , "Automaton's transitions percentage", 	"%transitions", true },
+			{ AutomatonMaxDistance , 		"Automaton's max distance", 				"maxdist", true },
+			{ AutomatonSafeZoneDistance , 	"Automaton's safe-zone distance", 			"safezonedist", true },
+			{ ActiveAutomatonPruning , 		"Active \"automaton pruning\"", 			"?autompruning", false },
+			{ ActiveRemovingLabel , 		"Active \"removing label\"", 				"?removlabel", false },
+			{ ActiveDistanceCheckInTranslation , "Active \"distance check in translation\"", "?distcheck",  false },
+			{ PrintStatistics , 			"Print statistics", 						"?pstats", false },
+			{ PrintTranslation , 			"Print translation", 						"?ptrad", false },
+			{ PrintOriginalAutomaton , 		"Print original automaton", 				"?porig", false },
+			{ PrintSCSolution , 			"Print SC solution", 						"?psc", false },
+			{ PrintESCSOlution , 			"Print ESC solution", 						"?pesc", false },
+			{ DrawOriginalAutomaton , 		"Draw original automaton", 					"?dorig", false },
+			{ DrawSCSolution , 				"Draw SC solution", 						"?dsc", false },
+			{ DrawESCSOlution , 			"Draw ESC solution", 						"?desc", false }
 	};
 
 	/**
@@ -176,6 +176,14 @@ namespace translated_automata {
 	 */
 	string Configurations::nameOf(const SettingID& id) {
 		return Configurations::getSetting(id).m_name;
+	}
+
+	/**
+	 * Metodo statico.
+	 * Restituisce la sigla identificativa del parametro di configurazione.
+	 */
+	string Configurations::abbreviationOf(const SettingID& id) {
+		return Configurations::getSetting(id).m_abbr;
 	}
 
 	/**
@@ -192,7 +200,7 @@ namespace translated_automata {
 	 * passato in ingresso.
 	 */
 	string Configurations::toString(const SettingID& id) {
-		return (Configurations::nameOf(id) + this->m_settings_instances.at(id)->getValueString());
+		return (Configurations::abbreviationOf(id) + ":" + this->m_settings_instances.at(id)->getValueString());
 	}
 
 

@@ -283,7 +283,7 @@ namespace translated_automata {
 			printf("__________________|    MIN    |    AVG    |    MAX    |\n");
 			for (int int_stat = SC_TIME; int_stat <= SOL_GROWTH; int_stat++) {
 				ResultStat stat = static_cast<ResultStat>(int_stat);
-				// TODO Ricordarsi di aggiornare l'ultimo valore, in caso di aggiunta di statistiche
+				// XXX Ricordarsi di aggiornare l'ultimo valore, in caso di aggiunta di statistiche
 				tuple<double, double, double> stat_values = this->getStat(stat);
 				printf(" %12s | %9.4f | %9.4f | %9.4f |\n",
 						stat_headlines[stat].c_str(),
@@ -292,33 +292,44 @@ namespace translated_automata {
 						std::get<2>(stat_values));
 			}
 		}}
+
 		DEBUG_MARK_PHASE("Logging dei risultati aggregati") {
+
 		// Scrittura su file dei risultati del blocco di testcase
 		ofstream file_out("stats.txt", ios::app);
 		file_out << std::endl;
 
-		file_out << "--- PARAMETERS ---" << std::endl;
-
 		// Stampo tutti i valori interessanti per i testcase, in coda al file
 		for (int param_enum = Testcases; param_enum <= ActiveDistanceCheckInTranslation; ++param_enum) {
-			file_out << this->m_config_reference->toString((SettingID) param_enum) << std::endl;
+			SettingID param_id = static_cast<SettingID>(param_enum);
+			// XXX Ricordarsi di aggiornare l'ultimo valore, in caso di aggiunta di parametri
+			if (this->m_config_reference->isTestParam(param_id)) {
+				file_out << this->m_config_reference->toString(param_id) << std::endl;
+			}
 		}
 
-		file_out << "--- STATISTICS ---" << std::endl;
+//		for (int int_stat = SC_TIME; int_stat <= SOL_GROWTH; int_stat++) {
+//			ResultStat stat = static_cast<ResultStat>(int_stat);
+//			// XXX Ricordarsi di aggiornare l'ultimo valore, in caso di aggiunta di statistiche
+//			tuple<double, double, double> stat_values = this->getStat(stat);
+//			file_out << stat_headlines[stat] << " | " <<
+//					"MIN = " << std::to_string(std::get<0>(stat_values)) << " | " <<
+//					"AVG = " << std::to_string(std::get<1>(stat_values)) << " | " <<
+//					"MAX = " <<	std::to_string(std::get<2>(stat_values)) << " |\n";
+//		}
+		tuple<double, double, double> sc_stat_values = this->getStat(SC_TIME);
+			file_out << "SC( " 	<< std::to_string(std::get<0>(sc_stat_values)) << " , "
+								<< std::to_string(std::get<1>(sc_stat_values)) << " , "
+								<< std::to_string(std::get<2>(sc_stat_values)) << " ) ";
 
-		for (int int_stat = SC_TIME; int_stat <= SOL_GROWTH; int_stat++) {
-			ResultStat stat = static_cast<ResultStat>(int_stat);
-			// TODO Ricordarsi di aggiornare l'ultimo valore, in caso di aggiunta di statistiche
-			tuple<double, double, double> stat_values = this->getStat(stat);
-			file_out << stat_headlines[stat] << " | " <<
-					"MIN = " << std::to_string(std::get<0>(stat_values)) << " | " <<
-					"AVG = " << std::to_string(std::get<1>(stat_values)) << " | " <<
-					"MAX = " <<	std::to_string(std::get<2>(stat_values)) << " |\n";
-		}
+		tuple<double, double, double> esc_stat_values = this->getStat(ESC_TIME);
+			file_out << "ESC( " << std::to_string(std::get<0>(esc_stat_values)) << " , "
+								<< std::to_string(std::get<1>(esc_stat_values)) << " , "
+								<< std::to_string(std::get<2>(esc_stat_values)) << " )";
 
-		file_out << "---" << std::endl;
 
 		// Chiudo il file
+		file_out << std::endl;
 		file_out.close();
 		}
 	}

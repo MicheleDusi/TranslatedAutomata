@@ -49,10 +49,10 @@ namespace translated_automata {
 		return m_type;
 	}
 
-	Value SettingValue::getValue() {
-		return m_value;
-	}
-
+	/**
+	 * Restituisce il valore come stringa.
+	 * Poiché il casting avviene internamente non è necessario usare template o overloading.
+	 */
 	string SettingValue::getValueString() {
 		switch (this->m_type) {
 		case INT :
@@ -73,7 +73,7 @@ namespace translated_automata {
 	 * Costruttore.
 	 */
 	Configurations::Configurations() {
-		this->m_settings = map<SettingID, SettingValue*>();
+		this->m_settings_instances = map<SettingID, SettingValue*>();
 	}
 
 	/**
@@ -82,10 +82,22 @@ namespace translated_automata {
 	Configurations::~Configurations() {}
 
 	/**
-	 * Metodo privato che carica nelle impostazioni un singolo parametro.
+	 * Metodo static.
+	 * Restituisce il setting associato all'ID.
+	 *
+	 * NOTA: Il metodo fa affidamento sul fatto che le strutture sono state inizializzate nell'array statico
+	 * in ordine, e quindi è possibile avervi accesso tramite l'indice dell'array.
+	 * Per sicurezza è stato aggiunto un controllo all'interno di questo metodo, che -in caso l'ID non corrisponda-
+	 * segnala un errore di debug.
 	 */
-	void Configurations::load(SettingID name, SettingValue* value) {
-		this->m_settings.insert(std::make_pair(name, value));
+	const Configurations::Setting& Configurations::getSetting(const SettingID& id) {
+		const Configurations::Setting* setting;
+		setting = &(Configurations::settings_list[static_cast<int>(id)]);
+		if (setting->m_id != id) {
+			DEBUG_LOG_ERROR("Il parametro richiesto con id=%d NON corrisponde al parametro di configurazione nella posizione attesa, che invece ha id=%d e nome \"%s\"",
+					id, setting.m_id, setting.m_name.c_str());
+		}
+		return *setting;
 	}
 
 	/**
@@ -93,83 +105,94 @@ namespace translated_automata {
 	 */
 	void Configurations::load() {
 		// Numero di Testcase
-		load(Testcases, new SettingValue(							10));
+		load(Testcases, 							10);
 
 		// Proprietà del problema
-//		load(ProblemType, new SettingValue(TRANSLATION_PROBLEM));
-		load(ProblemType, new SettingValue(Problem::DETERMINIZATION_PROBLEM));
+//		load(ProblemType, TRANSLATION_PROBLEM);
+		load(ProblemType, Problem::DETERMINIZATION_PROBLEM);
 
-		load(AlphabetCardinality, new SettingValue(					5));
-		load(TranslationMixingFactor, new SettingValue(				0.9));
-		load(TranslationOffset, new SettingValue(					1));
-		load(EpsilonPercentage, new SettingValue(					0.05));
+		load(AlphabetCardinality, 					5);
+		load(TranslationMixingFactor, 				0.9);
+		load(TranslationOffset, 					1);
+		load(EpsilonPercentage, 					0.05);
 
-//		load(AutomatonType, new SettingValue(AUTOMATON_RANDOM));
-//		load(AutomatonType, new SettingValue(AUTOMATON_STRATIFIED));
-		load(AutomatonStructure, new SettingValue(AUTOMATON_STRATIFIED_WITH_SAFE_ZONE));
-		load(AutomatonSize, new SettingValue(						100));
-		load(AutomatonFinalProbability, new SettingValue(			0.1));
-		load(AutomatonTransitionsPercentage, new SettingValue(		0.5));
-		load(AutomatonMaxDistance, new SettingValue(				90));
-		load(AutomatonSafeZoneDistance, new SettingValue(			80));
+//		load(AutomatonType, AUTOMATON_RANDOM);
+//		load(AutomatonType, AUTOMATON_STRATIFIED);
+		load(AutomatonStructure, AUTOMATON_STRATIFIED_WITH_SAFE_ZONE);
+		load(AutomatonSize, 						500);
+		load(AutomatonFinalProbability, 			0.1);
+		load(AutomatonTransitionsPercentage, 		0.5);
+		load(AutomatonMaxDistance, 					90);
+		load(AutomatonSafeZoneDistance, 			80);
 
 		// Moduli e funzionalità opzionali
-		load(ActiveAutomatonPruning, new SettingValue(				true));		// In caso sia attivato, evita la formazione e la gestione dello stato con estensione vuota, tramite procedura Automaton Pruning
-		load(ActiveRemovingLabel, new SettingValue(					true));		// In caso sia attivato, utilizza una label apposita per segnalare le epsilon-transizione, che deve essere rimossa durante la determinizzazione
-		load(ActiveDistanceCheckInTranslation, new SettingValue(	false));	// In caso sia attivato, durante la traduzione genera dei Bud solamente se gli stati soddisfano una particolare condizione sulla distanza [FIXME è una condizione che genera bug]
+		load(ActiveAutomatonPruning, 				true);		// In caso sia attivato, evita la formazione e la gestione dello stato con estensione vuota, tramite procedura Automaton Pruning
+		load(ActiveRemovingLabel, 					true);		// In caso sia attivato, utilizza una label apposita per segnalare le epsilon-transizione, che deve essere rimossa durante la determinizzazione
+		load(ActiveDistanceCheckInTranslation,	 	false);	// In caso sia attivato, durante la traduzione genera dei Bud solamente se gli stati soddisfano una particolare condizione sulla distanza [FIXME è una condizione che genera bug]
 
-		load(PrintStatistics, new SettingValue(						true));
-		load(PrintTranslation, new SettingValue(					false));
-		load(PrintOriginalAutomaton, new SettingValue(				false));
-		load(PrintSCSolution, new SettingValue(						false));
-		load(PrintESCSOlution, new SettingValue(					false));
+		load(PrintStatistics, 						true);
+		load(PrintTranslation, 						false);
+		load(PrintOriginalAutomaton, 				false);
+		load(PrintSCSolution, 						false);
+		load(PrintESCSOlution, 						false);
 
-		load(DrawOriginalAutomaton, new SettingValue(				false));
-		load(DrawSCSolution, new SettingValue(						false));
-		load(DrawESCSOlution, new SettingValue(						false));
+		load(DrawOriginalAutomaton, 				false);
+		load(DrawSCSolution, 						false);
+		load(DrawESCSOlution, 						false);
 	}
 
-	string names[] = {
-			"Number of testcases:                      ",
-			"Problem type:                             ",
-			"Alphabet cardinality:                     ",
-			"Translation mixing factor:                ",
-			"Translation offset:                       ",
-			"Epsilong percentage:                      ",
-			"Automaton's structure type:               ",
-			"Automaton's size (#states):               ",
-			"Automaton's final states probability:     ",
-			"Automaton's transitions percentage:       ",
-			"Automaton's max distance:                 ",
-			"Automaton's safe-zone distance:           ",
-			"Active \"automaton pruning\"                ",
-			"Active \"removing label\":                  ",
-			"Active \"distance check in translation\":   ",
-			"Print statistics:                         ",
-			"Print translation:                        ",
-			"Print original automaton:                 ",
-			"Print SC solution:                        ",
-			"Print ESC solution:                       ",
-			"Draw original automaton:                  ",
-			"Draw SC solution:                         ",
-			"Draw ESC solution:                        ",
+	/////
+
+	/** Inizializzazione della lista di configurazioni */
+	const Configurations::Setting Configurations::settings_list[] = {
+			{ Testcases,					"Testcases:                                ", true },
+			{ ProblemType,					"Problem type:                             ", false	},
+			{ AlphabetCardinality,			"Alphabet cardinality:                     ", true },
+			{ TranslationMixingFactor , 	"Translation mixing factor:                ", false },
+			{ TranslationOffset , 			"Translation offset:                       ", false },
+			{ EpsilonPercentage , 			"Epsilong percentage:                      ", true },
+			{ AutomatonStructure , 			"Automaton's structure type:               ", false },
+			{ AutomatonSize , 				"Automaton's size (#states):               ", true },
+			{ AutomatonFinalProbability , 	"Automaton's final states probability:     ", false },
+			{ AutomatonTransitionsPercentage , "Automaton's transitions percentage:       ",         true },
+			{ AutomatonMaxDistance , 		"Automaton's max distance:                 ", true },
+			{ AutomatonSafeZoneDistance , 	"Automaton's safe-zone distance:           ", true },
+			{ ActiveAutomatonPruning , 		"Active \"automaton pruning\"                ", false },
+			{ ActiveRemovingLabel , 		"Active \"removing label\":                  ", false },
+			{ ActiveDistanceCheckInTranslation , "Active \"distance check in translation\":   ",       false },
+			{ PrintStatistics , 			"Print statistics:                         ", false },
+			{ PrintTranslation , 			"Print translation:                        ", false },
+			{ PrintOriginalAutomaton , 		"Print original automaton:                 ", false },
+			{ PrintSCSolution , 			"Print SC solution:                        ", false },
+			{ PrintESCSOlution , 			"Print ESC solution:                       ", false },
+			{ DrawOriginalAutomaton , 		"Draw original automaton:                  ", false },
+			{ DrawSCSolution , 				"Draw SC solution:                         ", false },
+			{ DrawESCSOlution , 			"Draw ESC solution:                        ", false }
 	};
 
 	/**
+	 * Metodo statico.
 	 * Restituisce il nome del parametro di configurazione.
-	 * Precondizione: il nome deve essere esistente, non deve eccedere l'indice
-	 * dell'array in cui sono contenuti i nomi.
 	 */
-	string Configurations::nameOf(const SettingID& name) {
-		return names[name];
+	string Configurations::nameOf(const SettingID& id) {
+		return Configurations::getSetting(id).m_name;
+	}
+
+	/**
+	 * Metodo statico.
+	 * Restituisce un flag booleano indicante se il valore del parametro deve
+	 * essere stampato in coda ai test.
+	 */
+	bool Configurations::isTestParam(const SettingID& id) {
+		return Configurations::getSetting(id).m_test_param;
 	}
 
 	/**
 	 * Restituisce una stringa contenente NOME e VALORE associati al parametro
 	 * passato in ingresso.
 	 */
-	string Configurations::toString(const SettingID& name) {
-		return (nameOf(name) + this->m_settings.at(name)->getValueString());
+	string Configurations::toString(const SettingID& id) {
+		return (Configurations::nameOf(id) + this->m_settings_instances.at(id)->getValueString());
 	}
 
 

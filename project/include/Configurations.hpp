@@ -79,7 +79,6 @@ namespace translated_automata {
 		virtual ~SettingValue() {};
 
 		SettingType getType();
-		Value getValue();
 		string getValueString();
 
 		template <typename T> T getTemplateValue() {
@@ -104,21 +103,41 @@ namespace translated_automata {
 	class Configurations {
 
 	private:
-		map<SettingID, SettingValue*> m_settings;
 
-		void load(SettingID, SettingValue*);
+		/**
+		 * Singola configurazione, rappresenta concettualmente il setting a prescidere
+		 * dal valore assunto in una specifica istanza del programma.
+		 */
+		struct Setting {
+			SettingID m_id;		// L'identificatore (enum) che rappresenta
+			string m_name;		// Il nome che ne spiega brevemente lo scopo
+			bool m_test_param;	// Indica se il setting è utilizzato per il testing, e quindi deve essere stampato nei risultati
+		};
+
+		static const Setting settings_list[];					// Lista statica di tutte le configurazioni, inizializzata compile-time o all'avvio
+		map<SettingID, SettingValue*> m_settings_instances;		// Valori delle configurazioni in una specifica esecuzione del programma
+
+		static const Setting& getSetting(const SettingID& id);
+
+		/**
+		 * Carica un singolo parametro di configurazione all'interno della mappa.
+		 */
+		template <typename T> void load(const SettingID& id, T value) {
+			this->m_settings_instances.insert(std::make_pair(id, new SettingValue(value)));
+		};
 
 	public:
 		Configurations();
 		~Configurations();
 
 		void load();
-		static string nameOf(const SettingID& name);
-		string toString(const SettingID& name);
+		static string nameOf(const SettingID& id);
+		static bool isTestParam(const SettingID& id);
+		string toString(const SettingID& id);
 
-		template <class T> T valueOf(const SettingID& name) {
-			DEBUG_ASSERT_TRUE(this->m_settings.count(name));
-			return this->m_settings.at(name)->getTemplateValue<T>();
+		template <class T> T valueOf(const SettingID& id) {
+			DEBUG_ASSERT_TRUE(this->m_settings_instances.count(id));
+			return this->m_settings_instances.at(id)->getTemplateValue<T>();
 		}
 
 	};

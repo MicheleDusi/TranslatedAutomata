@@ -10,11 +10,13 @@
 
 #include <iostream>
 #include <map>
+#include <vector>
 
 #include "Debug.hpp"
 
 using std::string;
 using std::map;
+using std::vector;
 
 namespace translated_automata {
 
@@ -68,6 +70,9 @@ namespace translated_automata {
 	 */
 	class SettingValue {
 
+		// La classe SettingMultiValue può accedere ai membri della classe SettingValue
+		friend class SettingMultiValue;
+
 	private:
 		SettingType m_type;
 		Value m_value;
@@ -79,21 +84,34 @@ namespace translated_automata {
 		virtual ~SettingValue() {};
 
 		SettingType getType();
-		string getValueString();
+		virtual Value getValue();
+		virtual string getValueString(); // Restituisce il valore come stringa
+		virtual string toString();		 // Restituisce l'oggetto SettingValue come stringa
+		virtual bool nextCase();
 
-		template <typename T> T getTemplateValue() {
-			switch (this->m_type) {
-			case INT :
-				return static_cast<int>(this->m_value.integer);
-			case DOUBLE :
-				return static_cast<double>(this->m_value.real);
-			case BOOL :
-				return static_cast<bool>(this->m_value.flag);
-			default :
-				DEBUG_LOG_ERROR("Impossibile interpretare il valore %b", this->m_value.integer);
-				return static_cast<int>(this->m_value.integer);
-			}
-		};
+	};
+
+	/**
+	 * Classe che accorpa più valori.
+	 * Secondo il pattern Composite, è figlia della classe SettingValue e aggrega
+	 * multipli valori SettingValue.
+	 * Inoltre, utilizza l'attributo "value" della classe padre come indice numerico
+	 * del valore corrente.
+	 */
+	class SettingMultiValue : public SettingValue {
+
+	private:
+		vector<SettingValue> m_multivalue;
+
+	public:
+		SettingMultiValue(vector<int> values);
+		SettingMultiValue(vector<double> values);
+		virtual ~SettingMultiValue() {};
+
+		virtual Value getValue();
+		virtual string getValueString(); // Restituisce il valore come stringa
+		virtual string toString();		 // Restituisce l'oggetto SettingValue come stringa
+		virtual bool nextCase();
 
 	};
 
@@ -127,6 +145,13 @@ namespace translated_automata {
 			this->m_settings_instances.insert(std::make_pair(id, new SettingValue(value)));
 		};
 
+		/**
+		 * Carica un singolo parametro di configurazione multi-valore all'interno della mappa.
+		 */
+		template <typename T> void load(const SettingID& id, vector<T> values) {
+			this->m_settings_instances.insert(std::make_pair(id, new SettingMultiValue(values)));
+		}
+
 	public:
 		Configurations();
 		~Configurations();
@@ -135,11 +160,30 @@ namespace translated_automata {
 		static string nameOf(const SettingID& id);
 		static string abbreviationOf(const SettingID& id);
 		static bool isTestParam(const SettingID& id);
+		string getValueString();
+		string toString();
 		string toString(const SettingID& id);
+		bool nextTestCase();
 
 		template <class T> T valueOf(const SettingID& id) {
 			DEBUG_ASSERT_TRUE(this->m_settings_instances.count(id));
-			return this->m_settings_instances.at(id)->getTemplateValue<T>();
+			DEBUG_LOG("Richiesta del valore di: %s", settings_list[int(id)].m_name.c_str());
+			SettingValue* associated_value_container = this->m_settings_instances[id];
+			Value value = associated_value_container->getValue();
+			switch (associated_value_container->getType()) {
+			case INT :
+				DEBUG_LOG("Valore restituito: %s", std::to_string(value.integer).c_str());
+				return static_cast<int>(value.integer);
+			case DOUBLE :
+				DEBUG_LOG("Valore restituito: %s", std::to_string(value.real).c_str());
+				return static_cast<double>(value.real);
+			case BOOL :
+				DEBUG_LOG("Valore restituito: %s", std::to_string(value.flag).c_str());
+				return static_cast<bool>(value.flag);
+			default :
+				DEBUG_LOG_ERROR("Impossibile interpretare il valore %d", value.integer);
+				return static_cast<int>(value.integer);
+			}
 		}
 
 	};

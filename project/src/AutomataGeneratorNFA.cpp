@@ -132,8 +132,9 @@ namespace translated_automata {
 		 * In questo modo ci si assicura il determinismo evitando duplicati nelle label.
 		 * Si richiede il determinismo a TUTTI E SOLI gli stati con distanza MINORE della SafeZoneDistance.
 		 */
-		map<StateNFA*, Alphabet> unused_labels;
-		for (stratum_index = 0; stratum_index < this->getSafeZoneDistance(); stratum_index++) {
+		map<StateNFA*, Alphabet> unused_labels = map<StateNFA*, Alphabet>();
+		unsigned int limit = (this->getSafeZoneDistance() < strata.size()) ? this->getSafeZoneDistance() : strata.size();
+		for (stratum_index = 0; stratum_index < limit; stratum_index++) {
 			for (StateNFA* state : strata[stratum_index]) {
 				unused_labels[state] = Alphabet(this->getAlphabet());
 			}

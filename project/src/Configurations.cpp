@@ -46,7 +46,15 @@ namespace translated_automata {
 	 * Restituisce il tipo del valore.
 	 */
 	SettingType SettingValue::getType() {
-		return m_type;
+		return this->m_type;
+	}
+
+	/**
+	 * Restituisce il valore.
+	 * Sarà compito del metodo di Configurations castarlo al tipo corretto.
+	 */
+	Value SettingValue::getValue() {
+		return this->m_value;
 	}
 
 	/**
@@ -62,8 +70,119 @@ namespace translated_automata {
 		case BOOL :
 			return std::to_string(this->m_value.flag);
 		default :
-			DEBUG_LOG_ERROR("Impossibile interpretare il valore %b", this->m_value.integer);
+			DEBUG_LOG_ERROR("Impossibile interpretare il valore %d", this->m_value.integer);
 			return "null";
+		}
+	}
+
+	/**
+	 * Restituisce una rappresentazione dell'oggetto come stringa.
+	 * In caso di valori multipli, restituisce TUTTI i valori.
+	 * Nella stringa è presente anche un'informazione sul tipo di valore.
+	 */
+	string SettingValue::toString() {
+		switch (this->m_type) {
+		case INT :
+			return "int:" + std::to_string(this->m_value.integer);
+		case DOUBLE :
+			return "double:" + std::to_string(this->m_value.real);
+		case BOOL :
+			return "bool:" + std::to_string(this->m_value.flag);
+		default :
+			DEBUG_LOG_ERROR("Impossibile interpretare il valore %d", this->m_value.integer);
+			return "null";
+		}
+	}
+
+	/**
+	 * Poiché il valore è "singolo" ( o atomico), non esiste un valore successivo e il metodo restituisce sempre FALSE.
+	 */
+	bool SettingValue::nextCase() {
+		return false;
+	}
+
+// CLASSE "SettingMultiValue"
+
+	/**
+	 * Costruttore con un array di interi.
+	 */
+	SettingMultiValue::SettingMultiValue(vector<int> values) : SettingValue(0) {
+		// Inserisco i valori
+		this->m_multivalue = vector<SettingValue>();
+		for (int n : values) {
+			this->m_multivalue.push_back(SettingValue(n));
+		}
+		this->m_type = INT;
+	}
+
+	/**
+	 * Costruttore con un array di double.
+	 */
+	SettingMultiValue::SettingMultiValue(vector<double> values) : SettingValue(0) {
+		// Inserisco i valori
+		this->m_multivalue = vector<SettingValue>();
+		for (double d : values) {
+			this->m_multivalue.push_back(SettingValue(d));
+		}
+		this->m_type = DOUBLE;
+	}
+
+	/**
+	 * Restituisce il valore corrente come stringa.
+	 * In caso di valori multipli, solo il valore corrente è restituito come stringa.
+	 */
+	string SettingMultiValue::getValueString() {
+		return this->m_multivalue[this->m_value.integer].getValueString();
+	}
+
+	/**
+	 * Restituisce una rappresentazione dell'oggetto come stringa.
+	 * In caso di valori multipli, restituisce TUTTI i valori.
+	 * Nella stringa è presente anche un'informazione sul tipo di valore.
+	 */
+	string SettingMultiValue::toString() {
+		// Concateno i valori
+		string result = "{";
+		for (SettingValue sv : this->m_multivalue) {
+			result += sv.getValueString() + ", ";
+		}
+		result.pop_back(); result.pop_back();
+		result += "}";
+		return result;
+	}
+
+	/**
+	 * Restituisce il valore all'indice corrente.
+	 * Sarà responsabilità della classe Configuration castare il tutto.
+	 */
+	Value SettingMultiValue::getValue() {
+		return this->m_multivalue[this->m_value.integer].m_value;
+	}
+
+	/**
+	 * Incrementa il contatore e imposta l'oggetto al valore successivo del vettore.
+	 * Se tale valore esiste, e quindi se tale valore cambia, viene restituito TRUE.
+	 * Altrimenti viene restituito FALSE, e il contatore viene resettato a 0 per un nuovo ciclo.
+	 */
+	bool SettingMultiValue::nextCase() {
+		// Verifico se il valore corrente è atomico o contiene valori multipli a sua volta
+		if ((this->m_multivalue[this->m_value.integer]).nextCase()) {
+			// In tal caso, itero su di esso e restituisco TRUE
+			return true;
+		}
+		// Se invece il valore corrente ha già "esaurito" i suoi valori, o ha un valore atomico, il suo metodo restituirà false.
+		else {
+			// Viene quindi verificato se esistono altri valori nel vettore di questo oggetto
+			// Incemento il contatore
+			this->m_value.integer++;
+			// Verifico se corrisponde ad un nuovo valore
+			if (this->m_value.integer < this->m_multivalue.size()) {
+				return true;
+			} else {
+				// Altrimenti sono arrivato alla fine, azzero il contatore e restituisco FALSE
+				this->m_value.integer = 0;
+				return false;
+			}
 		}
 	}
 
@@ -95,7 +214,7 @@ namespace translated_automata {
 		setting = &(Configurations::settings_list[static_cast<int>(id)]);
 		if (setting->m_id != id) {
 			DEBUG_LOG_ERROR("Il parametro richiesto con id=%d NON corrisponde al parametro di configurazione nella posizione attesa, che invece ha id=%d e nome \"%s\"",
-					id, setting.m_id, setting.m_name.c_str());
+					id, setting->m_id, setting->m_name.c_str());
 		}
 		return *setting;
 	}
@@ -122,8 +241,11 @@ namespace translated_automata {
 		load(AutomatonSize, 						1000);
 		load(AutomatonFinalProbability, 			0.1);
 		load(AutomatonTransitionsPercentage, 		0.2);
-		load(AutomatonMaxDistance, 					50);
-		load(AutomatonSafeZoneDistance, 			45);
+		load(AutomatonMaxDistance, 					(this->m_settings_instances[AutomatonSize]->getValue().integer) / 2);
+		load(AutomatonSafeZoneDistance, 			vector<int>{
+					int((this->m_settings_instances[AutomatonMaxDistance]->getValue().integer) * 0.5),
+					int((this->m_settings_instances[AutomatonMaxDistance]->getValue().integer) * 0.9),
+					int((this->m_settings_instances[AutomatonMaxDistance]->getValue().integer) * 0.95) });
 
 		// Moduli e funzionalità opzionali
 		load(ActiveAutomatonPruning, 				true); // In caso sia attivato, evita la formazione e la gestione dello stato con estensione vuota, tramite procedura Automaton Pruning
@@ -196,11 +318,52 @@ namespace translated_automata {
 	}
 
 	/**
+	 * Stampa i valori CORRENTI delle configurazioni attuali.
+	 */
+	string Configurations::getValueString() {
+		string result = "{ ";
+		for (int param = Testcases; param <= DrawESCSOlution; param++) {
+			if (isTestParam((SettingID) param)) {
+				result += Configurations::abbreviationOf((SettingID)param) + "=";
+				result += this->m_settings_instances.at((SettingID)param)->getValueString() + ", ";
+			}
+		}
+		result.pop_back(); result.pop_back();
+		return result + "}";
+	}
+
+	/**
+	 * Stampa i valori (completi!) di tutte configurazioni.
+	 */
+	string Configurations::toString() {
+		string result = "Configurations:\n";
+		for (int param = Testcases; param <= DrawESCSOlution; param++) {
+			// TODO Ricordati di aggiornare l'ultimo valore
+			result += Configurations::nameOf((SettingID)param) + " = ";
+			result += this->m_settings_instances.at((SettingID)param)->toString() + "\n";
+		}
+		return result;
+	}
+
+	/**
 	 * Restituisce una stringa contenente NOME e VALORE associati al parametro
 	 * passato in ingresso.
 	 */
 	string Configurations::toString(const SettingID& id) {
-		return (Configurations::abbreviationOf(id) + ":" + this->m_settings_instances.at(id)->getValueString());
+		return (Configurations::abbreviationOf(id) + ":" + this->m_settings_instances.at(id)->toString());
+	}
+
+	/**
+	 * Imposta i parametri salvati all'interno delle configurazioni con la combinazione successiva
+	 */
+	bool Configurations::nextTestCase() {
+		for (auto &pair : this->m_settings_instances) {
+			// Se viene trovato un caso successivo, si restituisce TRUE
+			if (pair.second->nextCase()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 

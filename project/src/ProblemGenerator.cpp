@@ -116,11 +116,14 @@ namespace translated_automata {
 
 		case Problem::TRANSLATION_PROBLEM :
 			this->m_dfa_generator = new DFAGenerator(this->m_alphabet, configurations);
+			this->m_nfa_generator = NULL;
 			this->m_translation_generator = new TranslationGenerator(configurations);
 			break;
 
 		case Problem::DETERMINIZATION_PROBLEM :
+			this->m_dfa_generator = NULL;
 			this->m_nfa_generator = new NFAGenerator(this->m_alphabet, configurations);
+			this->m_translation_generator = NULL;
 			break;
 
 		default :
@@ -136,8 +139,9 @@ namespace translated_automata {
 	 */
 	ProblemGenerator::~ProblemGenerator() {
 		DEBUG_MARK_PHASE("Eliminazione dell'oggetto ProblemGenerator") {
-			delete this->m_dfa_generator;
-			delete this->m_translation_generator;
+			if (this->m_dfa_generator != NULL) delete this->m_dfa_generator;
+			if (this->m_nfa_generator != NULL) delete this->m_nfa_generator;
+			if (this->m_translation_generator != NULL) delete this->m_translation_generator;
 		}
 	}
 

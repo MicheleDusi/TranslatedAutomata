@@ -40,6 +40,7 @@ namespace translated_automata {
 	 */
 	template <class Automaton>
 	AutomataGenerator<Automaton>::AutomataGenerator(Alphabet alphabet, Configurations* configurations) {
+		DEBUG_MARK_PHASE("Costruzione di un generatore di automi") {
 		this->m_alphabet = alphabet;
 		this->m_automaton_structure = (AutomatonType) configurations->valueOf<int>(AutomatonStructure);
 		this->m_size = configurations->valueOf<int>(AutomatonSize);
@@ -49,6 +50,7 @@ namespace translated_automata {
 		this->m_final_probability = configurations->valueOf<double>(AutomatonFinalProbability);
 		this->m_max_distance = configurations->valueOf<int>(AutomatonMaxDistance);
 		this->m_safe_zone_distance = configurations->valueOf<int>(AutomatonSafeZoneDistance);
+		}
 	}
 
 	/**

@@ -15,9 +15,9 @@
 #include <iostream>
 #include <tuple>
 
-#include "../include/ProblemSolver.hpp"
 #include "Automaton.hpp"
 #include "Debug.hpp"
+#include "ProblemSolver.hpp"
 #include "Properties.hpp"
 
 using std::set;
@@ -28,20 +28,28 @@ int main(int argc, char **argv) {
 
 	DEBUG_MARK_PHASE( "Translated Automaton - Main" ) {
 
-	// Creazione delle configurazioni
-	Configurations* config = new Configurations();
-	config->load();
+	Configurations* config;
+	DEBUG_MARK_PHASE("Caricamento delle configurazioni") {
+		// Creazione delle configurazioni
+		config = new Configurations();
+		config->load();
+	}
 
-	// Creazione del sistema di risoluzione
-	ProblemSolver* solver = new ProblemSolver(config);
+	do {
+		// Visualizzazione della combinazione corrente di configurazioni
+		std::cout << config->getValueString() << std::endl;
 
-	// Risoluzione effettiva
-	solver->solveSeries(config->valueOf<int>(Testcases));
+		// Creazione del sistema di risoluzione
+		ProblemSolver solver = ProblemSolver(config);
 
-	// Presentazione delle statistiche risultanti
-	solver->getResultCollector()->presentResults();
+		// Risoluzione effettiva
+		solver.solveSeries(config->valueOf<int>(Testcases));
 
-	delete solver;
+		// Presentazione delle statistiche risultanti
+		solver.getResultCollector()->presentResults();
+		std::cout << std::endl;
+
+	} while (config->nextTestCase());
 
 	}
 

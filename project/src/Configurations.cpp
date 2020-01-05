@@ -105,7 +105,7 @@ namespace translated_automata {
 	 */
 	void Configurations::load() {
 		// Numero di Testcase
-		load(Testcases, 							100);
+		load(Testcases, 							10);
 
 		// Proprietà del problema
 //		load(ProblemType, TRANSLATION_PROBLEM);
@@ -114,16 +114,16 @@ namespace translated_automata {
 		load(AlphabetCardinality, 					5);
 		load(TranslationMixingFactor, 				0.9);
 		load(TranslationOffset, 					1);
-		load(EpsilonPercentage, 					0.05);
+		load(EpsilonPercentage, 					0.5);
 
 //		load(AutomatonType, AUTOMATON_RANDOM);
 //		load(AutomatonType, AUTOMATON_STRATIFIED);
 		load(AutomatonStructure, AUTOMATON_STRATIFIED_WITH_SAFE_ZONE);
-		load(AutomatonSize, 						100);
+		load(AutomatonSize, 						1000);
 		load(AutomatonFinalProbability, 			0.1);
-		load(AutomatonTransitionsPercentage, 		0.5);
-		load(AutomatonMaxDistance, 					9);
-		load(AutomatonSafeZoneDistance, 			7);
+		load(AutomatonTransitionsPercentage, 		0.2);
+		load(AutomatonMaxDistance, 					50);
+		load(AutomatonSafeZoneDistance, 			45);
 
 		// Moduli e funzionalità opzionali
 		load(ActiveAutomatonPruning, 				true); // In caso sia attivato, evita la formazione e la gestione dello stato con estensione vuota, tramite procedura Automaton Pruning

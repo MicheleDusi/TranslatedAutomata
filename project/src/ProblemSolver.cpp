@@ -175,15 +175,9 @@ namespace translated_automata {
 		std::cout << "[";
 		int pos = BARWIDTH * progress;
 		for (int i = 0; i < BARWIDTH; ++i) {
-			if (i < pos) {
-				std::cout << "=";
-			}
-			else if (i == pos) {
-				std::cout << ">";
-			}
-			else {
-				std::cout << " ";
-			}
+			if (i < pos) std::cout << "=";
+			else if (i == pos) std::cout << ">";
+			else std::cout << " ";
 		}
 		std::cout << "] " << int(progress * 100.0) << " %\r";
 		std::cout.flush();

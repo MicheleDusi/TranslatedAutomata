@@ -241,11 +241,8 @@ namespace translated_automata {
 		load(AutomatonSize, 						1000);
 		load(AutomatonFinalProbability, 			0.1);
 		load(AutomatonTransitionsPercentage, 		0.2);
-		load(AutomatonMaxDistance, 					(this->m_settings_instances[AutomatonSize]->getValue().integer) / 2);
-		load(AutomatonSafeZoneDistance, 			vector<int>{
-					int((this->m_settings_instances[AutomatonMaxDistance]->getValue().integer) * 0.5),
-					int((this->m_settings_instances[AutomatonMaxDistance]->getValue().integer) * 0.9),
-					int((this->m_settings_instances[AutomatonMaxDistance]->getValue().integer) * 0.95) });
+		load(AutomatonMaxDistance, 					100);
+		load(AutomatonSafeZoneDistance, 			vector<int>{60, 80, 90});
 
 		// Moduli e funzionalità opzionali
 		load(ActiveAutomatonPruning, 				true); // In caso sia attivato, evita la formazione e la gestione dello stato con estensione vuota, tramite procedura Automaton Pruning
@@ -253,6 +250,7 @@ namespace translated_automata {
 		load(ActiveDistanceCheckInTranslation,	 	false);	// In caso sia attivato, durante la traduzione genera dei Bud solamente se gli stati soddisfano una particolare condizione sulla distanza [FIXME è una condizione che genera bug]
 
 		load(PrintStatistics, 						true);
+		load(LogStatistics,							true);
 		load(PrintTranslation, 						false);
 		load(PrintOriginalAutomaton, 				false);
 		load(PrintSCSolution, 						false);
@@ -272,7 +270,7 @@ namespace translated_automata {
 			{ AlphabetCardinality,			"Alphabet cardinality", 					"#alpha", true },
 			{ TranslationMixingFactor , 	"Translation mixing factor", 				"mixing", false },
 			{ TranslationOffset , 			"Translation offset", 						"offset", false },
-			{ EpsilonPercentage , 			"Epsilong percentage", 						"%epsilon", true },
+			{ EpsilonPercentage , 			"Epsilon percentage", 						"%epsilon", true },
 			{ AutomatonStructure , 			"Automaton's structure type", 				"structure", false },
 			{ AutomatonSize , 				"Automaton's size (#states)",	 			"#size", true },
 			{ AutomatonFinalProbability , 	"Automaton's final states probability", 	"%finals", false },
@@ -283,6 +281,7 @@ namespace translated_automata {
 			{ ActiveRemovingLabel , 		"Active \"removing label\"", 				"?removlabel", false },
 			{ ActiveDistanceCheckInTranslation , "Active \"distance check in translation\"", "?distcheck",  false },
 			{ PrintStatistics , 			"Print statistics", 						"?pstats", false },
+			{ LogStatistics , 				"Log statistics in file", 					"?lstats", false },
 			{ PrintTranslation , 			"Print translation", 						"?ptrad", false },
 			{ PrintOriginalAutomaton , 		"Print original automaton", 				"?porig", false },
 			{ PrintSCSolution , 			"Print SC solution", 						"?psc", false },
@@ -321,15 +320,13 @@ namespace translated_automata {
 	 * Stampa i valori CORRENTI delle configurazioni attuali.
 	 */
 	string Configurations::getValueString() {
-		string result = "{ ";
+		string result = "";
 		for (int param = Testcases; param <= DrawESCSOlution; param++) {
 			if (isTestParam((SettingID) param)) {
-				result += Configurations::abbreviationOf((SettingID)param) + "=";
 				result += this->m_settings_instances.at((SettingID)param)->getValueString() + ", ";
 			}
 		}
-		result.pop_back(); result.pop_back();
-		return result + "}";
+		return result;
 	}
 
 	/**

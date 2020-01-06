@@ -272,6 +272,7 @@ namespace translated_automata {
 		for (Result* result : this->m_results) {
 			this->presentResult(result);
 		}
+
 		DEBUG_MARK_PHASE("Presentazione delle statistiche") {
 		if (this->m_config_reference->valueOf<bool>(PrintStatistics)) {
 			printf("STATS:\n");
@@ -294,38 +295,43 @@ namespace translated_automata {
 		}}
 
 		DEBUG_MARK_PHASE("Logging dei risultati aggregati") {
+		if (this->m_config_reference->valueOf<bool>(LogStatistics)) {
 
-		// Scrittura su file dei risultati del blocco di testcase
-		ofstream file_out("stats.txt", ios::app);
+			// Scrittura su file dei risultati del blocco di testcase
+			string stat_file_name = "stats.csv";
+			ifstream ifile(stat_file_name);
+			ofstream file_out(stat_file_name, ios::app);
 
-
-		file_out << this->m_config_reference->toString(Testcases) << " { ";
-		// Stampo tutti i valori rilevanti per il blocco di test, in coda al file
-		for (int param_enum = Testcases; param_enum <= ActiveDistanceCheckInTranslation; ++param_enum) {
-			SettingID param_id = static_cast<SettingID>(param_enum);
-			// XXX Ricordarsi di aggiornare l'ultimo valore, in caso di aggiunta di parametri
-			if (this->m_config_reference->isTestParam(param_id)) {
-				file_out << this->m_config_reference->toString(param_id) << " ";
+			// Stampa della headline
+			if (! (bool)ifile) {
+				for (int setting = 0; setting < DrawESCSOlution; setting++) {
+					SettingID id = static_cast<SettingID>(setting);
+					if (this->m_config_reference->isTestParam(id)) {
+						file_out << Configurations::nameOf(id) + ", ";
+					}
+				}
+				file_out << "SC min, SC avg, SC max, ESC min, ESC avg, ESC max" << std::endl;
 			}
-		}
-		file_out << "} ";
 
-		// Stampo i risultati
-		tuple<double, double, double> sc_stat_values = this->getStat(SC_TIME);
-			file_out << "SC( " 	<< std::to_string(std::get<0>(sc_stat_values)) << ", "
-								<< std::to_string(std::get<1>(sc_stat_values)) << ", "
-								<< std::to_string(std::get<2>(sc_stat_values)) << " ) ";
+			file_out << this->m_config_reference->getValueString();
 
-		tuple<double, double, double> esc_stat_values = this->getStat(ESC_TIME);
-			file_out << "ESC( " << std::to_string(std::get<0>(esc_stat_values)) << ", "
-								<< std::to_string(std::get<1>(esc_stat_values)) << ", "
-								<< std::to_string(std::get<2>(esc_stat_values)) << " )";
+			// Stampo i risultati
+			tuple<double, double, double> sc_stat_values = this->getStat(SC_TIME);
+				file_out 	<< std::to_string((int) std::get<0>(sc_stat_values)) << ", "
+							<< std::to_string(		std::get<1>(sc_stat_values)) << ", "
+							<< std::to_string((int) std::get<2>(sc_stat_values)) << ", ";
+
+			tuple<double, double, double> esc_stat_values = this->getStat(ESC_TIME);
+				file_out 	<< std::to_string((int) std::get<0>(esc_stat_values)) << ", "
+							<< std::to_string(		std::get<1>(esc_stat_values)) << ", "
+							<< std::to_string((int) std::get<2>(esc_stat_values));
 
 
-		// Chiudo il file
-		file_out << std::endl;
-		file_out.close();
-		}
+			// Chiudo il file
+			file_out << std::endl;
+			file_out.close();
+
+		}}
 	}
 
 } /* namespace translated_automata */

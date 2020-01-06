@@ -42,6 +42,7 @@ namespace translated_automata {
 		ActiveDistanceCheckInTranslation,
 
 		PrintStatistics,
+		LogStatistics,
 		PrintTranslation,
 		PrintOriginalAutomaton,
 		PrintSCSolution,

@@ -28,7 +28,8 @@ namespace translated_automata {
 	typedef enum {
 		AUTOMATON_RANDOM,
 		AUTOMATON_STRATIFIED,
-		AUTOMATON_STRATIFIED_WITH_SAFE_ZONE
+		AUTOMATON_STRATIFIED_WITH_SAFE_ZONE,
+		AUTOMATON_ACYCLIC
 	} AutomatonType;
 
 	template <class Automaton>
@@ -78,6 +79,7 @@ namespace translated_automata {
 		virtual Automaton* generateRandomAutomaton();
 		virtual Automaton* generateStratifiedAutomaton();
 		virtual Automaton* generateStratifiedWithSafeZoneAutomaton();
+		virtual Automaton* generateAcyclicAutomaton();
 
 	};
 

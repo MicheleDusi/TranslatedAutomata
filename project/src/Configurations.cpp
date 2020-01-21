@@ -226,7 +226,7 @@ namespace translated_automata {
 	 */
 	void Configurations::load() {
 		// Numero di Testcase
-		load(Testcases, 100);
+		load(Testcases, 5);
 		// Proprietà del problema
 		//		load(ProblemType, TRANSLATION_PROBLEM);
 		load(ProblemType, Problem::DETERMINIZATION_PROBLEM);
@@ -234,12 +234,13 @@ namespace translated_automata {
 		load(TranslationMixingFactor, 0.9);
 		load(TranslationOffset, 1);
 		load(EpsilonPercentage, 0);
-		//		load(AutomatonType, AUTOMATON_RANDOM);
-		//		load(AutomatonType, AUTOMATON_STRATIFIED);
-		load(AutomatonStructure, AUTOMATON_STRATIFIED_WITH_SAFE_ZONE);
-		load(AutomatonSize, 1000);
+//		load(AutomatonType, AUTOMATON_RANDOM);
+//		load(AutomatonType, AUTOMATON_STRATIFIED);
+//		load(AutomatonStructure, AUTOMATON_STRATIFIED_WITH_SAFE_ZONE);
+		load(AutomatonStructure, AUTOMATON_ACYCLIC);
+		load(AutomatonSize, 5000);
 		load(AutomatonFinalProbability, 0.1);
-		load(AutomatonTransitionsPercentage, 0.1);
+		load(AutomatonTransitionsPercentage, 0.3);
 		load(AutomatonMaxDistance, 200);
 		load(AutomatonSafeZoneDistance, 100);
 		// Moduli e funzionalità opzionali

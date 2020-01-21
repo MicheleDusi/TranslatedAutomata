@@ -250,6 +250,86 @@ namespace translated_automata {
 	}
 
 	/**
+	 * Genera un automa NFA privo di cicli.
+	 * Non utilizza il parametro "SafeZoneDistance" né "maxDistance".
+	 */
+	NFA* NFAGenerator::generateAcyclicAutomaton() {
+		// Creo l'NFA
+		NFA* nfa = new NFA();
+
+		// Generazione degli stati
+		this->generateStates(nfa);
+		vector<StateNFA*> states = nfa->getStatesVector(); // Riferimento agli stati
+		DEBUG_ASSERT_TRUE( this->getSize() == nfa->size() );
+
+		// Soddisfacimento della RAGGIUNGIBILITA'
+		for (int i = 1; i < states.size(); i++) {
+			// Determino una label casuale (eventualmente anche epsilon)
+			string random_label;
+			if (RANDOM_PERCENTAGE <= this->getEpsilonProbability()) {
+				random_label = EPSILON;
+			} else {
+				random_label = this->getAlphabet()[rand() % this->getAlphabet().size()];
+			}
+
+			// Effettuo la connessione:
+			// FROM = uno stato generico precedente a quello corrente nell'ordine del vettore
+			// TO = lo stato corrente del vettore all'indice i
+			nfa->connectStates(states[rand() % i], states[i], random_label);
+		}
+
+		// Soddisfacimento della PERCENTUALE DI TRANSIZIONI
+
+		/* Viene calcolato il numero di transizioni da generare, considerandone il numero massimo
+		 * (ossia il numero di transizioni di un grafo completo, per ciascuna possibile etichetta) e
+		 * la percentuale di transizioni desiderata.
+		 */
+		unsigned long int transitions_number = this->computeDeterministicTransitionsNumber();
+		DEBUG_ASSERT_TRUE( transitions_number >= nfa->size() - 1 );
+
+		for (	unsigned long int transitions_created = this->getSize() - 1;
+				transitions_created < transitions_number;
+				transitions_created++) {
+
+			// Estraggo una label casuale, che può anche essere EPSILON
+			string label;
+			if (RANDOM_PERCENTAGE <= this->getEpsilonProbability()) {
+				label = EPSILON;
+			} else {
+				label = this->getAlphabet()[rand() % this->getAlphabet().size()];
+			}
+
+			// Vengono estratti gli indici
+			int random_index_1 = (rand() % (states.size() - 1)) + 1;
+			int random_index_2 = (rand() % (states.size() - 1)) + 1;
+
+			int from_index;
+			int to_index;
+
+			if (random_index_1 > random_index_2) {
+				from_index = random_index_2;
+				to_index = random_index_1;
+			} else {
+				from_index = random_index_1;
+				to_index = random_index_2;
+			}
+
+			// Creo la connessione
+			nfa->connectStates(
+					states[from_index], 	// FROM
+					states[to_index],		// TO
+					label);
+			/* Nota: al momento non ho modo di garantire che la connessione non esista già, nel caso 2 */
+		}
+
+		// Impostazione delle distanze e dello stato iniziale
+		nfa->setInitialState(states[0]);
+		states[0]->initDistancesRecursively(0);
+
+		return nfa;
+	}
+
+	/**
 	 * Genera una lista di oggetti StateNFA, ognuno dei quali con un nome univoco,
 	 * e inserisci questi stati all'interno del NFA passato come parametro.
 	 * Gli stati non presentano transizioni.

@@ -30,6 +30,7 @@ namespace translated_automata {
 		~NFAGenerator();
 
 		NFA* generateStratifiedWithSafeZoneAutomaton();
+		NFA* generateAcyclicAutomaton();
 	};
 
 } /* namespace translated_automata */

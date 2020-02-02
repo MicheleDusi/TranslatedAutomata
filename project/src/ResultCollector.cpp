@@ -9,6 +9,7 @@
 #include <fstream>
 
 #include "AutomataDrawer_impl.hpp"
+#define DEBUG_MODE
 #include "Debug.hpp"
 #include "Properties.hpp"
 
@@ -19,7 +20,8 @@ namespace translated_automata {
 		"SC_TIME     [ms]",		// Tempo dedicato alla fase di costruzione nell'algoritmo SC (SC effettivo)
 		"ESC_TIME    [ms]",		// Tempo dedicato alla fase di costruzione nell'algoritmo ESC
 		"SOL_SIZE    [#] ",		// Dimensione della soluzione trovata dall'algoritmo
-		"SOL_GROWTH  [%] "		// Rapporto fra la dimensione dell'automa della soluzione e l'automa originale
+		"SOL_GROWTH  [%] ",		// Rapporto fra la dimensione dell'automa della soluzione e l'automa originale
+		"EMP_GAIN    [.] "		// Guadagno sperimentale di tempo di ESC rispetto a SC, normalizzato fra -1 e 1
 	};
 
 	/**
@@ -78,6 +80,25 @@ namespace translated_automata {
 			};
 			break;
 
+		// Guadagno sperimentale di tempo di ESC rispetto a SC, normalizzato fra -1 e 1
+		case EMPIRICAL_GAIN :
+			getter = [](Result* result) {
+				double time_diff = (((signed long int) (result->sc_elapsed_time)) - ((signed long int) result->esc_elapsed_time));
+				// Se entrambi i tempi sono uguali, il guadagno empirico è nullo.
+				if (result->sc_elapsed_time == result->esc_elapsed_time) {
+					return 0.0;
+					// Nota: questo controllo serve specificatamente ad escludere il caso in cui entrambi i risultati siano nulli, che genererebbe una divisione per 0.
+					// In tutti gli altri casi, il tempo maggiore sarà diverso da 0 e sarà possibile dividere per esso.
+				}
+				// Appurato che i tempi sono diversi, stabilisco il tempo maggiore
+				else if (result->sc_elapsed_time > result->esc_elapsed_time) {
+					return (double) (time_diff / result->sc_elapsed_time);
+				} else {
+					return (double) (time_diff / result->esc_elapsed_time);
+				}
+			};
+			break;
+
 		default :
 			DEBUG_LOG_ERROR("Valore %d non riconosciuto all'interno dell'enumerazione ResultStat", stat);
 			getter = [](Result* result) {
@@ -129,7 +150,7 @@ namespace translated_automata {
 	 */
 	std::tuple<double, double, double> ResultCollector::getStat(ResultStat stat) {
 		// Inizializzo le variabili
-		double min = 1E20, sum = 0, max = 0;
+		double min = 1E20, sum = 0, max = -2;
 		// Preparo la funzione estrattore
 		auto getter = this->getStatGetter(stat);
 		DEBUG_LOG("Ho appena estratto l'estrattore");
@@ -282,7 +303,7 @@ namespace translated_automata {
 					this->m_config_reference->valueOf<int>(AlphabetCardinality));
 			printf("ESC success percentage = %f %%\n", (100 * this->getSuccessPercentage()));
 			printf("__________________|    MIN    |    AVG    |    MAX    |\n");
-			for (int int_stat = SC_TIME; int_stat <= SOL_GROWTH; int_stat++) {
+			for (int int_stat = SC_TIME; int_stat <= EMPIRICAL_GAIN; int_stat++) {
 				ResultStat stat = static_cast<ResultStat>(int_stat);
 				// XXX Ricordarsi di aggiornare l'ultimo valore, in caso di aggiunta di statistiche
 				tuple<double, double, double> stat_values = this->getStat(stat);

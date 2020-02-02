@@ -39,7 +39,8 @@ namespace translated_automata {
 		SC_TIME,		// Tempo dedicato alla fase di costruzione nell'algoritmo SC (SC effettivo)
 		ESC_TIME,		// Tempo dedicato alla fase di costruzione nell'algoritmo ESC (Esclusa la traduzione)
 		SOL_SIZE,		// Dimensione della soluzione trovata dall'algoritmo
-		SOL_GROWTH		// Rapporto fra la dimensione dell'automa della soluzione e l'automa originale
+		SOL_GROWTH,		// Rapporto fra la dimensione dell'automa della soluzione e l'automa originale
+		EMPIRICAL_GAIN	// Guadagno empirico di ESC su SC, dato dalla frazione della differenza di tempo sul tempo massimo fra i due algoritmi
 	};
 
 	/**

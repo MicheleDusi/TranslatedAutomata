@@ -240,6 +240,9 @@ namespace translated_automata {
 		case AUTOMATON_STRATIFIED_WITH_SAFE_ZONE :
 			return this->generateStratifiedWithSafeZoneAutomaton();
 
+		case AUTOMATON_ACYCLIC :
+			return this->generateAcyclicAutomaton();
+
 		default :
 			DEBUG_LOG_ERROR("Valore %d non riconosciuto all'interno dell'enumerazione AutomatonType", this->getAutomatonStructure());
 			return NULL;
@@ -263,6 +266,12 @@ namespace translated_automata {
 	Automaton* AutomataGenerator<Automaton>::generateStratifiedWithSafeZoneAutomaton() {
 		DEBUG_LOG_ERROR("Impossibile generare un automa di tipo \"StratifiedWithSafeZone\" per l'attuale tipologia di problema");
 		throw "Impossibile generare un automa di tipo \"StratifiedWithSafeZone\" per l'attuale tipologia di problema";
+	}
+
+	template <class Automaton>
+	Automaton* AutomataGenerator<Automaton>::generateAcyclicAutomaton() {
+		DEBUG_LOG_ERROR("Impossibile generare un automa di tipo \"Acyclic\" per l'attuale tipologia di problema");
+		throw "Impossibile generare un automa di tipo \"Acyclic\" per l'attuale tipologia di problema";
 	}
 
     /*************

@@ -23,6 +23,7 @@ namespace translated_automata {
 		StateNFA* getRandomState(NFA* nfa);
 		StateNFA* getRandomState(vector<StateNFA*>& states);
 		StateNFA* getRandomStateWithUnusedLabels(vector<StateNFA*>& states, map<StateNFA*, Alphabet>& unused_labels);
+		StateNFA* getRandomStateWithUnusedLabels(map<StateNFA*, Alphabet>& unused_labels);
 		string extractRandomUnusedLabel(map<StateNFA*, Alphabet>& unused_labels, StateNFA* state);
 
 	public:

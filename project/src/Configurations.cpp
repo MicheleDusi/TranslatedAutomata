@@ -226,23 +226,23 @@ namespace translated_automata {
 	 */
 	void Configurations::load() {
 		// Numero di Testcase
-		load(Testcases, 5);
+		load(Testcases, 1);
 		// Proprietà del problema
 		//		load(ProblemType, TRANSLATION_PROBLEM);
 		load(ProblemType, Problem::DETERMINIZATION_PROBLEM);
-		load(AlphabetCardinality, 5);
+		load(AlphabetCardinality, 10);
 		load(TranslationMixingFactor, 0.9);
 		load(TranslationOffset, 1);
 		load(EpsilonPercentage, 0);
 //		load(AutomatonType, AUTOMATON_RANDOM);
 //		load(AutomatonType, AUTOMATON_STRATIFIED);
-//		load(AutomatonStructure, AUTOMATON_STRATIFIED_WITH_SAFE_ZONE);
-		load(AutomatonStructure, AUTOMATON_ACYCLIC);
-		load(AutomatonSize, 5000);
+		load(AutomatonStructure, AUTOMATON_STRATIFIED_WITH_SAFE_ZONE);
+//		load(AutomatonStructure, AUTOMATON_ACYCLIC);
+		load(AutomatonSize, 100);
 		load(AutomatonFinalProbability, 0.1);
-		load(AutomatonTransitionsPercentage, 0.3);
-		load(AutomatonMaxDistance, 200);
-		load(AutomatonSafeZoneDistance, 100);
+		load(AutomatonTransitionsPercentage, 1);
+		load(AutomatonMaxDistance, 50);
+		load(AutomatonSafeZoneDistance, 0);
 		// Moduli e funzionalità opzionali
 		load(ActiveAutomatonPruning, true); // In caso sia attivato, evita la formazione e la gestione dello stato con estensione vuota, tramite procedura Automaton Pruning
 		load(ActiveRemovingLabel, true); // In caso sia attivato, utilizza una label apposita per segnalare le epsilon-transizione, che deve essere rimossa durante la determinizzazione

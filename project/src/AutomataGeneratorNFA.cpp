@@ -79,11 +79,23 @@ namespace translated_automata {
 
 		// Inizializzazione degli strati
 		vector<vector<StateNFA*>> strata = vector<vector<StateNFA*>>();
+		vector<vector<StateNFA*>> safe_zone_strata = vector<vector<StateNFA*>>();
+		/*
+		 * Nota: vengono creati due vettori di strati:
+		 * - Il primo è il vettore di strati, non viene modificato una volta riempito
+		 * - Il secondo corrisponde alla SAFE-ZONE, e serve per tenere traccia degli stati che hanno ancora label disponibili,
+		 * senza che l'estrazione casuale generi attese infinite
+		 */
+
 		vector<StateNFA*> states = nfa->getStatesVector();
 
 		// Creo tanti strati in numero pari alla distanza massima + 1
 		for (int d = 0; d <= this->getMaxDistance(); d++) {
 			strata.push_back(vector<StateNFA*>());
+		}
+		// Creo tanti strati per la SAFE ZONE
+		for (int d = 0; d <= this->getSafeZoneDistance(); d++) {
+			safe_zone_strata.push_back(vector<StateNFA*>());
 		}
 
 		// Li riempio mettendone uno per strato, andando a riempire in "orizzontale".
@@ -116,11 +128,20 @@ namespace translated_automata {
 			}
 		}
 
+		// Copio i primi strati della safe-zone nel vettore apposito
+		for (int d = 0; d < safe_zone_strata.size() && d < strata.size(); d++) {
+			// Per ciascuno stato nello strato d-esimo
+			for (int i = 0; i < strata[d].size(); i++) {
+				// Copio lo stato negli strati della safe-zone
+				safe_zone_strata[d].push_back(strata[d][i]);
+			}
+		}
+
 
 		// DEBUG - Stampa degli strati
-		DEBUG_LOG("Gli strati ottenuti sono %lu, e comprendono i seguenti stati:", strata.size());
+		DEBUG_LOG("Gli strati ottenuti sono %lu, e comprendono i seguenti stati:", strata_from.size());
 		IF_DEBUG_ACTIVE(
-		for (auto stratus : strata) {
+		for (auto stratus : strata_from) {
 			std::cout << "STRATO { ";
 			for (StateNFA* state : stratus) {
 				std::cout << state->getName() << " ";
@@ -200,18 +221,15 @@ namespace translated_automata {
 			// Sono nella safe-zone
 			if (stratum_index < this->getSafeZoneDistance()) {
 
-				try {
 				// In tal caso, estraggo uno stato genitore assicurandomi di poter garantire il determinismo
-				from = this->getRandomStateWithUnusedLabels(strata[stratum_index], unused_labels);
-				}
-				catch (const char* msg) {
-					DEBUG_LOG("E' stata sollevata un'eccezione dal metodo \"getRandomStateWithUnusedLabel\": \"%s\"", msg);
-					DEBUG_LOG("Annullo la transizione corrente, ne creo una nuova");
-					transitions_created--;
-					continue;
-				}
+				// Sicuramente gli stati rimasti hanno ancora delle label utilizzabili
+				from = this->getRandomStateWithUnusedLabels(unused_labels);
 				// Estraggo una label ancora inutilizzata
 				label = this->extractRandomUnusedLabel(unused_labels, from);
+				/*
+				 * Nota: in questo caso viene corretta la distanza dello stato, ossia lo strato
+				 */
+				stratum_index = from->getDistance();
 
 			}
 			// CASO 2
@@ -400,8 +418,8 @@ namespace translated_automata {
 			from = states_aux[random_index];
 
 			// Verifica dell'esistenza di label inutilizzate ancora disponibili
-			if (unused_labels[from].size() > 0) {
-				DEBUG_LOG("Ho trovato lo stato %s con %lu labels non utilizzate", from->getName().c_str(), unused_labels[from].size());
+			if (unused_labels.count(from) > 0 && unused_labels.at(from).size() > 0) {
+				DEBUG_LOG("Ho trovato lo stato %s con %lu labels non utilizzate", from->getName().c_str(), unused_labels.at(from).size());
 				from_state_has_unused_labels = true;
 			}
 			// Altrimenti elimino lo stato dalla lista
@@ -411,6 +429,50 @@ namespace translated_automata {
 			}
 
 		} while (!from_state_has_unused_labels);
+
+		return from;
+	}
+
+	StateNFA* NFAGenerator::getRandomStateWithUnusedLabels(map<StateNFA*, Alphabet> &unused_labels) {
+		StateNFA* from;
+		bool from_state_has_unused_labels = false; // Flag pessimista
+		do {
+			// Verifico che siano presenti stati nel vettore
+			if (unused_labels.empty()) {
+				DEBUG_LOG_ERROR("Impossibile estrarre uno stato da una lista vuota");
+				throw "Impossibile estrarre uno stato da una lista vuota";
+			}
+
+			// Estrazione di uno stato casuale dalla lista
+			int random_index = rand() % unused_labels.size();
+			// Ciclo finché l'indice non corrisponde
+			int i = 0;
+			for (auto &pair : unused_labels) {
+				if (i == random_index) {
+					from = pair.first;
+					// Verifico direttamente se ci sono label disponibili
+					if (pair.second.size() > 0) {
+						DEBUG_LOG("Ho trovato lo stato %s con %lu labels non utilizzate", from->getName().c_str(), unused_labels.at(from).size());
+						from_state_has_unused_labels = true;
+						return from;
+					}
+
+					// Esco dal ciclo
+					break;
+
+				} else {
+					i++;
+				}
+			}
+
+			DEBUG_LOG("Lo stato %s non ha più label inutilizzate; eviterò di selezionarlo nelle iterazioni successive", from->getName().c_str());
+			unused_labels.erase(from);
+
+		} while (!from_state_has_unused_labels);
+		/*
+		 * NOTA: in teoria qui si parte dall'assunto che la condizione rimanga sempre falsa e che il ciclo venga ripetuto.
+		 * Se infatti diventa vera, lo stato viene restituito prima.
+		 */
 
 		return from;
 	}

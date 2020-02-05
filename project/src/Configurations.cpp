@@ -18,7 +18,7 @@ namespace translated_automata {
 	/**
 	 * Costruttore con valore intero.
 	 */
-	SettingValue::SettingValue(int value) {
+	AtomicSettingValue::AtomicSettingValue(int value) {
 		DEBUG_LOG("Costruzione di un oggetto SettingValue con valore INT = %d", value);
 		this->m_type = INT;
 		this->m_value.integer = value;
@@ -27,7 +27,7 @@ namespace translated_automata {
 	/**
 	 * Costruttore con valore reale.
 	 */
-	SettingValue::SettingValue(double value) {
+	AtomicSettingValue::AtomicSettingValue(double value) {
 		DEBUG_LOG("Costruzione di un oggetto SettingValue con valore DOUBLE = %f", value);
 		this->m_type = DOUBLE;
 		this->m_value.real = value;
@@ -36,7 +36,7 @@ namespace translated_automata {
 	/**
 	 * Costruttore con valore booleano.
 	 */
-	SettingValue::SettingValue(bool value) {
+	AtomicSettingValue::AtomicSettingValue(bool value) {
 		DEBUG_LOG("Costruzione di un oggetto SettingValue con valore BOOL = %d", value);
 		this->m_type = BOOL;
 		this->m_value.flag = value;
@@ -45,7 +45,7 @@ namespace translated_automata {
 	/**
 	 * Restituisce il tipo del valore.
 	 */
-	SettingType SettingValue::getType() {
+	SettingType AtomicSettingValue::getType() {
 		return this->m_type;
 	}
 
@@ -53,7 +53,7 @@ namespace translated_automata {
 	 * Restituisce il valore.
 	 * Sarà compito del metodo di Configurations castarlo al tipo corretto.
 	 */
-	Value SettingValue::getValue() {
+	Value AtomicSettingValue::getValue() {
 		return this->m_value;
 	}
 
@@ -61,7 +61,7 @@ namespace translated_automata {
 	 * Restituisce il valore come stringa.
 	 * Poiché il casting avviene internamente non è necessario usare template o overloading.
 	 */
-	string SettingValue::getValueString() {
+	string AtomicSettingValue::getValueString() {
 		switch (this->m_type) {
 		case INT :
 			return std::to_string(this->m_value.integer);
@@ -80,7 +80,7 @@ namespace translated_automata {
 	 * In caso di valori multipli, restituisce TUTTI i valori.
 	 * Nella stringa è presente anche un'informazione sul tipo di valore.
 	 */
-	string SettingValue::toString() {
+	string AtomicSettingValue::toString() {
 		switch (this->m_type) {
 		case INT :
 			return "int:" + std::to_string(this->m_value.integer);
@@ -97,7 +97,7 @@ namespace translated_automata {
 	/**
 	 * Poiché il valore è "singolo" ( o atomico), non esiste un valore successivo e il metodo restituisce sempre FALSE.
 	 */
-	bool SettingValue::nextCase() {
+	bool AtomicSettingValue::nextCase() {
 		return false;
 	}
 
@@ -106,33 +106,37 @@ namespace translated_automata {
 	/**
 	 * Costruttore con un array di interi.
 	 */
-	SettingMultiValue::SettingMultiValue(vector<int> values) : SettingValue(0) {
+	CompositeSettingValue::CompositeSettingValue(vector<int> values) : SettingValue() {
 		// Inserisco i valori
-		this->m_multivalue = vector<SettingValue>();
+		this->m_multivalue = vector<SettingValue*>();
 		for (int n : values) {
-			this->m_multivalue.push_back(SettingValue(n));
+			this->m_multivalue.push_back(new AtomicSettingValue(n));
 		}
-		this->m_type = INT;
+		this->m_current_value_index = 0;
 	}
 
 	/**
 	 * Costruttore con un array di double.
 	 */
-	SettingMultiValue::SettingMultiValue(vector<double> values) : SettingValue(0) {
+	CompositeSettingValue::CompositeSettingValue(vector<double> values) : SettingValue() {
 		// Inserisco i valori
-		this->m_multivalue = vector<SettingValue>();
+		this->m_multivalue = vector<SettingValue*>();
 		for (double d : values) {
-			this->m_multivalue.push_back(SettingValue(d));
+			this->m_multivalue.push_back(new AtomicSettingValue(d));
 		}
-		this->m_type = DOUBLE;
+		this->m_current_value_index = 0;
+	}
+
+	SettingType CompositeSettingValue::getType() {
+		return this->m_multivalue[this->m_current_value_index]->getType();
 	}
 
 	/**
 	 * Restituisce il valore corrente come stringa.
 	 * In caso di valori multipli, solo il valore corrente è restituito come stringa.
 	 */
-	string SettingMultiValue::getValueString() {
-		return this->m_multivalue[this->m_value.integer].getValueString();
+	string CompositeSettingValue::getValueString() {
+		return this->m_multivalue[this->m_current_value_index]->getValueString();
 	}
 
 	/**
@@ -140,11 +144,11 @@ namespace translated_automata {
 	 * In caso di valori multipli, restituisce TUTTI i valori.
 	 * Nella stringa è presente anche un'informazione sul tipo di valore.
 	 */
-	string SettingMultiValue::toString() {
+	string CompositeSettingValue::toString() {
 		// Concateno i valori
 		string result = "{";
-		for (SettingValue sv : this->m_multivalue) {
-			result += sv.getValueString() + ", ";
+		for (SettingValue* sv : this->m_multivalue) {
+			result += sv->getValueString() + ", ";
 		}
 		result.pop_back(); result.pop_back();
 		result += "}";
@@ -155,8 +159,8 @@ namespace translated_automata {
 	 * Restituisce il valore all'indice corrente.
 	 * Sarà responsabilità della classe Configuration castare il tutto.
 	 */
-	Value SettingMultiValue::getValue() {
-		return this->m_multivalue[this->m_value.integer].m_value;
+	Value CompositeSettingValue::getValue() {
+		return this->m_multivalue[this->m_current_value_index]->getValue();
 	}
 
 	/**
@@ -164,9 +168,9 @@ namespace translated_automata {
 	 * Se tale valore esiste, e quindi se tale valore cambia, viene restituito TRUE.
 	 * Altrimenti viene restituito FALSE, e il contatore viene resettato a 0 per un nuovo ciclo.
 	 */
-	bool SettingMultiValue::nextCase() {
+	bool CompositeSettingValue::nextCase() {
 		// Verifico se il valore corrente è atomico o contiene valori multipli a sua volta
-		if ((this->m_multivalue[this->m_value.integer]).nextCase()) {
+		if ((this->m_multivalue[this->m_current_value_index])->nextCase()) {
 			// In tal caso, itero su di esso e restituisco TRUE
 			return true;
 		}
@@ -174,13 +178,13 @@ namespace translated_automata {
 		else {
 			// Viene quindi verificato se esistono altri valori nel vettore di questo oggetto
 			// Incemento il contatore
-			this->m_value.integer++;
+			this->m_current_value_index++;
 			// Verifico se corrisponde ad un nuovo valore
-			if (this->m_value.integer < this->m_multivalue.size()) {
+			if (this->m_current_value_index < this->m_multivalue.size()) {
 				return true;
 			} else {
 				// Altrimenti sono arrivato alla fine, azzero il contatore e restituisco FALSE
-				this->m_value.integer = 0;
+				this->m_current_value_index = 0;
 				return false;
 			}
 		}
@@ -238,11 +242,11 @@ namespace translated_automata {
 //		load(AutomatonType, AUTOMATON_STRATIFIED);
 		load(AutomatonStructure, AUTOMATON_STRATIFIED_WITH_SAFE_ZONE);
 //		load(AutomatonStructure, AUTOMATON_ACYCLIC);
-		load(AutomatonSize, 100);
+		load(AutomatonSize, vector<int>{10, 11, 12});
 		load(AutomatonFinalProbability, 0.1);
-		load(AutomatonTransitionsPercentage, 1);
-		load(AutomatonMaxDistance, 50);
-		load(AutomatonSafeZoneDistance, 0);
+		load(AutomatonTransitionsPercentage, 0.1);
+		load(AutomatonMaxDistance, vector<int>{4,5});
+		load(AutomatonSafeZoneDistance, 3);
 		// Moduli e funzionalità opzionali
 		load(ActiveAutomatonPruning, true); // In caso sia attivato, evita la formazione e la gestione dello stato con estensione vuota, tramite procedura Automaton Pruning
 		load(ActiveRemovingLabel, true); // In caso sia attivato, utilizza una label apposita per segnalare le epsilon-transizione, che deve essere rimossa durante la determinizzazione

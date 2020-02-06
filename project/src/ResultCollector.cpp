@@ -319,7 +319,8 @@ namespace translated_automata {
 		if (this->m_config_reference->valueOf<bool>(LogStatistics)) {
 
 			// Scrittura su file dei risultati del blocco di testcase
-			string stat_file_name = "stats.csv";
+			string stat_file_name = DIR_RESULTS;
+			stat_file_name += "stats.csv";
 			ifstream ifile(stat_file_name);
 			ofstream file_out(stat_file_name, ios::app);
 

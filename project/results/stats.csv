@@ -1,6 +1,5 @@
 Alphabet cardinality, Epsilon percentage, Automaton's size (#states), Automaton's transitions percentage, Automaton's max distance, Automaton's safe-zone distance, SC min, SC avg, SC max, ESC min, ESC avg, ESC max
 10, 0, 10, 0.100000, 4, 3, 0, 0.000000, 0, 0, 0.000000, 0
-10, 0, 10, 0.100000, 4, 3, 0, 0.000000, 0, 0, 0.000000, 0
 10, 0, 11, 0.100000, 4, 3, 0, 0.000000, 0, 0, 0.000000, 0
 10, 0, 12, 0.100000, 4, 3, 0, 0.000000, 0, 0, 0.000000, 0
 10, 0, 10, 0.100000, 5, 3, 0, 0.000000, 0, 0, 0.000000, 0

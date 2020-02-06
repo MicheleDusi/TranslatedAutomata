@@ -67,28 +67,40 @@ namespace translated_automata {
 	} Value;
 
 	/**
-	 * Rappresenta un valore di tipo generico associato ad una specifica configurazione.
+	 * Classe astratta per il pattern Composite.
+	 * Non implementa alcun metodo: sono da sovrascrivere.
 	 */
 	class SettingValue {
+	public:
+		SettingValue() {};
+		virtual ~SettingValue() {};
+		virtual SettingType getType() = 0;
+		virtual Value getValue() = 0;
+		virtual string getValueString() = 0; // Restituisce il valore come stringa
+		virtual string toString() = 0;		 // Restituisce l'oggetto SettingValue come stringa
+		virtual bool nextCase() = 0;
+	};
 
-		// La classe SettingMultiValue può accedere ai membri della classe SettingValue
-		friend class SettingMultiValue;
+	/**
+	 * Rappresenta un valore di tipo generico associato ad una specifica configurazione.
+	 */
+	class AtomicSettingValue : public SettingValue {
 
 	private:
 		SettingType m_type;
 		Value m_value;
 
 	public:
-		SettingValue(int value);
-		SettingValue(double value);
-		SettingValue(bool value);
-		virtual ~SettingValue() {};
+		AtomicSettingValue(int value);
+		AtomicSettingValue(double value);
+		AtomicSettingValue(bool value);
+		~AtomicSettingValue() {};
 
 		SettingType getType();
-		virtual Value getValue();
-		virtual string getValueString(); // Restituisce il valore come stringa
-		virtual string toString();		 // Restituisce l'oggetto SettingValue come stringa
-		virtual bool nextCase();
+		Value getValue();
+		string getValueString(); // Restituisce il valore come stringa
+		string toString();		 // Restituisce l'oggetto SettingValue come stringa
+		bool nextCase();
 
 	};
 
@@ -99,20 +111,22 @@ namespace translated_automata {
 	 * Inoltre, utilizza l'attributo "value" della classe padre come indice numerico
 	 * del valore corrente.
 	 */
-	class SettingMultiValue : public SettingValue {
+	class CompositeSettingValue : public SettingValue {
 
 	private:
-		vector<SettingValue> m_multivalue;
+		int m_current_value_index; // Indice del valore corrente
+		vector<SettingValue*> m_multivalue; // Vettore dei valori
 
 	public:
-		SettingMultiValue(vector<int> values);
-		SettingMultiValue(vector<double> values);
-		virtual ~SettingMultiValue() {};
+		CompositeSettingValue(vector<int> values);
+		CompositeSettingValue(vector<double> values);
+		~CompositeSettingValue() {};
 
-		virtual Value getValue();
-		virtual string getValueString(); // Restituisce il valore come stringa
-		virtual string toString();		 // Restituisce l'oggetto SettingValue come stringa
-		virtual bool nextCase();
+		SettingType getType();
+		Value getValue();
+		string getValueString(); // Restituisce il valore come stringa
+		string toString();		 // Restituisce l'oggetto SettingValue come stringa
+		bool nextCase();
 
 	};
 
@@ -143,14 +157,14 @@ namespace translated_automata {
 		 * Carica un singolo parametro di configurazione all'interno della mappa.
 		 */
 		template <typename T> void load(const SettingID& id, T value) {
-			this->m_settings_instances.insert(std::make_pair(id, new SettingValue(value)));
+			this->m_settings_instances.insert(std::make_pair(id, new AtomicSettingValue(value)));
 		};
 
 		/**
 		 * Carica un singolo parametro di configurazione multi-valore all'interno della mappa.
 		 */
 		template <typename T> void load(const SettingID& id, vector<T> values) {
-			this->m_settings_instances.insert(std::make_pair(id, new SettingMultiValue(values)));
+			this->m_settings_instances.insert(std::make_pair(id, new CompositeSettingValue(values)));
 		}
 
 	public:

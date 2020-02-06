@@ -3,7 +3,7 @@
 ###############################################
 
 # Nome del file eseguibile di output
-OUTPUT = translated_automata
+OUTPUT = algo_esc
 
 # Directories
 SRCDIR = ./src

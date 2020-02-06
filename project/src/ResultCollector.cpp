@@ -301,7 +301,7 @@ namespace translated_automata {
 					this->getTestCaseNumber(),
 					this->m_config_reference->valueOf<int>(AutomatonSize),
 					this->m_config_reference->valueOf<int>(AlphabetCardinality));
-			printf("ESC success percentage = %f %%\n", (100 * this->getSuccessPercentage()));
+//			printf("ESC success percentage = %f %%\n", (100 * this->getSuccessPercentage()));
 			printf("__________________|    MIN    |    AVG    |    MAX    |\n");
 			for (int int_stat = SC_TIME; int_stat <= EMPIRICAL_GAIN; int_stat++) {
 				ResultStat stat = static_cast<ResultStat>(int_stat);
